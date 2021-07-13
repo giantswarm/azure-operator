@@ -130,7 +130,10 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 				return currentState, microerror.Mask(err)
 			}
 
-			if desiredParameters.Scaling.MinReplicas == desiredParameters.Scaling.MaxReplicas && desiredParameters.Scaling.CurrentReplicas != int32(*vmss.Sku.Capacity) {
+			if desiredParameters.Scaling.MinReplicas == desiredParameters.Scaling.MaxReplicas &&
+				vmss.Sku != nil &&
+				vmss.Sku.Capacity != nil &&
+				desiredParameters.Scaling.CurrentReplicas != int32(*vmss.Sku.Capacity) {
 				changes = append(changes, "scaling")
 			}
 		}

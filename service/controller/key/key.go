@@ -19,6 +19,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/templates/ignition"
@@ -55,8 +56,6 @@ const (
 
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
-	AnnotationNodePoolMinSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
-	AnnotationNodePoolMaxSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
 
 	LabelApp             = "app"
 	LabelCluster         = "giantswarm.io/cluster"
@@ -729,6 +728,11 @@ func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 
 func WorkersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
+}
+
+func WorkersEgressExistingPublicIP(customObject providerv1alpha1.AzureConfig) string {
+	ipAddressResourceId := customObject.Annotations[annotation.WorkersEgressExternalPublicIP]
+	return ipAddressResourceId
 }
 
 func NodePoolSpotInstancesEnabled(azureMachinePool *expcapzv1alpha3.AzureMachinePool) bool {

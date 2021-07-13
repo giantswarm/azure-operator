@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Allow using an existing public IP for the NAT gateway of worker nodes.
+
 ### Fixed
 
 - Fix udev rules that caused `/boot` automount to fail

@@ -18,6 +18,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	localannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -151,6 +152,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 		}
 
+		// Ensure External IP address annotation is up to date.
+		if presentAzureConfig.Annotations == nil {
+			presentAzureConfig.Annotations = make(map[string]string)
+		}
+		presentAzureConfig.Annotations[localannotation.WorkersEgressExternalPublicIP] = mappedAzureConfig.Annotations[localannotation.WorkersEgressExternalPublicIP]
+
 		if changed {
 			r.logger.Debugf(ctx, "existing azureconfig needs update")
 
@@ -244,6 +251,9 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 
 	{
 		azureConfig.Annotations[annotation.ClusterDescription] = cluster.Annotations[annotation.ClusterDescription]
+		if azureCluster.Annotations[localannotation.WorkersEgressExternalPublicIP] != "" {
+			azureConfig.Annotations[localannotation.WorkersEgressExternalPublicIP] = azureCluster.Annotations[localannotation.WorkersEgressExternalPublicIP]
+		}
 	}
 
 	{

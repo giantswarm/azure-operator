@@ -1,6 +1,10 @@
 package azureconfig
 
-import providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+import (
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
+)
 
 func azureConfigsEqual(cr1, cr2 providerv1alpha1.AzureConfig) bool {
 	// Common Cluster Checks.
@@ -44,6 +48,11 @@ func azureConfigsEqual(cr1, cr2 providerv1alpha1.AzureConfig) bool {
 
 	// Legacy version bundle version.
 	if cr1.Spec.VersionBundle != cr2.Spec.VersionBundle { // nolint: gosimple
+		return false
+	}
+
+	// External IP address for workers egress changed
+	if cr1.Annotations[annotation.WorkersEgressExternalPublicIP] != cr2.Annotations[annotation.WorkersEgressExternalPublicIP] {
 		return false
 	}
 
