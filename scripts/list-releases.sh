@@ -6,15 +6,12 @@ if [ "$1" = "" ]; then
     exit 1
 fi
 
-opsctl list installations > list-of-installations.txt
-gsctl list endpoints > list-of-endpoints.txt
 
 provider=$1
 active_release=$2
 for installation in $(opsctl list installations --provider=$provider --short); do
-		gsctl select endpoint "${inallation_data[0]}"
-		
-		if [ "$active_release" = "" ]
+		gsctl select endpoint "${installation[0]}"
+		if [ "$active_release" = "" ]	
 		then
 			gsctl list releases
 		else
@@ -27,9 +24,5 @@ for installation in $(opsctl list installations --provider=$provider --short); d
 			    fi
 		done <list-of-releases.txt
   		fi
-  	
-  	#gsctl select endpoint api.g8s."${inallation_data[4]}"
-  fi
-done <list-of-installations.txt
-rm -rf list-of-installations.txt
+done
 rm -rf list-of-releases.txt
