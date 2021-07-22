@@ -17,7 +17,3 @@ func newSecretName(legacySecret corev1.Secret) string {
 
 	return fmt.Sprintf("%s%s", newNamePrefix, name)
 }
-
-func newSecretNamespace(legacySecret corev1.Secret) string {
-	return legacySecret.Namespace
-}
