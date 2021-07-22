@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix namespace in secret reference of `AzureClusterIdentity`.
+
 ## [5.8.0] - 2021-07-13
 
 ### Added

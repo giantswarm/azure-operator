@@ -104,7 +104,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		err = r.ensureAzureClusterIdentityUpdated(ctx, legacySecret, azureClusterIdentity)
+		err = r.ensureAzureClusterIdentityUpdated(ctx, &azureCluster, legacySecret, azureClusterIdentity)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -193,7 +193,7 @@ func (r *Resource) ensureNewSecretUpdated(ctx context.Context, legacySecret core
 
 func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret) (*v1alpha3.AzureClusterIdentity, error) {
 	newName := newSecretName(legacySecret)
-	desiredSpec := getAzureClusterIdentitySpec(legacySecret)
+	desiredSpec := getAzureClusterIdentitySpec(azureCluster, legacySecret)
 
 	r.logger.Debugf(ctx, "Looking for AzureClusterIdentity %q in namespace %q", newName, azureCluster.Namespace)
 
@@ -233,9 +233,9 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, azureCluster 
 	return existing, nil
 }
 
-func (r *Resource) ensureAzureClusterIdentityUpdated(ctx context.Context, legacySecret corev1.Secret, existing v1alpha3.AzureClusterIdentity) error {
+func (r *Resource) ensureAzureClusterIdentityUpdated(ctx context.Context, azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret, existing v1alpha3.AzureClusterIdentity) error {
 	newName := newSecretName(legacySecret)
-	desiredSpec := getAzureClusterIdentitySpec(legacySecret)
+	desiredSpec := getAzureClusterIdentitySpec(azureCluster, legacySecret)
 
 	if !reflect.DeepEqual(existing.Spec, desiredSpec) {
 		r.logger.Debugf(ctx, "AzureClusterIdentity %q is outdated, updating", newName)
@@ -256,9 +256,9 @@ func (r *Resource) ensureAzureClusterIdentityUpdated(ctx context.Context, legacy
 	return nil
 }
 
-func getAzureClusterIdentitySpec(legacySecret corev1.Secret) v1alpha3.AzureClusterIdentitySpec {
+func getAzureClusterIdentitySpec(azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret) v1alpha3.AzureClusterIdentitySpec {
 	newName := newSecretName(legacySecret)
-	newNamespace := newSecretNamespace(legacySecret)
+	newNamespace := azureCluster.Namespace
 
 	clientID := string(legacySecret.Data[legacySecretClientIDFieldName])
 	tenantID := string(legacySecret.Data[legacySecretTenantIDFieldName])
