@@ -1,6 +1,6 @@
 module github.com/giantswarm/azure-operator/v5
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Azure/azure-sdk-for-go v48.2.2+incompatible
@@ -32,7 +32,6 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.6
 	github.com/imdario/mergo v0.3.11 // indirect
-	github.com/markbates/pkger v0.17.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.11.0
 	github.com/spf13/viper v1.8.1

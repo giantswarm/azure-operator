@@ -3,27 +3,24 @@ package template
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
-	"github.com/markbates/pkger"
 )
 
-// GetARMTemplate returns the ARM template reading a json file locally using pkger.
+// GetARMTemplate returns the ARM template reading a json file locally using go embed.
 func GetARMTemplate() (map[string]interface{}, error) {
 	contents := make(map[string]interface{})
 
-	f, err := pkger.Open("/service/controller/azuremachinepool/handler/nodepool/template/main.json")
-	if err != nil {
-		return contents, microerror.Mask(err)
-	}
-	defer f.Close()
+	// go:embed main.json
+	var template string
 
-	d := json.NewDecoder(f)
+	d := json.NewDecoder(strings.NewReader(template))
 	if err := d.Decode(&contents); err != nil {
 		return contents, microerror.Mask(err)
 	}
-	return contents, microerror.Mask(err)
+	return contents, nil
 }
 
 func NewDeployment(templateParams Parameters) (azureresource.Deployment, error) {

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use go embed in place of pkger.
+
 ## [5.8.1] - 2021-07-22
 
 ### Fixed

@@ -2,24 +2,21 @@ package template
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/giantswarm/microerror"
-	"github.com/markbates/pkger"
 )
 
-// GetARMTemplate returns the ARM template reading a json file locally using pkger.
+// GetARMTemplate returns the ARM template reading a json file locally using go embed.
 func GetARMTemplate() (map[string]interface{}, error) {
 	contents := make(map[string]interface{})
 
-	f, err := pkger.Open("/service/controller/azureconfig/handler/deployment/template/main.json")
-	if err != nil {
-		return contents, microerror.Mask(err)
-	}
-	defer f.Close()
+	// go:embed main.json
+	var template string
 
-	d := json.NewDecoder(f)
+	d := json.NewDecoder(strings.NewReader(template))
 	if err := d.Decode(&contents); err != nil {
 		return contents, microerror.Mask(err)
 	}
-	return contents, microerror.Mask(err)
+	return contents, nil
 }
