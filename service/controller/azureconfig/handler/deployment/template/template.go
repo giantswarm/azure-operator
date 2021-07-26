@@ -1,6 +1,7 @@
 package template
 
 import (
+	_ "embed"
 	"encoding/json"
 	"strings"
 

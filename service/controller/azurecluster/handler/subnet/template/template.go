@@ -1,6 +1,7 @@
 package subnet
 
 import (
+	_ "embed"
 	"encoding/json"
 	"strings"
 
