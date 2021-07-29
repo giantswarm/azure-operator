@@ -3,11 +3,12 @@ package machinepoolupgrade
 import (
 	"context"
 
+	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
@@ -61,7 +62,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.Debugf(ctx, "ensuring release labels are set on respective AzureMachinePool")
 
-	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
+	azureMachinePool := capzexp.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if apierrors.IsNotFound(err) {
 		r.logger.Debugf(ctx, "AzureMachinePool %s/%s was not found for MachinePool %#q, skipping setting owner reference", cr.Namespace, cr.Spec.Template.Spec.InfrastructureRef.Name, cr.Name)
@@ -91,6 +92,26 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 	r.logger.Debugf(ctx, "ensured release labels are set on respective AzureMachinePool")
+
+	r.logger.Debugf(ctx, "ensuring release labels are set on respective Spark")
+
+	var sparkCR corev1alpha1.Spark
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}, &sparkCR)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if sparkCR.Labels[label.ReleaseVersion] != cr.Labels[label.ReleaseVersion] {
+		sparkCR.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
+		err = r.ctrlClient.Update(ctx, &sparkCR)
+		if apierrors.IsConflict(err) {
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
+			r.logger.Debugf(ctx, "cancelling resource")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+	r.logger.Debugf(ctx, "ensured release labels are set on respective Spark")
 
 	err = r.ensureLastDeployedReleaseVersion(ctx, &cr)
 	if err != nil {
