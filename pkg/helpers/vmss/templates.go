@@ -6,6 +6,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/templates"
 )
@@ -26,18 +27,29 @@ func RenderCloudConfig(blobURL string, encryptionKey string, initialVector strin
 }
 
 func GetMasterNodesConfiguration(obj providerv1alpha1.AzureConfig, distroVersion string) []Node {
-	return getNodesConfiguration(distroVersion, obj.Spec.Azure.Masters)
+	offer := getFlatcarOffer(obj)
+	return getNodesConfiguration(offer, distroVersion, obj.Spec.Azure.Masters)
 }
 
 func GetWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig, distroVersion string) []Node {
-	return getNodesConfiguration(distroVersion, obj.Spec.Azure.Workers)
+	offer := getFlatcarOffer(obj)
+	return getNodesConfiguration(offer, distroVersion, obj.Spec.Azure.Workers)
 }
 
-func getNodesConfiguration(distroVersion string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []Node {
+func getNodesConfiguration(offer FlatcarOffer, distroVersion string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []Node {
 	var nodes []Node
 	for _, m := range nodesSpecs {
-		n := NewNode(distroVersion, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
+		n := NewNode(offer, distroVersion, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
 		nodes = append(nodes, n)
 	}
 	return nodes
+}
+
+func getFlatcarOffer(obj providerv1alpha1.AzureConfig) FlatcarOffer {
+	offer := FlatcarFree
+	if obj.Annotations[annotation.FlatcarPro] == "true" {
+		offer = FlatcarPro
+	}
+
+	return offer
 }

@@ -8,4 +8,6 @@ const (
 	UpgradingToNodePools = "release.giantswarm.io/upgrading-to-node-pools"
 
 	WorkersEgressExternalPublicIP = "giantswarm.io/workers-egress-external-public-ip"
+
+	FlatcarPro = "giantswarm.io/flatcar-pro"
 )

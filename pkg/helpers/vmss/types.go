@@ -29,19 +29,26 @@ type NodeOSImage struct {
 	Version string `json:"version" yaml:"version"`
 }
 
-func NewNode(distroVersion string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) Node {
+func NewNode(offer FlatcarOffer, distroVersion string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) Node {
 	return Node{
-		OSImage:             newNodeOSImageCoreOS(distroVersion),
+		OSImage:             newNodeOSImageCoreOS(offer, distroVersion),
 		VMSize:              vmSize,
 		DockerVolumeSizeGB:  dockerVolumeSizeGB,
 		KubeletVolumeSizeGB: kubeletVolumeSizeGB,
 	}
 }
 
+type FlatcarOffer string
+
+const (
+	FlatcarFree FlatcarOffer = "flatcar-container-linux-free"
+	FlatcarPro  FlatcarOffer = "flatcar_pro"
+)
+
 // newNodeOSImage provides OS information for Container Linux
-func newNodeOSImageCoreOS(distroVersion string) NodeOSImage {
+func newNodeOSImageCoreOS(offer FlatcarOffer, distroVersion string) NodeOSImage {
 	return NodeOSImage{
-		Offer:     "flatcar_pro",
+		Offer:     string(offer),
 		Publisher: "kinvolk",
 		SKU:       "stable",
 		Version:   distroVersion,
