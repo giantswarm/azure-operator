@@ -41,7 +41,7 @@ func NewNode(distroVersion string, vmSize string, dockerVolumeSizeGB int, kubele
 // newNodeOSImage provides OS information for Container Linux
 func newNodeOSImageCoreOS(distroVersion string) NodeOSImage {
 	return NodeOSImage{
-		Offer:     "flatcar-container-linux-free",
+		Offer:     "flatcar_pro",
 		Publisher: "kinvolk",
 		SKU:       "stable",
 		Version:   distroVersion,
