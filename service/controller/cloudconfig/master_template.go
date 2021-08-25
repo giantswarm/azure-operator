@@ -31,7 +31,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 	var k8sAPIExtraArgs []string
 	{
 		oidcExtraArgs := c.oidcExtraArgs(ctx, data)
-		k8sAPIExtraArgs = append(k8sAPIExtraArgs, "--cloud-config=/etc/kubernetes/config/azure.yaml")
+		k8sAPIExtraArgs = append(k8sAPIExtraArgs, "--cloud-config=/etc/kubernetes/azure.json")
 		k8sAPIExtraArgs = append(k8sAPIExtraArgs, oidcExtraArgs...)
 	}
 
@@ -63,8 +63,8 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			Apiserver: k8scloudconfig.KubernetesPodOptions{
 				HostExtraMounts: []k8scloudconfig.KubernetesPodOptionsHostMount{
 					{
-						Name:     "k8s-config",
-						Path:     "/etc/kubernetes/config/",
+						Name:     "cloud-config-file",
+						Path:     "/etc/kubernetes/azure.json",
 						ReadOnly: true,
 					},
 					{
@@ -78,13 +78,18 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			ControllerManager: k8scloudconfig.KubernetesPodOptions{
 				HostExtraMounts: []k8scloudconfig.KubernetesPodOptionsHostMount{
 					{
+						Name:     "cloud-config-file",
+						Path:     "/etc/kubernetes/azure.json",
+						ReadOnly: true,
+					},
+					{
 						Name:     "identity-settings",
 						Path:     "/var/lib/waagent/",
 						ReadOnly: true,
 					},
 				},
 				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+					"--cloud-config=/etc/kubernetes/azure.json",
 					"--allocate-node-cidrs=true",
 					"--cluster-cidr=" + data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
 				},
@@ -94,7 +99,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 					"-v /var/lib/waagent:/var/lib/waagent:ro",
 				},
 				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+					"--cloud-config=/etc/kubernetes/azure.json",
 				},
 			},
 		}
@@ -176,7 +181,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	filesMeta := []k8scloudconfig.FileMetadata{
 		{
 			AssetContent: ignition.CloudProviderConf,
-			Path:         "/etc/kubernetes/config/azure.yaml",
+			Path:         "/etc/kubernetes/azure.json",
 			Owner: k8scloudconfig.Owner{
 				Group: k8scloudconfig.Group{
 					ID: FileOwnerGroupIDNobody,

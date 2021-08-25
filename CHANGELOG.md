@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use go embed in place of pkger.
+- Rename cloud config file to /etc/kubernetes/azure.json to comply with CAPZ.- Rename API backend pool to comply with CAPZ.
+- Rename API Load Balancing rule to comply with CAPZ.
+- Rename API health probe to comply with CAPZ.
+- Set `DisableOutputSnat` to true for API Load Balancer Load Balancing Rule to comply with CAPZ.
 
 ### Fixed
 
@@ -110,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Avoid blocking the whole `AzureConfig` handler on cluster creation because we can't update the `StorageClasses`.
-- Avoid overriding the NP size when the scaling is changed by autoscaler.
+- Avoid overriding the NP size when the scaling is changed by autoscaler. 
 
 ## [5.4.0] - 2021-02-05
 
