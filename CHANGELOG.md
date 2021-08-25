@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use go embed in place of pkger.
-- Rename cloud config file to /etc/kubernetes/azure.json to comply with CAPZ.- Rename API backend pool to comply with CAPZ.
+- Rename cloud config file to /etc/kubernetes/azure.json to comply with CAPZ.
+- Rename API backend pool to comply with CAPZ.
 - Rename API Load Balancing rule to comply with CAPZ.
 - Rename API health probe to comply with CAPZ.
 - Set `DisableOutputSnat` to true for API Load Balancer Load Balancing Rule to comply with CAPZ.
