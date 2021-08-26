@@ -1,4 +1,4 @@
-FROM quay.io/giantswarm/golang:1.16.6 AS builder
+FROM quay.io/giantswarm/golang:1.17.0 AS builder
 ENV GO111MODULE=on
 COPY go.mod /etc/go.mod
 RUN cat /etc/go.mod | grep k8scloudconfig | awk '{print $1"/...@"$2}' | xargs -I{} go get {}

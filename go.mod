@@ -18,8 +18,8 @@ require (
 	github.com/giantswarm/errors v0.3.0
 	github.com/giantswarm/exporterkit v0.2.1
 	github.com/giantswarm/ipam v0.3.0
-	github.com/giantswarm/k8sclient/v5 v5.11.0
-	github.com/giantswarm/k8scloudconfig/v10 v10.9.1
+	github.com/giantswarm/k8sclient/v5 v5.12.0
+	github.com/giantswarm/k8scloudconfig/v10 v10.10.0
 	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.3.0
