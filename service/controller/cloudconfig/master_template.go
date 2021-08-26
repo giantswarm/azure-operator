@@ -64,7 +64,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 				HostExtraMounts: []k8scloudconfig.KubernetesPodOptionsHostMount{
 					{
 						Name:     "k8s-config",
-						Path:     "/etc/kubernetes/config/azure.yaml",
+						Path:     "/etc/kubernetes/config/",
 						ReadOnly: true,
 					},
 					{
