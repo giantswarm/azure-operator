@@ -169,21 +169,6 @@
     "sshUser": "giantswarm",
     "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]",
     "vmssName": "[parameters('nodepoolName')]",
-    "vmssExtensions": [
-      {
-        "name": "MSILinuxExtension",
-        "properties": {
-          "publisher": "Microsoft.ManagedIdentity",
-          "type": "ManagedIdentityExtensionForLinux",
-          "typeHandlerVersion": "1.0",
-          "autoUpgradeMinorVersion": true,
-          "settings": {
-            "port": 50342
-          },
-          "protectedSettings": {}
-        }
-      }
-    ],
     "scheduledEventsProfileEnabled": {
       "terminateNotificationProfile": {
         "notBeforeTimeout": "PT15M",
@@ -300,9 +285,6 @@
                 }
               }
             ]
-          },
-          "extensionProfile": {
-            "extensions": "[variables('vmssExtensions')]"
           },
           "scheduledEventsProfile": "[if(parameters('spotInstancesEnabled'), json('null'), variables('scheduledEventsProfileEnabled'))]"
         }

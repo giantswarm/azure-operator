@@ -1112,10 +1112,8 @@
             "loadBalancerName": "[concat(parameters('clusterID'), '-API-PublicLoadBalancer')]",
             "loadBalancerSkuName": "Standard",
             "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
-            "loadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-API-PublicLoadBalancer-BackendPool')]",
+            "loadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-API-PublicLoadBalancer-backendPool')]",
             "loadBalancerBackendPoolID": "[concat(variables('loadBalancerID'),'/backendAddressPools/',variables('loadBalancerBackendPoolName'))]",
-            "loadBalancerProbeName": "[concat(parameters('clusterID'), '-API-PublicLoadBalancer-Probe')]",
-            "loadBalancerProbeID": "[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]",
             "settings": {
               "API": {
                 "PublicIP": {
@@ -1216,7 +1214,7 @@
                     "name": "loadBalancingRules",
                     "count": "[length(parameters('ports'))]",
                     "input": {
-                      "name": "[concat('loadBalancingRule-', string(add(copyIndex('loadBalancingRules'), 1)))]",
+                      "name": "[parameters('ports')[copyIndex('loadBalancingRules')].name]",
                       "properties": {
                         "frontendIPConfiguration": {
                           "id": "[variables('settings')[parameters('ports')[copyIndex('loadBalancingRules')].suffix].Frontend.ID]"
@@ -1229,8 +1227,9 @@
                         "backendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
                         "enableFloatingIP": false,
                         "probe": {
-                          "id": "[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]"
-                        }
+                          "id": "[concat(variables('loadBalancerID'),'/probes/', parameters('ports')[copyIndex('loadBalancingRules')].probeName)]"
+                        },
+                        "disableOutboundSnat": true
                       }
                     }
                   },
@@ -1238,7 +1237,7 @@
                     "name": "probes",
                     "count": "[length(parameters('ports'))]",
                     "input": {
-                      "name": "[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
+                      "name": "[parameters('ports')[copyIndex('probes')].probeName]",
                       "properties": {
                         "protocol": "[parameters('ports')[copyIndex('probes')].probeProtocol]",
                         "port": "[parameters('ports')[copyIndex('probes')].probePort]",
@@ -1277,27 +1276,33 @@
           "ports":{
             "value":[
               {
+                "name": "LBRuleHTTPS",
                 "protocol":"Tcp",
                 "frontend":443,
                 "backend":443,
-                "probeProtocol": "Http",
-                "probePort": 8089,
+                "probeName": "HTTPSProbe",
+                "probeProtocol": "Https",
+                "probePort": 443,
                 "suffix": "API",
                 "requestPath": "/healthz"
               },
               {
+                "name": "loadBalancingRule-2",
                 "protocol":"Udp",
                 "frontend":60001,
                 "backend":60001,
+                "probeName": "[concat(parameters('clusterID'), '-API-PublicLoadBalancer-Probe-2')]",
                 "probeProtocol": "Http",
                 "probePort": 8089,
                 "suffix": "API",
                 "requestPath": "/healthz"
               },
               {
+                "name": "loadBalancingRule-3",
                 "protocol":"Tcp",
                 "frontend":2379,
                 "backend":2379,
+                "probeName": "[concat(parameters('clusterID'), '-API-PublicLoadBalancer-Probe-3')]",
                 "probeProtocol": "Tcp",
                 "probePort": 2379,
                 "suffix": "ETCD",
