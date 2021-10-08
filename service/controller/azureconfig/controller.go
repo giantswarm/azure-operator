@@ -48,6 +48,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
@@ -230,6 +231,18 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 			Logger:     config.Logger,
 		}
 		organizationClientFactory = client.NewOrganizationFactory(c)
+	}
+
+	var vmSKU *vmsku.VMSKUs
+	{
+		vmSKU, err = vmsku.New(vmsku.Config{
+			AzureClientSet: config.CPAzureClientSet,
+			Location:       config.Azure.Location,
+			Logger:         config.Logger,
+		})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	var newDebugger *debugger.Debugger
@@ -435,6 +448,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 			Config:                   nodesConfig,
 			CtrlClient:               config.K8sClient.CtrlClient(),
 			TenantRestConfigProvider: tenantRestConfigProvider,
+			VMSKU:                    vmSKU,
 		}
 
 		mastersResource, err = masters.New(c)

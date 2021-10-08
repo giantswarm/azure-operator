@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Delegate Storage account type selection for master VM's disks to Azure API.
+
 ## [5.9.0] - 2021-09-13
 
 ### Changed

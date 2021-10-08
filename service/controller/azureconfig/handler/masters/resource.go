@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -22,12 +23,14 @@ type Config struct {
 	nodes.Config
 	CtrlClient               client.Client
 	TenantRestConfigProvider *tenantcluster.TenantCluster
+	VMSKU                    *vmsku.VMSKUs
 }
 
 type Resource struct {
 	nodes.Resource
 	ctrlClient               client.Client
 	tenantRestConfigProvider *tenantcluster.TenantCluster
+	vmSku                    *vmsku.VMSKUs
 }
 
 func New(config Config) (*Resource, error) {
@@ -36,6 +39,9 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.TenantRestConfigProvider == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.TenantRestConfigProvider must not be empty", config)
+	}
+	if config.VMSKU == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.VMSKU must not be empty", config)
 	}
 
 	config.Name = Name
@@ -48,6 +54,7 @@ func New(config Config) (*Resource, error) {
 		Resource:                 *nodes,
 		ctrlClient:               config.CtrlClient,
 		tenantRestConfigProvider: config.TenantRestConfigProvider,
+		vmSku:                    config.VMSKU,
 	}
 	stateMachine := r.createStateMachine()
 	r.SetStateMachine(stateMachine)
