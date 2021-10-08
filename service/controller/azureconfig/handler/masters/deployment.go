@@ -3,6 +3,7 @@ package masters
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
@@ -15,6 +16,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/masters/template"
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -91,13 +93,30 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	masterNodes := vmss.GetMasterNodesConfiguration(obj, distroVersion)
+
+	var storageAccountType string
+	{
+		premium, err := r.vmSku.HasCapability(ctx, masterNodes[0].VMSize, vmsku.CapabilityPremiumIO)
+		if err != nil {
+			return azureresource.Deployment{}, microerror.Mask(err)
+		}
+
+		if premium {
+			storageAccountType = string(compute.StorageAccountTypesPremiumLRS)
+		} else {
+			storageAccountType = string(compute.StorageAccountTypeStandardLRS)
+		}
+	}
+
 	defaultParams := map[string]interface{}{
 		"masterLBBackendPoolID": cc.MasterLBBackendPoolID,
 		"azureOperatorVersion":  project.Version(),
 		"clusterID":             key.ClusterID(&obj),
 		"masterCloudConfigData": masterCloudConfig,
-		"masterNodes":           vmss.GetMasterNodesConfiguration(obj, distroVersion),
+		"masterNodes":           masterNodes,
 		"masterSubnetID":        cc.MasterSubnetID,
+		"storageAccountType":    storageAccountType,
 		"vmssMSIEnabled":        r.Azure.MSI.Enabled,
 		"zones":                 key.AvailabilityZones(obj, location),
 	}
