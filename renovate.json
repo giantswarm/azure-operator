@@ -1,7 +1,7 @@
 {
   "extends": [
     "config:base",
-    ":reviewer(team:team-celestial)"
+    ":reviewer(team:team-phoenix)"
   ],
   "packageRules": [
     {
