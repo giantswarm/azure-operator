@@ -5,11 +5,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api/util"
+
 	"github.com/giantswarm/azure-operator/v5/pkg/drainer"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/microerror"
-	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 )
