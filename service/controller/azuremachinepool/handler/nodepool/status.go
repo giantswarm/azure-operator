@@ -17,6 +17,7 @@ const (
 	// States
 	DeploymentUninitialized     = ""
 	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS"
+	DrainOldWorkerInstances     = "DrainOldWorkerInstances"
 	TerminateOldWorkerInstances = "TerminateOldWorkerInstances"
 	WaitForWorkersToBecomeReady = "WaitForWorkersToBecomeReady"
 )

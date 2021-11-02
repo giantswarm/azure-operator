@@ -24,7 +24,7 @@ type AzureConfigPersister struct {
 
 func NewAzureConfigPersister(config AzureConfigPersisterConfig) (*AzureConfigPersister, error) {
 	if config.CtrlClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCClients must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)

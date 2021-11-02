@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Delegate Storage account type selection for master VM's disks to Azure API.
+- Separate the drain and node deletion phases during node pool upgrades to avoid stuck disks.
 
 ## [5.9.0] - 2021-09-13
 
