@@ -2,6 +2,7 @@ package tenantcluster
 
 import (
 	"context"
+
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"

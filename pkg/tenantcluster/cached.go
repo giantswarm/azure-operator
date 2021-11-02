@@ -2,8 +2,9 @@ package tenantcluster
 
 import (
 	"context"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"time"
+
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"

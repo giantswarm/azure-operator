@@ -2,10 +2,11 @@ package drainer
 
 import (
 	"context"
+	"time"
+
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
