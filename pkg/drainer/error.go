@@ -6,6 +6,14 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
+var alreadyCordonedError = &microerror.Error{
+	Kind: "alreadyCordonedError",
+}
+
+func IsAlreadyCordoned(err error) bool {
+	return microerror.Cause(err) == alreadyCordonedError
+}
+
 var cannotEvictPodError = &microerror.Error{
 	Kind: "cannotEvictPodError",
 }
@@ -30,6 +38,15 @@ var evictionInProgressError = &microerror.Error{
 
 func IsEvictionInProgress(err error) bool {
 	return microerror.Cause(err) == evictionInProgressError
+}
+
+var drainTimeoutError = &microerror.Error{
+	Kind: "drainTimeoutError",
+}
+
+// IsDrainTimeout asserts drainTimeoutError.
+func IsDrainTimeout(err error) bool {
+	return microerror.Cause(err) == drainTimeoutError
 }
 
 var invalidConfigError = &microerror.Error{

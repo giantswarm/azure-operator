@@ -22,6 +22,7 @@ func (r *Resource) createStateMachine() state.Machine {
 			DeploymentUninitialized:     r.deploymentUninitializedTransition,
 			ScaleUpWorkerVMSS:           r.scaleUpWorkerVMSSTransition,
 			WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
+			CordonOldWorkerInstances:    r.cordonOldWorkerInstances,
 			DrainOldWorkerInstances:     r.drainOldWorkerInstances,
 			TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
 		},

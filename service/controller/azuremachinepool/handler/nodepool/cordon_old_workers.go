@@ -3,7 +3,6 @@ package nodepool
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api/util"
@@ -15,7 +14,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 )
 
-func (r *Resource) drainOldWorkerInstances(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+func (r *Resource) cordonOldWorkerInstances(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
@@ -62,35 +61,20 @@ func (r *Resource) drainOldWorkerInstances(ctx context.Context, obj interface{},
 			return currentState, microerror.Mask(err)
 		}
 
-		completed := true
 		for _, instance := range oldInstances {
 			nodeName := strings.ToLower(*instance.OsProfile.ComputerName)
-			r.Logger.Debugf(ctx, "Draining node %q (instance name %q)", nodeName, *instance.Name)
-			err = nodeDrainer.DrainNode(ctx, nodeName, 15*time.Minute)
-			if drainer.IsEvictionInProgress(err) {
-				// Node still draining.
-				r.Logger.Debugf(ctx, "Node %q is still draining: %s", nodeName, err)
-				completed = false
-			} else if drainer.IsDrainTimeout(err) {
-				// Node drain timed out.
-				r.Logger.Debugf(ctx, "Timeout while draining node %q", nodeName)
-			} else if err != nil {
+			r.Logger.Debugf(ctx, "Cordoning node %q (instance name %q)", nodeName, *instance.Name)
+			err = nodeDrainer.CordonNode(ctx, nodeName)
+			if err != nil {
 				r.Logger.Debugf(ctx, "Error draining node %q: %s", nodeName, err)
 				return currentState, microerror.Mask(err)
-			} else {
-				r.Logger.Debugf(ctx, "Node %q drained successfully", nodeName)
 			}
 		}
 
-		if completed {
-			return TerminateOldWorkerInstances, nil
-		}
-
-		// Nodes still to be drained.
-		return currentState, nil
+		return DrainOldWorkerInstances, nil
 	}
 
-	// All old nodes are terminated.
+	// No old nodes found.
 	r.Logger.Debugf(ctx, "no old workers were found")
 
 	return TerminateOldWorkerInstances, nil
