@@ -9,6 +9,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiutil "sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -101,9 +102,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 func (r *Resource) isMasterUpgrading(ctx context.Context, amp *v1alpha3.AzureMachinePool) (bool, error) {
 	r.Logger.Debugf(ctx, "Checking if master nodes are upgrading")
 
+	cluster, err := capiutil.GetClusterFromMetadata(ctx, r.CtrlClient, amp.ObjectMeta)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	// get ctrl client on the WC
+	wcClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
 	// Get a list of all nodes, including worker nodes.
 	nodeList := v1.NodeList{}
-	err := r.CtrlClient.List(ctx, &nodeList)
+	err = wcClient.List(ctx, &nodeList)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -113,14 +125,14 @@ func (r *Resource) isMasterUpgrading(ctx context.Context, amp *v1alpha3.AzureMac
 			// Check if node has the right azure operator version label
 			if node.Labels[label.AzureOperatorVersion] != project.Version() {
 				r.Logger.Debugf(ctx, "Node %q is not running azure operator version %q (it has %q)", node.Name, project.Version(), node.Labels[label.AzureOperatorVersion])
-				return false, nil
+				return true, nil
 			}
 			if !isReady(node) {
 				r.Logger.Debugf(ctx, "Node %q is not ready", node.Name)
-				return false, nil
+				return true, nil
 			}
 		}
 	}
 
-	return true, nil
+	return false, nil
 }
