@@ -3,15 +3,15 @@ package nodepool
 import (
 	"context"
 
-	apiextensionsv3annotation "github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/conditions/pkg/conditions"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiutil "sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -99,27 +99,27 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 }
 
 func (r *Resource) isMasterUpgrading(ctx context.Context, amp *v1alpha3.AzureMachinePool) (bool, error) {
-	r.Logger.Debugf(ctx, "Checking if cluster for azuremachinepool %q is upgrading", amp.Name)
-	cluster, err := capiutil.GetClusterFromMetadata(ctx, r.CtrlClient, amp.ObjectMeta)
+	r.Logger.Debugf(ctx, "Checking if master nodes are upgrading")
+
+	// Get a list of all nodes, including worker nodes.
+	nodeList := v1.NodeList{}
+	err := r.CtrlClient.List(ctx, &nodeList)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	// Check `Upgrading` condition
-	r.Logger.Debugf(ctx, "Checking if cluster CR %q has upgrading condition", cluster.Name)
-	upgrading := conditions.IsUpgradingTrue(cluster)
-	if upgrading {
-		r.Logger.Debugf(ctx, "Cluster CR %q has upgrading condition", cluster.Name)
-		return true, nil
+	for _, node := range nodeList.Items {
+		if node.Labels["role"] == "master" || node.Labels["kubernetes.io/role"] == "master" {
+			// Check if node has the right azure operator version label
+			if node.Labels[label.AzureOperatorVersion] != project.Version() {
+				r.Logger.Debugf(ctx, "Node %q is not running azure operator version %q (it has %q)", node.Name, project.Version(), node.Labels[label.AzureOperatorVersion])
+				return false, nil
+			}
+			if !isReady(node) {
+				r.Logger.Debugf(ctx, "Node %q is not ready", node.Name)
+			}
+		}
 	}
 
-	// Check Last Deployed Version matches release version
-	r.Logger.Debugf(ctx, "Checking if %q cluster CR's %q annotation matches release label", cluster.Name, apiextensionsv3annotation.LastDeployedReleaseVersion)
-	if cluster.Annotations[apiextensionsv3annotation.LastDeployedReleaseVersion] != key.ReleaseVersion(cluster) {
-		r.Logger.Debugf(ctx, "Annotation matches label")
-		return true, nil
-	}
-
-	r.Logger.Debugf(ctx, "Cluster %q is not upgrading", cluster.Name)
-	return false, nil
+	return true, nil
 }
