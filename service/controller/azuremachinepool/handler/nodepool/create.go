@@ -3,11 +3,14 @@ package nodepool
 import (
 	"context"
 
+	apiextensionsv3annotation "github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiutil "sigs.k8s.io/cluster-api/util"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -38,7 +41,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	if isMasterUpgrading(&azureMachinePool) {
+	upgrading, err := r.isMasterUpgrading(ctx, &azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if upgrading {
 		r.Logger.Debugf(ctx, "master is upgrading")
 		r.Logger.Debugf(ctx, "canceling resource")
 		return nil
@@ -91,11 +98,28 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func isMasterUpgrading(getter key.AnnotationsGetter) bool {
-	masterUpgrading, exists := getter.GetAnnotations()[annotation.IsMasterUpgrading]
-	if !exists {
-		return false
+func (r *Resource) isMasterUpgrading(ctx context.Context, amp *v1alpha3.AzureMachinePool) (bool, error) {
+	r.Logger.Debugf(ctx, "Checking if cluster for azuremachinepool %q is upgrading", amp.Name)
+	cluster, err := capiutil.GetClusterFromMetadata(ctx, r.CtrlClient, amp.ObjectMeta)
+	if err != nil {
+		return false, microerror.Mask(err)
 	}
 
-	return masterUpgrading != "DeploymentCompleted"
+	// Check `Upgrading` condition
+	r.Logger.Debugf(ctx, "Checking if cluster CR %q has upgrading condition", cluster.Name)
+	upgrading := conditions.IsUpgradingTrue(cluster)
+	if upgrading {
+		r.Logger.Debugf(ctx, "Cluster CR %q has upgrading condition", cluster.Name)
+		return true, nil
+	}
+
+	// Check Last Deployed Version matches release version
+	r.Logger.Debugf(ctx, "Checking if %q cluster CR's %q annotation matches release label", cluster.Name, apiextensionsv3annotation.LastDeployedReleaseVersion)
+	if cluster.Annotations[apiextensionsv3annotation.LastDeployedReleaseVersion] != key.ReleaseVersion(cluster) {
+		r.Logger.Debugf(ctx, "Annotation matches label")
+		return true, nil
+	}
+
+	r.Logger.Debugf(ctx, "Cluster %q is not upgrading", cluster.Name)
+	return false, nil
 }
