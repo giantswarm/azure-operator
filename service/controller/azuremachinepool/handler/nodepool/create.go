@@ -52,6 +52,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
+	r.Logger.Debugf(ctx, "master is not upgrading, green light")
+
 	var newState state.State
 	var currentState state.State
 	{
