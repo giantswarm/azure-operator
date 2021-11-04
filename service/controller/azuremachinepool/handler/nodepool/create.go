@@ -117,6 +117,7 @@ func (r *Resource) isMasterUpgrading(ctx context.Context, amp *v1alpha3.AzureMac
 			}
 			if !isReady(node) {
 				r.Logger.Debugf(ctx, "Node %q is not ready", node.Name)
+				return false, nil
 			}
 		}
 	}
