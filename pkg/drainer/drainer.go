@@ -55,7 +55,6 @@ func (d *Drainer) CordonNode(ctx context.Context, nodename string) error {
 		return microerror.Maskf(alreadyCordonedError, "node %q is already cordoned", nodename)
 	}
 
-	d.logger.Debugf(ctx, "Cordoning node %q", nodename)
 	err = d.cordon(ctx, node)
 	if err != nil {
 		return microerror.Mask(err)

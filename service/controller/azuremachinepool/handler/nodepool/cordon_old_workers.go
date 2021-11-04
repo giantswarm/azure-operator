@@ -69,6 +69,7 @@ func (r *Resource) cordonOldWorkerInstances(ctx context.Context, obj interface{}
 				r.Logger.Debugf(ctx, "Error draining node %q: %s", nodeName, err)
 				return currentState, microerror.Mask(err)
 			}
+			r.Logger.Debugf(ctx, "Cordoned node %q", nodeName)
 		}
 
 		return DrainOldWorkerInstances, nil
