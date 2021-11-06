@@ -74,7 +74,7 @@ func (d *Drainer) DrainNode(ctx context.Context, nodename string, timeout time.D
 		return microerror.Mask(err)
 	}
 
-	annotationName := "culo"
+	annotationName := "giantswarm.io/drain-started-ts"
 	format := time.RFC3339
 
 	startDateStr, found := node.Annotations[annotationName]
