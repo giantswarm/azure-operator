@@ -31,7 +31,7 @@ func New(config Config) (*Drainer, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 	if config.WCClients == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.WCClients must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 
 	return &Drainer{
