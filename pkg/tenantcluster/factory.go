@@ -51,7 +51,7 @@ func NewFactory(certsSearcher certs.Interface, logger micrologger.Logger) (Facto
 	return f, nil
 }
 
-func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
+func (tcf *tenantClientFactory) GetAllClients(ctx context.Context, cr *capiv1alpha3.Cluster) (k8sclient.Interface, error) {
 	tcf.logger.Debugf(ctx, "creating tenant cluster k8s client for cluster %#q", key.ClusterID(cr))
 	var k8sClient k8sclient.Interface
 	{
@@ -75,5 +75,13 @@ func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.
 		}
 	}
 
-	return k8sClient.CtrlClient(), nil
+	return k8sClient, nil
+}
+
+func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
+	all, err := tcf.GetAllClients(ctx, cr)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	return all.CtrlClient(), nil
 }
