@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.10.0] - 2021-11-08
+
 ### Changed
 
 - Delegate Storage account type selection for master VM's disks to Azure API.
@@ -444,7 +446,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.9.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.10.0...HEAD
+[5.10.0]: https://github.com/giantswarm/azure-operator/compare/v5.9.0...v5.10.0
 [5.9.0]: https://github.com/giantswarm/azure-operator/compare/v5.8.1...v5.9.0
 [5.8.1]: https://github.com/giantswarm/azure-operator/compare/v5.8.0...v5.8.1
 [5.8.0]: https://github.com/giantswarm/azure-operator/compare/v5.7.2...v5.8.0
