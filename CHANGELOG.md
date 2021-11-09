@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.8.2] - 2021-11-09
+
 ### Changed
 
 - Separate the drain and node deletion phases during node pool upgrades to avoid stuck disks.
@@ -423,7 +425,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.8.1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.8.2...HEAD
+[5.8.2]: https://github.com/giantswarm/azure-operator/compare/v5.8.1...v5.8.2
 [5.8.1]: https://github.com/giantswarm/azure-operator/compare/v5.8.0...v5.8.1
 [5.8.0]: https://github.com/giantswarm/azure-operator/compare/v5.7.2...v5.8.0
 [5.7.2]: https://github.com/giantswarm/azure-operator/compare/v5.7.1...v5.7.2
