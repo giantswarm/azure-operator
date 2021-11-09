@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.8.2] - 2021-11-09
+
 ## [5.10.0] - 2021-11-08
 
 ### Changed
@@ -446,7 +448,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.10.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.8.2...HEAD
+[5.8.2]: https://github.com/giantswarm/azure-operator/compare/v5.10.0...v5.8.2
 [5.10.0]: https://github.com/giantswarm/azure-operator/compare/v5.9.0...v5.10.0
 [5.9.0]: https://github.com/giantswarm/azure-operator/compare/v5.8.1...v5.9.0
 [5.8.1]: https://github.com/giantswarm/azure-operator/compare/v5.8.0...v5.8.1
