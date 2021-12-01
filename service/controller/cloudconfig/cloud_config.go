@@ -108,7 +108,6 @@ func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject provider
 		err := c.ctrlClient.List(
 			ctx,
 			secretList,
-			ctrl.InNamespace(customObject.Namespace),
 			ctrl.MatchingLabels{
 				randomKeyLabel:              randomKeyLabelValue,
 				apiextensionslabels.Cluster: key.ClusterID(&customObject),
@@ -116,22 +115,6 @@ func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject provider
 		)
 		if err != nil {
 			return "", microerror.Mask(err)
-		}
-
-		if secretList.Size() < 1 {
-			c.logger.Debugf(ctx, "try to find encryption secret in namespace %#q", corev1.NamespaceDefault)
-			err := c.ctrlClient.List(
-				ctx,
-				secretList,
-				ctrl.InNamespace(corev1.NamespaceDefault),
-				ctrl.MatchingLabels{
-					randomKeyLabel:              randomKeyLabelValue,
-					apiextensionslabels.Cluster: key.ClusterID(&customObject),
-				},
-			)
-			if err != nil {
-				return "", microerror.Mask(err)
-			}
 		}
 	}
 
