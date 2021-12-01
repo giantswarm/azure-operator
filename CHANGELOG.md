@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- When looking for the encryption secret, search on all namespaces (to support latest cluster-operator).
+
 ## [5.10.0] - 2021-11-08
 
 ### Changed

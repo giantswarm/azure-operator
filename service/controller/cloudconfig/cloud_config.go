@@ -104,7 +104,7 @@ func New(config Config) (*CloudConfig, error) {
 func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject providerv1alpha1.AzureConfig) (string, error) {
 	secretList := &corev1.SecretList{}
 	{
-		c.logger.Debugf(ctx, "try to find encryption secret in namespace %#q", customObject.Namespace)
+		c.logger.Debugf(ctx, "try to find encryption secret")
 		err := c.ctrlClient.List(
 			ctx,
 			secretList,
