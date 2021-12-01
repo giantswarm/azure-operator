@@ -4,9 +4,9 @@ go 1.16
 
 require (
 	github.com/Azure/azure-sdk-for-go v48.2.2+incompatible
-	github.com/Azure/azure-storage-blob-go v0.11.0
-	github.com/Azure/go-autorest/autorest v0.11.19
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
+	github.com/Azure/azure-storage-blob-go v0.14.0
+	github.com/Azure/go-autorest/autorest v0.11.22
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.9
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
@@ -34,7 +34,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.11.0
-	github.com/spf13/viper v1.8.1
+	github.com/spf13/viper v1.9.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	k8s.io/api v0.18.19
 	k8s.io/apiextensions-apiserver v0.18.19
