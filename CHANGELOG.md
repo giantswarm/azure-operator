@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.10.1] - 2021-12-02
+
 ### Changed
 
 - When looking for the encryption secret, search on all namespaces (to support latest cluster-operator).
@@ -450,7 +452,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.10.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.10.1...HEAD
+[5.10.1]: https://github.com/giantswarm/azure-operator/compare/v5.10.0...v5.10.1
 [5.10.0]: https://github.com/giantswarm/azure-operator/compare/v5.9.0...v5.10.0
 [5.9.0]: https://github.com/giantswarm/azure-operator/compare/v5.8.1...v5.9.0
 [5.8.1]: https://github.com/giantswarm/azure-operator/compare/v5.8.0...v5.8.1
