@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.10.2] - 2021-12-07
+
 ### Fixed
 
 - Consider case when API is down when checking if Master node is upgrading during node pool reconciliation.
@@ -456,7 +458,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.10.1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.10.2...HEAD
+[5.10.2]: https://github.com/giantswarm/azure-operator/compare/v5.10.1...v5.10.2
 [5.10.1]: https://github.com/giantswarm/azure-operator/compare/v5.10.0...v5.10.1
 [5.10.0]: https://github.com/giantswarm/azure-operator/compare/v5.9.0...v5.10.0
 [5.9.0]: https://github.com/giantswarm/azure-operator/compare/v5.8.1...v5.9.0
