@@ -13,6 +13,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -111,7 +112,12 @@ func (r *Resource) isMasterUpgrading(ctx context.Context, amp *v1alpha3.AzureMac
 
 	// get ctrl client on the WC
 	wcClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if err != nil {
+	if tenantcluster.IsAPINotAvailableError(err) {
+		// WC's api server not reachable, can't reliably tell if the master is upgrading.
+		// We return true to stop working on the node pool to be safe.
+		r.Logger.Debugf(ctx, "Workload Cluster API not available. Assuming master is creating or upgrading")
+		return true, nil
+	} else if err != nil {
 		return false, microerror.Mask(err)
 	}
 
