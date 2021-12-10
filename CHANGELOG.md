@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove creation of legacy `AzureClusterConfig` CR as they are unused.
+
 ## [5.10.2] - 2021-12-07
 
 ### Fixed
