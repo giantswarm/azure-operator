@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.12.0] - 2021-12-14
+
 ### Added
 
 - Deal with AzureClusterConfig CR to avoid cluster operator conflict.
@@ -468,7 +470,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.11.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.12.0...HEAD
+[5.12.0]: https://github.com/giantswarm/azure-operator/compare/v5.11.0...v5.12.0
 [5.11.0]: https://github.com/giantswarm/azure-operator/compare/v5.10.2...v5.11.0
 [5.10.2]: https://github.com/giantswarm/azure-operator/compare/v5.10.1...v5.10.2
 [5.10.1]: https://github.com/giantswarm/azure-operator/compare/v5.10.0...v5.10.1
