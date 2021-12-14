@@ -27,6 +27,7 @@ rules:
   - apiGroups:
       - core.giantswarm.io
     resources:
+      - azureclusterconfigs
       - drainerconfigs
       - sparks
       - sparks/status
