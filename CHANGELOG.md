@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Deal with AzureClusterConfig CR to avoid cluster operator conflict.
+
 ## [5.11.0] - 2021-12-10
 
 ### Removed
