@@ -42,14 +42,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		desiredClusterOperatorVersion := azureCluster.GetLabels()[label.ClusterOperatorVersion]
 
 		if currentClusterOperatorVersion != desiredClusterOperatorVersion {
-			r.logger.Debugf(ctx, "updating %q label on azureclusterconfig")
+			r.logger.Debugf(ctx, "updating %q label on azureclusterconfig", label.ClusterOperatorVersion)
 			azureClusterConfig.Labels[label.ClusterOperatorVersion] = desiredClusterOperatorVersion
 
 			err = r.ctrlClient.Update(ctx, &azureClusterConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			r.logger.Debugf(ctx, "updated %q label on azureclusterconfig")
+			r.logger.Debugf(ctx, "updated %q label on azureclusterconfig", label.ClusterOperatorVersion)
 		}
 	}
 
