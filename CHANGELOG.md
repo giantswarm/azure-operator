@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.13.0] - 2022-01-14
+
 ### Changed
 
 - Bumped k8scc to latest version to support Calico 3.21.
@@ -474,7 +476,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.12.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.13.0...HEAD
+[5.13.0]: https://github.com/giantswarm/azure-operator/compare/v5.12.0...v5.13.0
 [5.12.0]: https://github.com/giantswarm/azure-operator/compare/v5.11.0...v5.12.0
 [5.11.0]: https://github.com/giantswarm/azure-operator/compare/v5.10.2...v5.11.0
 [5.10.2]: https://github.com/giantswarm/azure-operator/compare/v5.10.1...v5.10.2
