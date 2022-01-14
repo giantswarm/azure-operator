@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bumped k8scc to latest version to support Calico 3.21.
+
 ## [5.12.0] - 2021-12-14
 
 ### Added
