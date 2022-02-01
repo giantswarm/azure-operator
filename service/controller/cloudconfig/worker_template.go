@@ -3,8 +3,9 @@ package cloudconfig
 import (
 	"context"
 	"encoding/base64"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v10/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
@@ -56,6 +57,9 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		params.RegistryMirrors = c.registryMirrors
 		params.Versions = data.Versions
 		params.SSOPublicKey = c.ssoPublicKey
+
+		_, forceCGroupsV1 := data.MachinePool.Annotations[annotation.NodeForceCGroupsV1]
+		params.ForceCGroupsV1 = forceCGroupsV1
 
 		ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignition.Path)
 		params.Files, err = k8scloudconfig.RenderFiles(ignitionPath, params)
