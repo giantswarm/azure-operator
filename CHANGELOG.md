@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Upgraded to giantswarm/exporterkit v1.0.0
+- Upgraded to giantswarm/microendpoint v1.0.0
+- Upgraded to giantswarm/microkit v1.0.0
+- Upgraded to giantswarm/micrologger v0.6.0
+- Upgraded to giantswarm/versionbundle v1.0.0
+- Upgraded to spf13/viper v1.10.0
+
 ## [5.13.0] - 2022-01-14
 
 ### Changed
@@ -105,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Don't get the node pool upgrade stuck if the current state of `AzureMachinePool` is invalid. 
+- Don't get the node pool upgrade stuck if the current state of `AzureMachinePool` is invalid.
 
 ## [5.7.0] - 2021-05-13
 
