@@ -382,6 +382,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 			AzureMachinePool: azureMachinePool,
 			CustomObject:     mappedAzureConfig,
 			Images:           images,
+			MachinePool:      machinePool,
 			MasterCertFiles:  masterCertFiles,
 			Versions:         versions,
 			WorkerCertFiles:  workerCertFiles,
