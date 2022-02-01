@@ -3,9 +3,9 @@ package cloudconfig
 import (
 	"context"
 	"encoding/base64"
-	"github.com/giantswarm/k8smetadata/pkg/annotation"
 
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
