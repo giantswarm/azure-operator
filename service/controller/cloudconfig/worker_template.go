@@ -58,8 +58,10 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		params.Versions = data.Versions
 		params.SSOPublicKey = c.ssoPublicKey
 
-		_, forceCGroupsV1 := data.MachinePool.Annotations[annotation.NodeForceCGroupsV1]
-		params.ForceCGroupsV1 = forceCGroupsV1
+		if data.MachinePool.Annotations != nil {
+			_, forceCGroupsV1 := data.MachinePool.Annotations[annotation.NodeForceCGroupsV1]
+			params.ForceCGroupsV1 = forceCGroupsV1
+		}
 
 		ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignition.Path)
 		params.Files, err = k8scloudconfig.RenderFiles(ignitionPath, params)
