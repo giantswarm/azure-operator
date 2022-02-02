@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for feature that enables forcing cgroups v1 for Flatcar version `3033.2.0` and above.
+
 ### Changed
 
 - Upgraded to giantswarm/exporterkit v1.0.0

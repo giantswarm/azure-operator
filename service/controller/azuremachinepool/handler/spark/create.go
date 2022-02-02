@@ -17,7 +17,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v10/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
 	"golang.org/x/sync/errgroup"
@@ -382,6 +382,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 			AzureMachinePool: azureMachinePool,
 			CustomObject:     mappedAzureConfig,
 			Images:           images,
+			MachinePool:      machinePool,
 			MasterCertFiles:  masterCertFiles,
 			Versions:         versions,
 			WorkerCertFiles:  workerCertFiles,
