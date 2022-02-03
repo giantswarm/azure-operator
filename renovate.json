@@ -9,16 +9,17 @@
       "groupName": "giantswarm modules"
     },
     {
-      "matchPackagePatterns": ["^k8s.io", "^sigs.k8s.io"],
-      "groupName": "k8s modules"
-    },
-    {
-      "excludePackagePatterns": [".*giantswarm.*" ,"^k8s.io", "^sigs.k8s.io"],
-      "groupName": "etc modules"
-    },
-    {
       "matchPackagePatterns": ["^k8s.io"],
+      "groupName": "k8s modules",
       "allowedVersions": "< 0.21.0"
+    },
+    {
+      "matchPackagePatterns": ["^sigs.k8s.io"],
+      "groupName": "sig k8s modules"
+    },
+    {
+      "excludePackagePatterns": ["^sigs.k8s.io/cluster-api.*"],
+      "groupName": "capi modules"
     },
     {
       "matchPackageNames": ["sigs.k8s.io/controller-runtime"],
@@ -27,10 +28,6 @@
      {
        "matchPackagePatterns": ["github.com/giantswarm/apiextensions*"],
        "allowedVersions": ">= 4.0.0"
-     },
-     {
-       "excludePackagePatterns": ["^sigs.k8s.io/cluster-api.*"],
-       "groupName": "capi modules"
      }
   ],
   "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
