@@ -15,7 +15,7 @@
     },
     {
       "matchPackagePatterns": ["^sigs.k8s.io"],
-      "excludePackagePatterns": ["^sigs.k8s.io/cluster-api.*"],
+      "excludePackagePatterns": ["^sigs.k8s.io/cluster-api*"],
       "groupName": "sig k8s modules"
     },
     {
