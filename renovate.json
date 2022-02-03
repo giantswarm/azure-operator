@@ -14,9 +14,12 @@
       "allowedVersions": "< 0.21.0"
     },
     {
-      "matchPackagePatterns": ["^sigs.k8s.io*"],
-      "excludePackagePatterns": ["^sigs.k8s.io/cluster*"],
+      "matchPackagePatterns": ["^sigs.k8s.io"],
       "groupName": "sig k8s modules"
+    },
+    {
+      "matchPackagePatterns": ["^sigs.k8s.io/cluster*"],
+      "enabled": false
     },
     {
       "matchPackageNames": ["sigs.k8s.io/controller-runtime"],
