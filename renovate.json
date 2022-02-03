@@ -29,7 +29,7 @@
        "allowedVersions": ">= 4.0.0"
      },
      {
-       "excludePackagePatterns": ["sigs.k8s.io/cluster-api*"],
+       "excludePackagePatterns": ["^sigs.k8s.io/cluster-api.*"],
        "groupName": "capi modules"
      }
   ],
