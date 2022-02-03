@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Drop dependency on `giantswarm/apiextensions/v2`.
+
 ## [5.14.0] - 2022-02-02
 
 ### Added
