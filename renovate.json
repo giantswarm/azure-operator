@@ -15,11 +15,8 @@
     },
     {
       "matchPackagePatterns": ["^sigs.k8s.io"],
-      "groupName": "sig k8s modules"
-    },
-    {
       "excludePackagePatterns": ["^sigs.k8s.io/cluster-api.*"],
-      "groupName": "capi modules"
+      "groupName": "sig k8s modules"
     },
     {
       "matchPackageNames": ["sigs.k8s.io/controller-runtime"],
