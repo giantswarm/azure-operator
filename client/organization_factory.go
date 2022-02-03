@@ -9,8 +9,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	k8smetadatalabel "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
@@ -265,8 +265,8 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 			secretList,
 			client.InNamespace(objectMeta.Namespace),
 			client.MatchingLabels{
-				label.App:                        "credentiald",
-				apiextensionslabels.Organization: key.OrganizationID(&objectMeta),
+				label.App:                     "credentiald",
+				k8smetadatalabel.Organization: key.OrganizationID(&objectMeta),
 			},
 		)
 		if err != nil {
@@ -308,8 +308,8 @@ func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, obj
 			secretList,
 			client.InNamespace(credentialDefaultNamespace),
 			client.MatchingLabels{
-				label.App:                        "credentiald",
-				apiextensionslabels.Organization: key.OrganizationID(&objectMeta),
+				label.App:                     "credentiald",
+				k8smetadatalabel.Organization: key.OrganizationID(&objectMeta),
 			},
 		)
 		if err != nil {
