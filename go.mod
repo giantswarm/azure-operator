@@ -4,16 +4,16 @@ go 1.16
 
 require (
 	github.com/Azure/azure-sdk-for-go v48.2.2+incompatible
-	github.com/Azure/azure-storage-blob-go v0.11.0
-	github.com/Azure/go-autorest/autorest v0.11.19
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
+	github.com/Azure/azure-storage-blob-go v0.14.0
+	github.com/Azure/go-autorest/autorest v0.11.24
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
 	github.com/giantswarm/apiextensions/v3 v3.39.0
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v3 v3.1.1
-	github.com/giantswarm/conditions v0.3.0
+	github.com/giantswarm/conditions v0.4.0
 	github.com/giantswarm/conditions-handler v0.2.1
 	github.com/giantswarm/errors v0.3.0
 	github.com/giantswarm/exporterkit v1.0.0
@@ -31,19 +31,19 @@ require (
 	github.com/giantswarm/to v0.4.0
 	github.com/giantswarm/versionbundle v1.0.0
 	github.com/golang/mock v1.6.0
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.7
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/prometheus/client_golang v1.11.0
-	github.com/spf13/viper v1.10.0
+	github.com/prometheus/client_golang v1.12.1
+	github.com/spf13/viper v1.10.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	k8s.io/api v0.18.19
-	k8s.io/apiextensions-apiserver v0.18.19
-	k8s.io/apimachinery v0.18.19
-	k8s.io/client-go v0.18.19
+	k8s.io/api v0.20.15
+	k8s.io/apiextensions-apiserver v0.20.15
+	k8s.io/apimachinery v0.20.15
+	k8s.io/client-go v0.20.15
 	sigs.k8s.io/cluster-api v0.4.1
 	sigs.k8s.io/cluster-api-provider-azure v0.4.15
-	sigs.k8s.io/controller-runtime v0.6.4
+	sigs.k8s.io/controller-runtime v0.6.5
 	sigs.k8s.io/yaml v1.3.0
 )
 
