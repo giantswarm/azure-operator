@@ -31,7 +31,7 @@ require (
 	github.com/giantswarm/to v0.4.0
 	github.com/giantswarm/versionbundle v1.0.0
 	github.com/golang/mock v1.6.0
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.7
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.11.0
