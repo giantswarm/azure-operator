@@ -19,6 +19,7 @@
     },
     {
       "matchPackagePatterns": ["^sigs.k8s.io/cluster*"],
+      "groupName": "capi modules",
       "enabled": false
     },
     {
@@ -38,7 +39,10 @@
   ],
   "ignoreDeps": [
     "architect",
-    "zricethezav/gitleaks-action"
+    "zricethezav/gitleaks-action",
+    "sigs.k8s.io/cluster-api",
+    "sigs.k8s.io/cluster-api-provider-azure",
+    "sigs.k8s.io/cluster-api-provider-aws"
   ],
   "schedule": [ "after 9am on thursday" ]
 }
