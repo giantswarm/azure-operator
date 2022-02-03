@@ -39,10 +39,7 @@
   ],
   "ignoreDeps": [
     "architect",
-    "zricethezav/gitleaks-action",
-    "sigs.k8s.io/cluster-api",
-    "sigs.k8s.io/cluster-api-provider-azure",
-    "sigs.k8s.io/cluster-api-provider-aws"
+    "zricethezav/gitleaks-action"
   ],
   "schedule": [ "after 9am on thursday" ]
 }
