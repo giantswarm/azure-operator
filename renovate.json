@@ -14,8 +14,8 @@
       "allowedVersions": "< 0.21.0"
     },
     {
-      "matchPackagePatterns": ["^sigs.k8s.io"],
-      "excludePackagePatterns": ["^sigs.k8s.io/cluster-api*"],
+      "matchPackagePatterns": ["^sigs.k8s.io*"],
+      "excludePackagePatterns": ["^sigs.k8s.io/cluster*"],
       "groupName": "sig k8s modules"
     },
     {
