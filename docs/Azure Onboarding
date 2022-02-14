@@ -1,0 +1,75 @@
+
+# Azure Onboarding
+
+Prerequisites to be agreed prior starting the onboarding:
+1. Management Cluster Name: (decided by GS)
+2. Region:
+3. Azure Tenant ID:
+4. Management Cluster Subscription ID:
+5. Set of Organization Names for Workload Clusters with Subscription IDs:
+- ORG_NAME: SUB_ID
+- ...
+
+### Azure Lightouse  
+Process has to be run for each customers subscription separately.
+1. Docs/process: https://docs.giantswarm.io/getting-started/cloud-provider-accounts/azure/#configure-subscription-to-allow-access-for-giant-swarm-support 
+2. Data for running the script:
+```
+GiantSwarmPrincipalID: dee9f955-b947-4964-8eb0-558819d2fb90
+GiantSwarmTenantID: 31f75bf9-3d8c-4691-95c0-83dd71613db8
+```
+
+### Management Cluster API/Happa UI SSO
+- SSO Provider: Azure AD (can be different e.g. Github/okta/...)
+- Application used on GS side for SSO: https://github.com/giantswarm/dex-app 
+
+Procedure: 
+1. Set up dexidp configuration on Azure AD:
+- Register an application on the Azure AD with adding explicit `Directory.Read.All` permission to the list of Delegated Permissions.
+- Set up callback url: https://dex.g8s.MC_NAME.REGION.azure.gigantic.io/callback
+
+2. Create Roles within Azure AD if needed accordingly to those two permissions groups:
+`TenantAdminTargetGroup and ViewAllTargetGroup`
+
+3. Now GS will need such details as:
+```
+1. Tenant ID
+2. Client ID of the registered Application
+3. Client Secret of the registered Application
+4. Azure AD group names for TenantAdminTargetGroup and ViewAllTargetGroup
+```
+
+### Subscriptions Configuration 
+
+Giant Swarm uses concept of Azure Service Principals(SP) which are created on the GS side due to governance reasons. Those Service Principals have to be invited to the Azure Tenant as well as have assigned appriopriate permissions.
+For better overview of the set or permissions please have a look at the grap below:
+
+![alt text](./Azure%20SP%20.png)
+
+There are two roles to be assigned:
+- Network Contributor role for SP is needed across Subscription in order to set up the vnet peering between the Resource Groups. The peering is used for monitoring as well as operations between the Management Cluster and Workload Clusters  
+- Owner role is needed per subscription for the purpose of managing all resources connected with Clusters.
+
+Giant Swarm has to create the Service Principals upfront and will provide invitation links to the Azure AD with the provided details from customer such as Azure Tenant ID and organization names. 
+Basics of the process are described in the [docs](https://docs.giantswarm.io/getting-started/cloud-provider-accounts/azure/#configure-subscription-to-allow-access-for-giant-swarm-support)
+
+#### Service Principals Setup:
+
+##### Management Cluster(MC) Subscription:
+- SP Name: `MC_NAME-mc` (id: `xxxx`)
+- Invitation Link to AAD: https://login.microsoftonline.com/${TENANT_ID}/oauth2/authorize?client_id=xxx&response_type=code&redirect_uri=https%3A%2F%2Fwww.microsoft.com%2F
+- (MC Subscription) IAM role: Owner (or specified in [docs](https://docs.giantswarm.io/getting-started/cloud-provider-accounts/azure/#2-create-the-role-definition))
+
+##### Workload Cluster Organization ORG_NAME Subscription (WC):
+- Name: `MC_NAME-org-ORG_NAME-wc` (id: `xxxx`)
+- Invitation Link to AAD: https://login.microsoftonline.com/${TENANT_ID}/oauth2/authorize?client_id=xxxx&response_type=code&redirect_uri=https%3A%2F%2Fwww.microsoft.com%2F
+- (WC Subscription) IAM role for `MC_NAME-org-ORG_NAME-wc`: Owner (or specified in [docs](https://docs.giantswarm.io/getting-started/cloud-provider-accounts/azure/#2-create-the-role-definition))
+- (MC Subscription) IAM role for `MC_NAME-org-ORG_NAME-wc`: Network Contributor
+
+###### Process above is repeated for all Organizations
+
+
+##### Notes:
+- Please increase the quotas on the Subscription of Standard DSv3 Family vCPUs for WestEurope - those our our default machine types, as well as Total Regional vCPUs
+- Make sure to accept Azure Marketplace legal terms for Flatcar OSS per subscription, more information [here](https://docs.giantswarm.io/getting-started/cloud-provider-accounts/azure/#accept-legal-terms-for-deeployment-of-flatcar-image)
+- Giant Swarm will impersonate the MC Service Principal for the purpose of creation of [Custom Role](https://github.com/giantswarm/giantnetes-terraform/blob/master/modules/azure/vault/vault.tf#L106-L121) needed for providing vault access to VMs/VMSSs. Role can also be created by customer but due to operations efficiency we can take care of it ourselves.  
