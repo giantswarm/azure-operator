@@ -7,7 +7,7 @@ Prerequisites to be agreed prior starting the onboarding:
 3. Azure Tenant ID:
 4. Management Cluster Subscription ID:
 5. Set of Organization Names for Workload Clusters with Subscription IDs:
-- ORG_NAME: SUB_ID
+- ORG_NAME: SUBSCRIPTION_ID
 - ...
 
 ### Azure Lightouse  
