@@ -3,7 +3,7 @@
 
 Prerequisites to be agreed prior starting the onboarding:
 1. Management Cluster Name: (decided by GS)
-2. Region:
+2. Region: (example: westeurope)
 3. Azure Tenant ID:
 4. Management Cluster Subscription ID:
 5. Set of Organization Names for Workload Clusters with Subscription IDs:
