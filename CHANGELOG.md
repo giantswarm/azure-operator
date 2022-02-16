@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.15.0] - 2022-02-16
+
 ### Changed
 
 - Drop dependency on `giantswarm/apiextensions/v2`.
@@ -496,7 +498,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v5.14.0...HEAD
+[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v5.15.0...HEAD
+[5.15.0]: https://github.com/giantswarm/giantswarm/compare/v5.14.0...v5.15.0
 [5.14.0]: https://github.com/giantswarm/giantswarm/compare/v5.13.0...v5.14.0
 [5.13.0]: https://github.com/giantswarm/azure-operator/compare/v5.12.0...v5.13.0
 [5.12.0]: https://github.com/giantswarm/azure-operator/compare/v5.11.0...v5.12.0
