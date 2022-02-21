@@ -498,9 +498,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v5.15.0...HEAD
-[5.15.0]: https://github.com/giantswarm/giantswarm/compare/v5.14.0...v5.15.0
-[5.14.0]: https://github.com/giantswarm/giantswarm/compare/v5.13.0...v5.14.0
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.15.0...HEAD
+[5.15.0]: https://github.com/giantswarm/azure-operator/compare/v5.14.0...v5.15.0
+[5.14.0]: https://github.com/giantswarm/azure-operator/compare/v5.13.0...v5.14.0
 [5.13.0]: https://github.com/giantswarm/azure-operator/compare/v5.12.0...v5.13.0
 [5.12.0]: https://github.com/giantswarm/azure-operator/compare/v5.11.0...v5.12.0
 [5.11.0]: https://github.com/giantswarm/azure-operator/compare/v5.10.2...v5.11.0
