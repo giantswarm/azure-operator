@@ -273,7 +273,7 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clus
 	}
 
 	// CGroups have changed.
-	nodeCgroupVersion, _ := n.GetLabels()[label.CGroupVersion]
+	nodeCgroupVersion := n.GetLabels()[label.CGroupVersion]
 	vmssCgroupVersion := key.CGroupVersion(machinePool)
 	if nodeCgroupVersion != vmssCgroupVersion {
 		// Cgroups version changed in the node pool
