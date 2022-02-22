@@ -88,6 +88,9 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 	if !reflect.DeepEqual(currentParameters.Zones, desiredParameters.Zones) {
 		changes = append(changes, "zones")
 	}
+	if currentParameters.CGroupsVersion != desiredParameters.CGroupsVersion {
+		changes = append(changes, "cgroupsversion")
+	}
 
 	return changes, nil
 }

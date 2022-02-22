@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Make nodepool nodes roll in case the user switches between cgroups v1 and v2.
+
 ## [5.15.0] - 2022-02-16
 
 ### Changed

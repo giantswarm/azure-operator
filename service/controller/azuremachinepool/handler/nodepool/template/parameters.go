@@ -10,6 +10,7 @@ import (
 type Parameters struct {
 	AzureOperatorVersion        string
 	ClusterID                   string
+	CGroupsVersion              string
 	DataDisks                   []v1alpha3.DataDisk
 	EnableAcceleratedNetworking bool
 	KubernetesVersion           string
@@ -77,6 +78,7 @@ func (p Parameters) ToDeployParams() map[string]interface{} {
 	armDeploymentParameters := map[string]interface{}{}
 	armDeploymentParameters["azureOperatorVersion"] = toARMParam(p.AzureOperatorVersion)
 	armDeploymentParameters["clusterID"] = toARMParam(p.ClusterID)
+	armDeploymentParameters["cGroupsVersion"] = toARMParam(p.CGroupsVersion)
 	armDeploymentParameters["dataDisks"] = toARMParam(dataDisks)
 	armDeploymentParameters["enableAcceleratedNetworking"] = toARMParam(p.EnableAcceleratedNetworking)
 	armDeploymentParameters["kubernetesVersion"] = toARMParam(p.KubernetesVersion)
@@ -157,6 +159,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 	// Finally return typed parameters.
 	return Parameters{
 		AzureOperatorVersion:        cast(parameters["azureOperatorVersion"]).(string),
+		CGroupsVersion:              cast(parameters["cGroupsVersion"]).(string),
 		ClusterID:                   cast(parameters["clusterID"]).(string),
 		DataDisks:                   dataDisks,
 		EnableAcceleratedNetworking: cast(parameters["enableAcceleratedNetworking"]).(bool),

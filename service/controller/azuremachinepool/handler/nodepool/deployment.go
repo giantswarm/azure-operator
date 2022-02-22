@@ -10,7 +10,9 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/coreos/go-semver/semver"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -98,8 +100,34 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 		}
 	}
 
+	var cgroupsVersion string
+	{
+		// cgroups v2 is only supported since flatcar 2983.2.0
+		target, err := semver.NewVersion(distroVersion)
+		if err != nil {
+			return azureresource.Deployment{}, microerror.Mask(err)
+		}
+		min, err := semver.NewVersion("2983.2.0")
+		if err != nil {
+			return azureresource.Deployment{}, microerror.Mask(err)
+		}
+		if target.Compare(*min) < 0 {
+			// Flatcar version does not support cgroups v2.
+			cgroupsVersion = "v1"
+		} else {
+			cgroupsVersion = "v2"
+			if machinePool.Annotations != nil {
+				_, found := machinePool.Annotations[annotation.NodeForceCGroupsV1]
+				if found {
+					cgroupsVersion = "v1"
+				}
+			}
+		}
+	}
+
 	templateParameters := template.Parameters{
 		AzureOperatorVersion:        project.Version(),
+		CGroupsVersion:              cgroupsVersion,
 		ClusterID:                   azureCluster.GetName(),
 		DataDisks:                   azureMachinePool.Spec.Template.DataDisks,
 		EnableAcceleratedNetworking: enableAcceleratedNetworking,
