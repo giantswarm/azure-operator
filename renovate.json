@@ -3,6 +3,7 @@
     "config:base",
     ":reviewer(team:team-phoenix)"
   ],
+  "labels": ["dependencies"],
   "packageRules": [
     {
       "matchPackagePatterns": [".*giantswarm.*"],
@@ -31,7 +32,7 @@
       "allowedVersions": "< 0.7.0"
     },
     {
-      "matchPackageNames": ["github.com/giantswarm/apiextensions/v3"],
+      "matchPackagePatterns": ["^github.com/giantswarm/apiextensions*"],
       "allowedVersions": ">= 4.0.0"
     }
   ],
@@ -43,7 +44,8 @@
   ],
   "ignoreDeps": [
     "architect",
-    "zricethezav/gitleaks-action"
+    "zricethezav/gitleaks-action",
+    "actions/setup-go"
   ],
-  "schedule": [ "after 9am on thursday" ]
+  "schedule": [ "after 6am on thursday" ]
 }
