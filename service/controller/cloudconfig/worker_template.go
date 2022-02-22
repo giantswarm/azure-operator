@@ -3,12 +3,15 @@ package cloudconfig
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/templates/ignition"
 )
 
@@ -32,6 +35,8 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 
 		params = k8scloudconfig.Params{}
 		params.Cluster = data.CustomObject.Spec.Cluster
+		// Add node label for cgroups version
+		params.Cluster.Kubernetes.Kubelet.Labels = fmt.Sprintf("%s,%s=%s", params.Cluster.Kubernetes.Kubelet.Labels, label.CGroupVersion, key.CGroupVersion(data.MachinePool))
 		params.CalicoPolicyOnly = true
 		params.Kubernetes = k8scloudconfig.Kubernetes{
 			Kubelet: k8scloudconfig.KubernetesDockerOptions{
