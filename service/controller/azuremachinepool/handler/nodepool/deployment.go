@@ -100,6 +100,7 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 
 	templateParameters := template.Parameters{
 		AzureOperatorVersion:        project.Version(),
+		CGroupsVersion:              key.CGroupVersion(machinePool),
 		ClusterID:                   azureCluster.GetName(),
 		DataDisks:                   azureMachinePool.Spec.Template.DataDisks,
 		EnableAcceleratedNetworking: enableAcceleratedNetworking,

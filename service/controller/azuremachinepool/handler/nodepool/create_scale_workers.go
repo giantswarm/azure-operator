@@ -196,7 +196,7 @@ func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachi
 	var newInstances []compute.VirtualMachineScaleSetVM
 	{
 		for _, i := range allWorkerInstances {
-			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cluster, azureMachinePool.Name, i)
+			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cluster, azureMachinePool, i)
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}
@@ -236,11 +236,13 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantCluste
 	return nil, nil
 }
 
-func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, cluster *capiv1alpha3.Cluster, nodePoolId string, instance compute.VirtualMachineScaleSetVM) (bool, error) {
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, cluster *capiv1alpha3.Cluster, azureMachinePool capzv1alpha3.AzureMachinePool, instance compute.VirtualMachineScaleSetVM) (bool, error) {
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
+
+	nodePoolId := azureMachinePool.Name
 
 	n, err := r.getK8sWorkerNodeForInstance(ctx, tenantClusterK8sClient, nodePoolId, instance)
 	if err != nil {
@@ -254,6 +256,11 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clus
 		return false, nil
 	}
 
+	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
 	myVersion := semver.New(project.Version())
 
 	v, exists := n.GetLabels()[label.OperatorVersion]
@@ -263,6 +270,14 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clus
 		if nodeVersion.LessThan(*myVersion) {
 			return true, nil
 		}
+	}
+
+	// CGroups have changed.
+	nodeCgroupVersion := n.GetLabels()[label.CGroupVersion]
+	vmssCgroupVersion := key.CGroupVersion(machinePool)
+	if nodeCgroupVersion != vmssCgroupVersion {
+		// Cgroups version changed in the node pool
+		return true, nil
 	}
 
 	// Kubernetes version has changed, node is outdated.

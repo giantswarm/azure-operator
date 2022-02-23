@@ -8,6 +8,12 @@
         "description": "Version of the azure operator that created the deployment."
       }
     },
+    "cGroupsVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "CGroups version being used for the node pool. Either 'v1' or 'v2'."
+      }
+    },
     "clusterID": {
       "type": "string",
       "metadata": {
@@ -185,6 +191,7 @@
       "zones": "[if(greater(length(parameters('zones')),0), parameters('zones'), json('null'))]",
       "tags": {
         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]",
+        "cgroups-version": "[parameters('cGroupsVersion')]",
         "cluster-autoscaler-enabled": "[if(equals(parameters('minReplicas'),parameters('maxReplicas')), 'false', 'true')]",
         "cluster-autoscaler-name": "[parameters('clusterID')]",
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",

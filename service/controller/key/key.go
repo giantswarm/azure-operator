@@ -12,6 +12,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
+	k8smetaannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -745,6 +746,18 @@ func NodePoolSpotInstancesMaxPrice(azureMachinePool *expcapzv1alpha3.AzureMachin
 	}
 
 	return azureMachinePool.Spec.Template.SpotVMOptions.MaxPrice.AsDec().String()
+}
+
+func CGroupVersion(machinePool *expcapiv1alpha3.MachinePool) string {
+	cgroupsVersion := "v2"
+	if machinePool.Annotations != nil {
+		_, found := machinePool.Annotations[k8smetaannotation.NodeForceCGroupsV1]
+		if found {
+			cgroupsVersion = "v1"
+		}
+	}
+
+	return cgroupsVersion
 }
 
 func vmssInstanceIDBase36(instanceID string) (string, error) {
