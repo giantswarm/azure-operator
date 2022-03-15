@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.17.0] - 2022-03-15
+
 ### Fixed
 
 - Fix panic while checking for cgroups version during upgrade.
@@ -512,7 +514,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.16.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.17.0...HEAD
+[5.17.0]: https://github.com/giantswarm/azure-operator/compare/v5.16.0...v5.17.0
 [5.16.0]: https://github.com/giantswarm/azure-operator/compare/v5.15.0...v5.16.0
 [5.15.0]: https://github.com/giantswarm/azure-operator/compare/v5.14.0...v5.15.0
 [5.14.0]: https://github.com/giantswarm/azure-operator/compare/v5.13.0...v5.14.0
