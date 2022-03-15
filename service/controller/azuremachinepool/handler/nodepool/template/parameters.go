@@ -156,10 +156,15 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		spotEnabled = cast(parameters["spotInstancesEnabled"]).(bool)
 	}
 
+	cgroupsVersion := "v2"
+	if parameters["cGroupsVersion"] != nil {
+		cgroupsVersion = cast(parameters["cGroupsVersion"]).(string)
+	}
+
 	// Finally return typed parameters.
 	return Parameters{
 		AzureOperatorVersion:        cast(parameters["azureOperatorVersion"]).(string),
-		CGroupsVersion:              cast(parameters["cGroupsVersion"]).(string),
+		CGroupsVersion:              cgroupsVersion,
 		ClusterID:                   cast(parameters["clusterID"]).(string),
 		DataDisks:                   dataDisks,
 		EnableAcceleratedNetworking: cast(parameters["enableAcceleratedNetworking"]).(bool),
