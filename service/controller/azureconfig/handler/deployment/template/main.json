@@ -954,7 +954,8 @@
               "apiVersion":"[parameters('virtualNetworksAPIVersion')]",
               "location":"[resourceGroup().location]",
               "tags":{
-                "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+                "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
+                "GiantSwarmCluster":"[parameters('clusterID')]"
               },
               "properties":{
                 "addressSpace":{
@@ -1029,6 +1030,9 @@
           }
         },
         "parameters":{
+          "clusterID":{
+            "value":"[parameters('clusterID')]"
+          },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
           },
