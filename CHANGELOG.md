@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix panic while checking for cgroups version during upgrade.
+
+### Added
+
 - Add GiantSwarmCluster tag to Vnet.
 
 ## [5.16.0] - 2022-02-23
