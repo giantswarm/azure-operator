@@ -3,11 +3,11 @@ package nodestatus
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/apiextensions/v5/pkg/label"
 	"github.com/giantswarm/microerror"
 	apicorev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api/controllers/noderefutil"
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,7 +28,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
+	azureMachinePool := capzexp.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)

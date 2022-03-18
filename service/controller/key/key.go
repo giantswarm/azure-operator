@@ -7,18 +7,18 @@ import (
 	"strings"
 
 	"github.com/Azure/go-autorest/autorest/to"
-	apiextensionsannotations "github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
+	apiextensionsannotations "github.com/giantswarm/apiextensions/v5/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v5/pkg/label"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v12/pkg/template"
 	k8smetaannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
@@ -105,56 +105,56 @@ func AzureMachineName(getter LabelsGetter) string {
 	return fmt.Sprintf("%s-master-0", clusterID)
 }
 
-func ToCluster(v interface{}) (capiv1alpha3.Cluster, error) {
+func ToCluster(v interface{}) (capi.Cluster, error) {
 	if v == nil {
-		return capiv1alpha3.Cluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiv1alpha3.Cluster{}, v)
+		return capi.Cluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capi.Cluster{}, v)
 	}
 
-	customObjectPointer, ok := v.(*capiv1alpha3.Cluster)
+	customObjectPointer, ok := v.(*capi.Cluster)
 	if !ok {
-		return capiv1alpha3.Cluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiv1alpha3.Cluster{}, v)
+		return capi.Cluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capi.Cluster{}, v)
 	}
 	customObject := *customObjectPointer
 
 	return customObject, nil
 }
 
-func ToAzureMachine(v interface{}) (capzv1alpha3.AzureMachine, error) {
+func ToAzureMachine(v interface{}) (capz.AzureMachine, error) {
 	if v == nil {
-		return capzv1alpha3.AzureMachine{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzv1alpha3.AzureMachine{}, v)
+		return capz.AzureMachine{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capz.AzureMachine{}, v)
 	}
 
-	customObjectPointer, ok := v.(*capzv1alpha3.AzureMachine)
+	customObjectPointer, ok := v.(*capz.AzureMachine)
 	if !ok {
-		return capzv1alpha3.AzureMachine{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzv1alpha3.AzureMachine{}, v)
+		return capz.AzureMachine{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capz.AzureMachine{}, v)
 	}
 	customObject := *customObjectPointer
 
 	return customObject, nil
 }
 
-func ToAzureMachinePool(v interface{}) (expcapzv1alpha3.AzureMachinePool, error) {
+func ToAzureMachinePool(v interface{}) (capzexp.AzureMachinePool, error) {
 	if v == nil {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
+		return capzexp.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzexp.AzureMachinePool{}, v)
 	}
 
-	customObjectPointer, ok := v.(*expcapzv1alpha3.AzureMachinePool)
+	customObjectPointer, ok := v.(*capzexp.AzureMachinePool)
 	if !ok {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
+		return capzexp.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzexp.AzureMachinePool{}, v)
 	}
 	customObject := *customObjectPointer
 
 	return customObject, nil
 }
 
-func ToMachinePool(v interface{}) (expcapiv1alpha3.MachinePool, error) {
+func ToMachinePool(v interface{}) (capiexp.MachinePool, error) {
 	if v == nil {
-		return expcapiv1alpha3.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapiv1alpha3.MachinePool{}, v)
+		return capiexp.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiexp.MachinePool{}, v)
 	}
 
-	customObjectPointer, ok := v.(*expcapiv1alpha3.MachinePool)
+	customObjectPointer, ok := v.(*capiexp.MachinePool)
 	if !ok {
-		return expcapiv1alpha3.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapiv1alpha3.MachinePool{}, v)
+		return capiexp.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiexp.MachinePool{}, v)
 	}
 	customObject := *customObjectPointer
 
@@ -173,7 +173,7 @@ func WorkerBlobName(operatorVersion string) string {
 	return fmt.Sprintf("%s-%s-%s", operatorVersion, cloudConfigVersion, prefixWorker)
 }
 
-func BootstrapBlobName(customObject expcapzv1alpha3.AzureMachinePool) string {
+func BootstrapBlobName(customObject capzexp.AzureMachinePool) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(&customObject), customObject.Name, OperatorVersion(&customObject))
 }
 
@@ -224,7 +224,7 @@ func ClusterIPRange(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func ClusterName(getter LabelsGetter) string {
-	return getter.GetLabels()[capiv1alpha3.ClusterLabelName]
+	return getter.GetLabels()[capi.ClusterLabelName]
 }
 
 // ClusterNamespace returns the cluster Namespace for this cluster.
@@ -502,14 +502,14 @@ func StorageAccountName(customObject LabelsGetter) string {
 	return strings.Replace(storageAccountName, "-", "", -1)
 }
 
-func ToAzureCluster(v interface{}) (capzv1alpha3.AzureCluster, error) {
+func ToAzureCluster(v interface{}) (capz.AzureCluster, error) {
 	if v == nil {
-		return capzv1alpha3.AzureCluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzv1alpha3.AzureCluster{}, v)
+		return capz.AzureCluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capz.AzureCluster{}, v)
 	}
 
-	customObjectPointer, ok := v.(*capzv1alpha3.AzureCluster)
+	customObjectPointer, ok := v.(*capz.AzureCluster)
 	if !ok {
-		return capzv1alpha3.AzureCluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzv1alpha3.AzureCluster{}, v)
+		return capz.AzureCluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capz.AzureCluster{}, v)
 	}
 	customObject := *customObjectPointer
 
@@ -671,7 +671,7 @@ func WorkerInstanceName(clusterID, instanceID string) string {
 	return fmt.Sprintf("%s-worker-%s-%06s", clusterID, clusterID, idB36)
 }
 
-func NodePoolDeploymentName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
+func NodePoolDeploymentName(azureMachinePool *capzexp.AzureMachinePool) string {
 	return NodePoolVMSSName(azureMachinePool)
 }
 
@@ -697,7 +697,7 @@ func NodePoolInstanceName(nodePoolName, instanceID string) string {
 	return fmt.Sprintf("nodepool-%s-%06s", nodePoolName, idB36)
 }
 
-func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
+func NodePoolMinReplicas(machinePool *capiexp.MachinePool) int32 {
 	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMinSize]
 	size, err := strconv.Atoi(sizeStr) // nolint:gosec
 	if err != nil {
@@ -708,7 +708,7 @@ func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
 	return int32(size)
 }
 
-func NodePoolMaxReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
+func NodePoolMaxReplicas(machinePool *capiexp.MachinePool) int32 {
 	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMaxSize]
 	size, err := strconv.Atoi(sizeStr) // nolint:gosec
 	if err != nil {
@@ -719,7 +719,7 @@ func NodePoolMaxReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
 	return int32(size)
 }
 
-func NodePoolVMSSName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
+func NodePoolVMSSName(azureMachinePool *capzexp.AzureMachinePool) string {
 	return fmt.Sprintf("%s-%s", "nodepool", azureMachinePool.Name)
 }
 
@@ -736,11 +736,11 @@ func WorkersEgressExistingPublicIP(customObject providerv1alpha1.AzureConfig) st
 	return ipAddressResourceId
 }
 
-func NodePoolSpotInstancesEnabled(azureMachinePool *expcapzv1alpha3.AzureMachinePool) bool {
+func NodePoolSpotInstancesEnabled(azureMachinePool *capzexp.AzureMachinePool) bool {
 	return azureMachinePool.Spec.Template.SpotVMOptions != nil
 }
 
-func NodePoolSpotInstancesMaxPrice(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
+func NodePoolSpotInstancesMaxPrice(azureMachinePool *capzexp.AzureMachinePool) string {
 	if azureMachinePool.Spec.Template.SpotVMOptions == nil || azureMachinePool.Spec.Template.SpotVMOptions.MaxPrice == nil {
 		return ""
 	}
@@ -748,7 +748,7 @@ func NodePoolSpotInstancesMaxPrice(azureMachinePool *expcapzv1alpha3.AzureMachin
 	return azureMachinePool.Spec.Template.SpotVMOptions.MaxPrice.AsDec().String()
 }
 
-func CGroupVersion(machinePool *expcapiv1alpha3.MachinePool) string {
+func CGroupVersion(machinePool *capiexp.MachinePool) string {
 	cgroupsVersion := "v2"
 	if machinePool.Annotations != nil {
 		_, found := machinePool.Annotations[k8smetaannotation.NodeForceCGroupsV1]

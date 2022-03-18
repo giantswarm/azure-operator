@@ -3,13 +3,13 @@ package azureclusterupgrade
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v5/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
@@ -57,8 +57,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.Debugf(ctx, "ensuring release labels are set on AzureMachines")
 
-	azureMachineList := capzv1alpha3.AzureMachineList{}
-	err = r.ctrlClient.List(ctx, &azureMachineList, client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterName(&cr)})
+	azureMachineList := capz.AzureMachineList{}
+	err = r.ctrlClient.List(ctx, &azureMachineList, client.MatchingLabels{capi.ClusterLabelName: key.ClusterName(&cr)})
 	if err != nil {
 		return microerror.Mask(err)
 	}

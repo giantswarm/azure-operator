@@ -6,7 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/azure"

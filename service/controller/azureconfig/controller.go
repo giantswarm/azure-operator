@@ -5,19 +5,19 @@ import (
 	"net"
 	"time"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/crud"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/metricsresource"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
-	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/crud"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/wrapper/metricsresource"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/wrapper/retryresource"
+	"github.com/giantswarm/tenantcluster/v5/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
+	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
@@ -172,7 +172,7 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 			Name:      project.Name() + "-azureconfig-controller",
-			NewRuntimeObjectFunc: func() runtime.Object {
+			NewRuntimeObjectFunc: func() ctrlClient.Object {
 				return new(v1alpha1.AzureConfig)
 			},
 			Resources: resources,
@@ -358,7 +358,6 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		c := blobobject.Config{
 			CertsSearcher:  certsSearcher,
 			CtrlClient:     config.K8sClient.CtrlClient(),
-			G8sClient:      config.K8sClient.G8sClient(),
 			K8sClient:      config.K8sClient.K8sClient(),
 			Logger:         config.Logger,
 			RegistryDomain: config.RegistryDomain,
@@ -380,8 +379,8 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	{
 		c := deployment.Config{
 			Debugger:         newDebugger,
-			G8sClient:        config.K8sClient.G8sClient(),
 			InstallationName: config.InstallationName,
+			CtrlClient:       config.K8sClient.CtrlClient(),
 			Logger:           config.Logger,
 
 			Azure:                      config.Azure,

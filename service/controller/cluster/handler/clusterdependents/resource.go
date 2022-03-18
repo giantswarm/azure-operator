@@ -6,11 +6,11 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/finalizerskeptcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/finalizerskeptcontext"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -92,13 +92,13 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
+func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capi.Cluster) (bool, error) {
 	r.logger.Debugf(ctx, "ensuring AzureCluster CR is deleted")
 	objKey := client.ObjectKey{
 		Namespace: cr.Namespace,
 		Name:      cr.Spec.InfrastructureRef.Name,
 	}
-	azureCluster := new(v1alpha3.AzureCluster)
+	azureCluster := new(capz.AzureCluster)
 	err := r.ctrlClient.Get(ctx, objKey, azureCluster)
 	if errors.IsNotFound(err) {
 		r.logger.Debugf(ctx, "ensured AzureCluster CR is deleted")
@@ -121,12 +121,12 @@ func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capiv1a
 	return false, nil
 }
 
-func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
+func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capi.Cluster) (bool, error) {
 	r.logger.Debugf(ctx, "ensuring MachinePool CRs are deleted")
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+		capi.ClusterLabelName: key.ClusterName(&cr),
 	}
-	mpList := new(expcapiv1alpha3.MachinePoolList)
+	mpList := new(capiexp.MachinePoolList)
 	err := r.ctrlClient.List(ctx, mpList, o)
 	if err != nil {
 		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("error while getting all MachinePool CRs for cluster %q", cr.Name))

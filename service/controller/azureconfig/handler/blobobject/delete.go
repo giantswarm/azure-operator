@@ -3,7 +3,7 @@ package blobobject
 import (
 	"context"
 
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/crud"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/crud"
 )
 
 // ApplyDeleteChange not in use as blobobject deleted

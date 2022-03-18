@@ -7,15 +7,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	localannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
@@ -42,7 +42,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.Debugf(ctx, "finding required cluster api types")
 
-	var cluster capiv1alpha3.Cluster
+	var cluster capi.Cluster
 	{
 		nsName := types.NamespacedName{
 			Name:      key.ClusterName(&azureCluster),
@@ -59,16 +59,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	var masterMachines []capzv1alpha3.AzureMachine
-	var workerMachines []capzv1alpha3.AzureMachine
+	var masterMachines []capz.AzureMachine
+	var workerMachines []capz.AzureMachine
 	{
-		azureMachineList := &capzv1alpha3.AzureMachineList{}
+		azureMachineList := &capz.AzureMachineList{}
 		{
 			err := r.ctrlClient.List(
 				ctx,
 				azureMachineList,
 				client.InNamespace(cluster.Namespace),
-				client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterName(&cluster)},
+				client.MatchingLabels{capi.ClusterLabelName: key.ClusterName(&cluster)},
 			)
 			if err != nil {
 				return microerror.Mask(err)
@@ -227,7 +227,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cluster, azureCluster capzv1alpha3.AzureCluster, masters, workers []capzv1alpha3.AzureMachine) (providerv1alpha1.AzureConfig, error) {
+func (r *Resource) buildAzureConfig(ctx context.Context, cluster capi.Cluster, azureCluster capz.AzureCluster, masters, workers []capz.AzureMachine) (providerv1alpha1.AzureConfig, error) {
 	var err error
 
 	azureConfig := providerv1alpha1.AzureConfig{}
@@ -259,7 +259,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 
 	{
 		azureConfig.Labels[label.Cluster] = key.ClusterName(&cluster)
-		azureConfig.Labels[capiv1alpha3.ClusterLabelName] = key.ClusterName(&cluster)
+		azureConfig.Labels[capi.ClusterLabelName] = key.ClusterName(&cluster)
 		azureConfig.Labels[label.Organization] = key.OrganizationID(&cluster)
 		azureConfig.Labels[label.ReleaseVersion] = key.ReleaseVersion(&cluster)
 		azureConfig.Labels[label.OperatorVersion] = key.OperatorVersion(&azureCluster)
@@ -349,7 +349,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	return azureConfig, nil
 }
 
-func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1alpha3.AzureCluster, workers []capzv1alpha3.AzureMachine) (providerv1alpha1.Cluster, error) {
+func (r *Resource) newCluster(cluster capi.Cluster, azureCluster capz.AzureCluster, workers []capz.AzureMachine) (providerv1alpha1.Cluster, error) {
 	commonCluster := providerv1alpha1.Cluster{}
 
 	{

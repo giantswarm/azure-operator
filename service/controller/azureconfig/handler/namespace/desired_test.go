@@ -9,7 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"

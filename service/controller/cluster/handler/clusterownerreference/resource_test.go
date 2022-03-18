@@ -8,9 +8,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
@@ -35,16 +35,16 @@ func TestThatAzureClusterIsLabeledWithClusterId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cluster := &capiv1alpha3.Cluster{
+	cluster := &capi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 			Labels: map[string]string{
-				label.Cluster:                 clusterName,
-				capiv1alpha3.ClusterLabelName: clusterName,
+				label.Cluster:         clusterName,
+				capi.ClusterLabelName: clusterName,
 			},
 		},
-		Spec: capiv1alpha3.ClusterSpec{
+		Spec: capi.ClusterSpec{
 			InfrastructureRef: &v1.ObjectReference{
 				Kind:      "AzureCluster",
 				Namespace: clusterNamespace,
@@ -57,12 +57,12 @@ func TestThatAzureClusterIsLabeledWithClusterId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	azureCluster := &v1alpha3.AzureCluster{
+	azureCluster := &capz.AzureCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 		},
-		Spec: v1alpha3.AzureClusterSpec{},
+		Spec: capz.AzureClusterSpec{},
 	}
 	err = ctrlClient.Create(ctx, azureCluster)
 	if err != nil {
@@ -79,7 +79,7 @@ func TestThatAzureClusterIsLabeledWithClusterId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	labelClusterName, exists := azureCluster.Labels[capiv1alpha3.ClusterLabelName]
+	labelClusterName, exists := azureCluster.Labels[capi.ClusterLabelName]
 	if !exists {
 		t.Fatalf("Azure cluster should be labeled with Cluster name")
 	}
@@ -100,16 +100,16 @@ func TestThatAzureClusterIsOwnedByCluster(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cluster := &capiv1alpha3.Cluster{
+	cluster := &capi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 			Labels: map[string]string{
-				label.Cluster:                 clusterName,
-				capiv1alpha3.ClusterLabelName: clusterName,
+				label.Cluster:         clusterName,
+				capi.ClusterLabelName: clusterName,
 			},
 		},
-		Spec: capiv1alpha3.ClusterSpec{
+		Spec: capi.ClusterSpec{
 			InfrastructureRef: &v1.ObjectReference{
 				Kind:      "AzureCluster",
 				Namespace: azureCluster.Namespace,
@@ -137,16 +137,16 @@ func TestThatMachinePoolIsOwnedByCluster(t *testing.T) {
 	scheme := fakeK8sClient.Scheme()
 
 	machinePoolName := "my-machinepool"
-	cluster := &capiv1alpha3.Cluster{
+	cluster := &capi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 			Labels: map[string]string{
-				label.Cluster:                 clusterName,
-				capiv1alpha3.ClusterLabelName: clusterName,
+				label.Cluster:         clusterName,
+				capi.ClusterLabelName: clusterName,
 			},
 		},
-		Spec: capiv1alpha3.ClusterSpec{
+		Spec: capi.ClusterSpec{
 			InfrastructureRef: &v1.ObjectReference{
 				Kind:      "Cluster",
 				Namespace: "default",
@@ -177,34 +177,34 @@ func TestThatMachinePoolIsOwnedByCluster(t *testing.T) {
 	thenMachinePoolShouldBeOwnedByCluster(ctx, t, ctrlClient, machinePool.Namespace, machinePool.Name)
 }
 
-func givenAzureCluster(ctx context.Context, ctrlClient client.Client, clusterNamespace, clusterName string) (*v1alpha3.AzureCluster, error) {
-	azureCluster := &v1alpha3.AzureCluster{
+func givenAzureCluster(ctx context.Context, ctrlClient client.Client, clusterNamespace, clusterName string) (*capz.AzureCluster, error) {
+	azureCluster := &capz.AzureCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 		},
-		Spec: v1alpha3.AzureClusterSpec{},
+		Spec: capz.AzureClusterSpec{},
 	}
 	err := ctrlClient.Create(ctx, azureCluster)
 	return azureCluster, err
 }
 
-func givenMachinePool(ctx context.Context, ctrlClient client.Client, clusterNamespace, clusterName, machinePoolName string) (*expcapiv1alpha3.MachinePool, error) {
-	machinePool := &expcapiv1alpha3.MachinePool{
+func givenMachinePool(ctx context.Context, ctrlClient client.Client, clusterNamespace, clusterName, machinePoolName string) (*capiexp.MachinePool, error) {
+	machinePool := &capiexp.MachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
 			Name:      machinePoolName,
 			Labels: map[string]string{
-				capiv1alpha3.ClusterLabelName: clusterName,
+				capi.ClusterLabelName: clusterName,
 			},
 		},
-		Spec: expcapiv1alpha3.MachinePoolSpec{},
+		Spec: capiexp.MachinePoolSpec{},
 	}
 	err := ctrlClient.Create(ctx, machinePool)
 	return machinePool, err
 }
 
-func whenReconcilingCluster(ctx context.Context, ctrlClient client.Client, scheme *runtime.Scheme, cluster *capiv1alpha3.Cluster) error {
+func whenReconcilingCluster(ctx context.Context, ctrlClient client.Client, scheme *runtime.Scheme, cluster *capi.Cluster) error {
 	controller, err := New(Config{
 		CtrlClient: ctrlClient,
 		Logger:     microloggertest.New(),
@@ -218,7 +218,7 @@ func whenReconcilingCluster(ctx context.Context, ctrlClient client.Client, schem
 }
 
 func thenAzureClusterShouldBeOwnedByCluster(ctx context.Context, t *testing.T, ctrlClient client.Client, azureClusterNamespace, azureClusterName string) {
-	azureCluster := &v1alpha3.AzureCluster{}
+	azureCluster := &capz.AzureCluster{}
 	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureClusterNamespace, Name: azureClusterName}, azureCluster)
 	if err != nil {
 		t.Fatal(err)
@@ -226,7 +226,7 @@ func thenAzureClusterShouldBeOwnedByCluster(ctx context.Context, t *testing.T, c
 
 	found := false
 	for _, ref := range azureCluster.OwnerReferences {
-		if ref.Kind == "Cluster" && ref.APIVersion == capiv1alpha3.GroupVersion.String() {
+		if ref.Kind == "Cluster" && ref.APIVersion == capi.GroupVersion.String() {
 			found = true
 		}
 	}
@@ -237,7 +237,7 @@ func thenAzureClusterShouldBeOwnedByCluster(ctx context.Context, t *testing.T, c
 }
 
 func thenMachinePoolShouldBeOwnedByCluster(ctx context.Context, t *testing.T, ctrlClient client.Client, machinePoolNamespace, machinePoolName string) {
-	machinePool := &expcapiv1alpha3.MachinePool{}
+	machinePool := &capiexp.MachinePool{}
 	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePoolNamespace, Name: machinePoolName}, machinePool)
 	if err != nil {
 		t.Fatal(err)
@@ -245,7 +245,7 @@ func thenMachinePoolShouldBeOwnedByCluster(ctx context.Context, t *testing.T, ct
 
 	found := false
 	for _, ref := range machinePool.OwnerReferences {
-		if ref.Kind == "Cluster" && ref.APIVersion == capiv1alpha3.GroupVersion.String() {
+		if ref.Kind == "Cluster" && ref.APIVersion == capi.GroupVersion.String() {
 			found = true
 		}
 	}

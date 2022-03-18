@@ -4,12 +4,12 @@ import (
 	"context"
 	"reflect"
 
-	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v5/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -81,7 +81,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.Debugf(ctx, "Set IdentityRef for AzureCluster %q", azureCluster.Name)
 	} else {
 		// Ensure AzureClusterIdentity is up to date.
-		azureClusterIdentity := v1alpha3.AzureClusterIdentity{}
+		azureClusterIdentity := capz.AzureClusterIdentity{}
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Name: azureCluster.Spec.IdentityRef.Name, Namespace: azureCluster.Spec.IdentityRef.Namespace}, &azureClusterIdentity)
 		if err != nil {
 			return microerror.Mask(err)
@@ -124,7 +124,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) ensureNewSecret(ctx context.Context, azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret) error {
+func (r *Resource) ensureNewSecret(ctx context.Context, azureCluster *capz.AzureCluster, legacySecret corev1.Secret) error {
 	newName := newSecretName(legacySecret)
 
 	r.logger.Debugf(ctx, "Looking for Secret %q in namespace %q", newName, azureCluster.Namespace)
@@ -191,19 +191,19 @@ func (r *Resource) ensureNewSecretUpdated(ctx context.Context, legacySecret core
 	return nil
 }
 
-func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret) (*v1alpha3.AzureClusterIdentity, error) {
+func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, azureCluster *capz.AzureCluster, legacySecret corev1.Secret) (*capz.AzureClusterIdentity, error) {
 	newName := newSecretName(legacySecret)
 	desiredSpec := getAzureClusterIdentitySpec(azureCluster, legacySecret)
 
 	r.logger.Debugf(ctx, "Looking for AzureClusterIdentity %q in namespace %q", newName, azureCluster.Namespace)
 
-	existing := &v1alpha3.AzureClusterIdentity{}
+	existing := &capz.AzureClusterIdentity{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureCluster.Namespace, Name: newName}, existing)
 	if apierrors.IsNotFound(err) {
 		r.logger.Debugf(ctx, "AzureClusterIdentity %q wasn't found in namespace %q, creating it", newName, azureCluster.Namespace)
 
 		// We need to create the AzureClusterIdentity.
-		aci := &v1alpha3.AzureClusterIdentity{
+		aci := &capz.AzureClusterIdentity{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      newName,
 				Namespace: azureCluster.Namespace,
@@ -233,7 +233,7 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, azureCluster 
 	return existing, nil
 }
 
-func (r *Resource) ensureAzureClusterIdentityUpdated(ctx context.Context, azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret, existing v1alpha3.AzureClusterIdentity) error {
+func (r *Resource) ensureAzureClusterIdentityUpdated(ctx context.Context, azureCluster *capz.AzureCluster, legacySecret corev1.Secret, existing capz.AzureClusterIdentity) error {
 	newName := newSecretName(legacySecret)
 	desiredSpec := getAzureClusterIdentitySpec(azureCluster, legacySecret)
 
@@ -256,21 +256,24 @@ func (r *Resource) ensureAzureClusterIdentityUpdated(ctx context.Context, azureC
 	return nil
 }
 
-func getAzureClusterIdentitySpec(azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret) v1alpha3.AzureClusterIdentitySpec {
+func getAzureClusterIdentitySpec(azureCluster *capz.AzureCluster, legacySecret corev1.Secret) capz.AzureClusterIdentitySpec {
 	newName := newSecretName(legacySecret)
 	newNamespace := azureCluster.Namespace
 
 	clientID := string(legacySecret.Data[legacySecretClientIDFieldName])
 	tenantID := string(legacySecret.Data[legacySecretTenantIDFieldName])
 
-	return v1alpha3.AzureClusterIdentitySpec{
-		Type:     v1alpha3.ServicePrincipal,
+	return capz.AzureClusterIdentitySpec{
+		Type:     capz.ServicePrincipal,
 		ClientID: clientID,
 		ClientSecret: corev1.SecretReference{
 			Name:      newName,
 			Namespace: newNamespace,
 		},
-		TenantID:          tenantID,
-		AllowedNamespaces: make([]string, 0),
+		TenantID: tenantID,
+		AllowedNamespaces: &capz.AllowedNamespaces{
+			NamespaceList: make([]string, 0),
+			Selector:      nil,
+		},
 	}
 }

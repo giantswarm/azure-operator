@@ -5,10 +5,10 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/finalizerskeptcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/finalizerskeptcontext"
 	"k8s.io/apimachinery/pkg/api/errors"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -77,12 +77,12 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr expcapiv1alpha3.MachinePool) (bool, error) {
+func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capiexp.MachinePool) (bool, error) {
 	objKey := client.ObjectKey{
 		Namespace: cr.Namespace,
 		Name:      cr.Spec.Template.Spec.InfrastructureRef.Name,
 	}
-	azureMachinePool := new(expcapzv1alpha3.AzureMachinePool)
+	azureMachinePool := new(capzexp.AzureMachinePool)
 	err := r.ctrlClient.Get(ctx, objKey, azureMachinePool)
 	if errors.IsNotFound(err) {
 		return true, nil

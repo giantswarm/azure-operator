@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/ipam"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"golang.org/x/sync/errgroup"

@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/apiextensions/v5/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/to"
 	corev1 "k8s.io/api/core/v1"
@@ -16,8 +16,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	azopannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
@@ -25,10 +25,10 @@ import (
 )
 
 type crmapping struct {
-	obj runtime.Object
+	obj client.Object
 
 	needUpdateFunc func(orig, desired runtime.Object) (bool, error)
-	mergeFunc      func(orig, desired runtime.Object) (runtime.Object, error)
+	mergeFunc      func(orig, desired runtime.Object) (client.Object, error)
 }
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -44,7 +44,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Name:      cr.Name,
 			Namespace: key.OrganizationNamespace(&cr),
 		}
-		cluster := new(capiv1alpha3.Cluster)
+		cluster := new(capi.Cluster)
 		err = r.ctrlClient.Get(ctx, objKey, cluster)
 		if errors.IsNotFound(err) {
 			// all good
@@ -104,10 +104,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alpha1.AzureConfig, infraRef *corev1.ObjectReference) (runtime.Object, error) {
-	cluster := &capiv1alpha3.Cluster{
+func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alpha1.AzureConfig, infraRef *corev1.ObjectReference) (client.Object, error) {
+	cluster := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: capiv1alpha3.GroupVersion.String(),
+			APIVersion: capi.GroupVersion.String(),
 			Kind:       "Cluster",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -119,25 +119,25 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 			},
 			Labels: map[string]string{
 				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
-				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
-				label.ClusterOperatorVersion:  cr.Labels[label.ClusterOperatorVersion],
-				label.Cluster:                 cr.Name,
-				capiv1alpha3.ClusterLabelName: cr.Name,
-				label.Organization:            key.OrganizationID(&cr),
-				label.ReleaseVersion:          key.ReleaseVersion(&cr),
+				label.AzureOperatorVersion:   key.OperatorVersion(&cr),
+				label.ClusterOperatorVersion: cr.Labels[label.ClusterOperatorVersion],
+				label.Cluster:                cr.Name,
+				capi.ClusterLabelName:        cr.Name,
+				label.Organization:           key.OrganizationID(&cr),
+				label.ReleaseVersion:         key.ReleaseVersion(&cr),
 			},
 		},
-		Spec: capiv1alpha3.ClusterSpec{
-			ClusterNetwork: &capiv1alpha3.ClusterNetwork{
+		Spec: capi.ClusterSpec{
+			ClusterNetwork: &capi.ClusterNetwork{
 				APIServerPort: toInt32P(int32(key.APISecurePort(cr))),
-				Services: &capiv1alpha3.NetworkRanges{
+				Services: &capi.NetworkRanges{
 					CIDRBlocks: []string{
 						key.ClusterIPRange(cr),
 					},
 				},
 				ServiceDomain: cr.Spec.Cluster.Kubernetes.Domain,
 			},
-			ControlPlaneEndpoint: capiv1alpha3.APIEndpoint{
+			ControlPlaneEndpoint: capi.APIEndpoint{
 				Host: key.ClusterAPIEndpoint(cr),
 				Port: 443,
 			},
@@ -147,35 +147,35 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 	return cluster, nil
 }
 
-func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr providerv1alpha1.AzureConfig) (runtime.Object, error) {
-	azureCluster := &capzv1alpha3.AzureCluster{
+func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr providerv1alpha1.AzureConfig) (client.Object, error) {
+	azureCluster := &capz.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: capzv1alpha3.GroupVersion.String(),
+			APIVersion: capz.GroupVersion.String(),
 			Kind:       "AzureCluster",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
-				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
-				label.Cluster:                 cr.Name,
-				capiv1alpha3.ClusterLabelName: cr.Name,
-				label.Organization:            key.OrganizationID(&cr),
-				label.ReleaseVersion:          key.ReleaseVersion(&cr),
+				label.AzureOperatorVersion: key.OperatorVersion(&cr),
+				label.Cluster:              cr.Name,
+				capi.ClusterLabelName:      cr.Name,
+				label.Organization:         key.OrganizationID(&cr),
+				label.ReleaseVersion:       key.ReleaseVersion(&cr),
 			},
 			Annotations: map[string]string{
 				annotation.ClusterDescription: cr.Annotations[annotation.ClusterDescription],
 			},
 		},
-		Spec: capzv1alpha3.AzureClusterSpec{
+		Spec: capz.AzureClusterSpec{
 			Location: r.location,
-			ControlPlaneEndpoint: capiv1alpha3.APIEndpoint{
+			ControlPlaneEndpoint: capi.APIEndpoint{
 				Host: key.ClusterAPIEndpoint(cr),
 				Port: 443,
 			},
 			ResourceGroup: key.ClusterID(&cr),
-			NetworkSpec: capzv1alpha3.NetworkSpec{
-				Vnet: capzv1alpha3.VnetSpec{
+			NetworkSpec: capz.NetworkSpec{
+				Vnet: capz.VnetSpec{
 					CIDRBlocks:    []string{key.VnetCIDR(cr)},
 					Name:          key.VnetName(cr),
 					ResourceGroup: key.ResourceGroupName(cr),
@@ -187,46 +187,45 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 	return azureCluster, nil
 }
 
-func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr providerv1alpha1.AzureConfig) (runtime.Object, error) {
+func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr providerv1alpha1.AzureConfig) (client.Object, error) {
 	if len(cr.Spec.Azure.Masters) == 0 {
 		return nil, microerror.Maskf(invalidConfigError, "no master nodes defined")
 	}
 	vmSize := cr.Spec.Azure.Masters[0].VMSize
-	azureMachine := &capzv1alpha3.AzureMachine{
+	azureMachine := &capz.AzureMachine{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: capzv1alpha3.GroupVersion.String(),
+			APIVersion: capz.GroupVersion.String(),
 			Kind:       "AzureMachine",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      key.AzureMachineName(&cr),
 			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
-				label.AzureOperatorVersion:                key.OperatorVersion(&cr),
-				label.Cluster:                             cr.Name,
-				capiv1alpha3.ClusterLabelName:             cr.Name,
-				capiv1alpha3.MachineControlPlaneLabelName: "true",
-				label.Organization:                        key.OrganizationID(&cr),
-				label.ReleaseVersion:                      key.ReleaseVersion(&cr),
+				label.AzureOperatorVersion:        key.OperatorVersion(&cr),
+				label.Cluster:                     cr.Name,
+				capi.ClusterLabelName:             cr.Name,
+				capi.MachineControlPlaneLabelName: "true",
+				label.Organization:                key.OrganizationID(&cr),
+				label.ReleaseVersion:              key.ReleaseVersion(&cr),
 			},
 		},
-		Spec: capzv1alpha3.AzureMachineSpec{
+		Spec: capz.AzureMachineSpec{
 			VMSize: vmSize,
-			Image: &capzv1alpha3.Image{
-				Marketplace: &capzv1alpha3.AzureMarketplaceImage{
+			Image: &capz.Image{
+				Marketplace: &capz.AzureMarketplaceImage{
 					Publisher: "kinvolk",
 					Offer:     "flatcar-container-linux-free",
 					SKU:       "stable",
 					Version:   "2345.3.1",
 				},
 			},
-			OSDisk: capzv1alpha3.OSDisk{
+			OSDisk: capz.OSDisk{
 				OSType:     "Linux",
-				DiskSizeGB: int32(50),
-				ManagedDisk: capzv1alpha3.ManagedDisk{
+				DiskSizeGB: to.Int32P(50),
+				ManagedDisk: &capz.ManagedDiskParameters{
 					StorageAccountType: "Premium_LRS",
 				},
 			},
-			Location: r.location,
 			// We use ignition for SSH keys deployment.
 			SSHPublicKey: "",
 		},
@@ -242,7 +241,7 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error {
 	for _, m := range crmappings {
 		// Construct new instance via reflection to ensure clean zero value object.
-		var readCR runtime.Object
+		var readCR client.Object
 		{
 			// Get the underlying type of desired runtime.Object.
 			t := reflect.TypeOf(m.obj)
@@ -259,7 +258,7 @@ func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error 
 			// Finally, extract the encapsulated `interface{}` from the
 			// `reflect.Value` and cast it to instance of `runtime.Object`
 			// interface.
-			readCR = v.Interface().(runtime.Object)
+			readCR = v.Interface().(client.Object)
 		}
 
 		// Acquire accessors for ObjectMeta and TypeMeta fields of CR.
@@ -343,8 +342,8 @@ func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error 
 }
 
 func detectAzureClusterUpdate(orig, desired runtime.Object) (bool, error) {
-	o := orig.(*capzv1alpha3.AzureCluster)
-	d := desired.(*capzv1alpha3.AzureCluster)
+	o := orig.(*capz.AzureCluster)
+	d := desired.(*capz.AzureCluster)
 
 	return len(o.Spec.NetworkSpec.Vnet.CIDRBlocks) != len(d.Spec.NetworkSpec.Vnet.CIDRBlocks) ||
 		o.Spec.NetworkSpec.Vnet.CIDRBlocks[0] != d.Spec.NetworkSpec.Vnet.CIDRBlocks[0] ||
@@ -355,9 +354,9 @@ func detectAzureClusterUpdate(orig, desired runtime.Object) (bool, error) {
 		o.Spec.ControlPlaneEndpoint != d.Spec.ControlPlaneEndpoint, nil
 }
 
-func mergeAzureCluster(orig, desired runtime.Object) (runtime.Object, error) {
-	o := orig.(*capzv1alpha3.AzureCluster)
-	d := desired.(*capzv1alpha3.AzureCluster)
+func mergeAzureCluster(orig, desired runtime.Object) (client.Object, error) {
+	o := orig.(*capz.AzureCluster)
+	d := desired.(*capz.AzureCluster)
 
 	// Only copy specific parts of desired opbject
 	o.Spec.NetworkSpec.Vnet.CIDRBlocks = d.Spec.NetworkSpec.Vnet.CIDRBlocks

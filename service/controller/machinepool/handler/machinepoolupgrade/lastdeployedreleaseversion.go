@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/coreos/go-semver/semver"
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v5/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 

@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
 	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"

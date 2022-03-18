@@ -8,9 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	k8sclient "github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	k8sclient "github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	gomock "github.com/golang/mock/gomock"
-	v1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -38,7 +38,7 @@ func (m *MockFactory) EXPECT() *MockFactoryMockRecorder {
 }
 
 // GetAllClients mocks base method.
-func (m *MockFactory) GetAllClients(ctx context.Context, cr *v1alpha3.Cluster) (k8sclient.Interface, error) {
+func (m *MockFactory) GetAllClients(ctx context.Context, cr *capi.Cluster) (k8sclient.Interface, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllClients", ctx, cr)
 	ret0, _ := ret[0].(k8sclient.Interface)
@@ -53,7 +53,7 @@ func (mr *MockFactoryMockRecorder) GetAllClients(ctx, cr interface{}) *gomock.Ca
 }
 
 // GetClient mocks base method.
-func (m *MockFactory) GetClient(ctx context.Context, cr *v1alpha3.Cluster) (client.Client, error) {
+func (m *MockFactory) GetClient(ctx context.Context, cr *capi.Cluster) (client.Client, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClient", ctx, cr)
 	ret0, _ := ret[0].(client.Client)

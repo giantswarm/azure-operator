@@ -1,7 +1,7 @@
 package azureconfig
 
 import (
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
 )

@@ -3,7 +3,7 @@ package spark
 import (
 	"context"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

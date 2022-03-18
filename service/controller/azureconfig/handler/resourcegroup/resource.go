@@ -7,13 +7,13 @@ import (
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
+	"github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
+	azureconditions "github.com/giantswarm/apiextensions/v5/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/finalizerskeptcontext"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
-	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/finalizerskeptcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 

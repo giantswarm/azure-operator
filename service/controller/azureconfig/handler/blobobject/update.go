@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/crud"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/crud"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"

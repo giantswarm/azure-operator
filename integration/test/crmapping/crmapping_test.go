@@ -10,18 +10,18 @@ import (
 	"testing"
 	"unicode"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" // nolint:staticcheck
 	"sigs.k8s.io/yaml"
@@ -50,7 +50,9 @@ func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
 			clusterID: "c6fme",
 			namespace: "org-giantswarm",
 			preConditionFiles: []string{
-				"namespaces.yaml",
+				"namespace-giantswarm.yaml",
+				"namespace-org.yaml",
+				"namespace-cluster.yaml",
 				"simple_azureconfig.yaml",
 			},
 		},
@@ -81,7 +83,7 @@ func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
 
 			// Reconcile AzureCluster.
 			{
-				obj := &capzv1alpha3.AzureCluster{}
+				obj := &capz.AzureCluster{}
 				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
 				if err != nil {
 					t.Fatal(microerror.JSON(err))
@@ -96,9 +98,9 @@ func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
 			}
 
 			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: metav1.NamespaceDefault})
-			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capi.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capz.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capz.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
 		})
 	}
 }
@@ -121,7 +123,9 @@ func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 			clusterID: "c6fme",
 			namespace: "org-giantswarm",
 			preConditionFiles: []string{
-				"namespaces.yaml",
+				"namespace-giantswarm.yaml",
+				"namespace-org.yaml",
+				"namespace-cluster.yaml",
 				"simple_azurecluster.yaml",
 				"simple_azuremachine.yaml",
 				"simple_cluster.yaml",
@@ -138,7 +142,7 @@ func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 
 			// Reconcile AzureCluster.
 			{
-				obj := &capzv1alpha3.AzureCluster{}
+				obj := &capz.AzureCluster{}
 				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
 				if err != nil {
 					t.Fatal(microerror.JSON(err))
@@ -169,9 +173,9 @@ func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 			}
 
 			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: metav1.NamespaceDefault})
-			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capi.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capz.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capz.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
 		})
 	}
 }
@@ -228,17 +232,6 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 			t.Fatalf("failed to load input file %s: %#v", f, err)
 		}
 
-		if o.GetObjectKind().GroupVersionKind().Kind == "NamespaceList" {
-			lst := o.(*corev1.NamespaceList)
-			for i := range lst.Items {
-				err = client.Create(context.Background(), &lst.Items[i])
-				if err != nil {
-					t.Fatalf("failed to create object from input file %s: %#v", f, err)
-				}
-			}
-			continue
-		}
-
 		err = client.Create(context.Background(), o)
 		if err != nil {
 			t.Fatalf("failed to create object from input file %s: %#v", f, err)
@@ -246,9 +239,9 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 	}
 }
 
-func loadCR(fName string) (runtime.Object, error) {
+func loadCR(fName string) (client.Object, error) {
 	var err error
-	var obj runtime.Object
+	var obj client.Object
 
 	var bs []byte
 	{
@@ -268,17 +261,15 @@ func loadCR(fName string) (runtime.Object, error) {
 	// Then construct correct CR object.
 	switch t.Kind {
 	case "Cluster":
-		obj = new(capiv1alpha3.Cluster)
+		obj = new(capi.Cluster)
 	case "AzureConfig":
 		obj = new(providerv1alpha1.AzureConfig)
 	case "AzureCluster":
-		obj = new(capzv1alpha3.AzureCluster)
+		obj = new(capz.AzureCluster)
 	case "AzureMachine":
-		obj = new(capzv1alpha3.AzureMachine)
+		obj = new(capz.AzureMachine)
 	case "Namespace":
 		obj = new(corev1.Namespace)
-	case "NamespaceList":
-		obj = new(corev1.NamespaceList)
 	default:
 		return nil, microerror.Maskf(unknownKindError, "kind: %s", t.Kind)
 	}
@@ -295,12 +286,12 @@ func loadCR(fName string) (runtime.Object, error) {
 func newFakeClient() client.Client {
 	scheme := runtime.NewScheme()
 
-	err := capiv1alpha3.AddToScheme(scheme)
+	err := capi.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
 
-	err = capzv1alpha3.AddToScheme(scheme)
+	err = capz.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
@@ -335,7 +326,7 @@ func normalizeFileName(s string) string {
 	return string(result)
 }
 
-func verifyCR(t *testing.T, client client.Client, testName string, obj runtime.Object, nsName types.NamespacedName) {
+func verifyCR(t *testing.T, client client.Client, testName string, obj client.Object, nsName types.NamespacedName) {
 	t.Helper()
 
 	err := client.Get(context.Background(), nsName, obj)

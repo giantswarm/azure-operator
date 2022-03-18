@@ -7,16 +7,16 @@ import (
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/conditions-handler/pkg/factory"
 	conditionshandler "github.com/giantswarm/conditions-handler/pkg/handler"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/metricsresource"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/wrapper/metricsresource"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/wrapper/retryresource"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -63,8 +63,8 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 			Name:      project.Name() + "-cluster-controller",
-			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(capiv1alpha3.Cluster)
+			NewRuntimeObjectFunc: func() ctrlClient.Object {
+				return new(capi.Cluster)
 			},
 			Resources: resources,
 			Selector: labels.SelectorFromSet(map[string]string{

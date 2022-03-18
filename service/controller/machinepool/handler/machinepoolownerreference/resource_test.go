@@ -8,9 +8,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/unittest"
@@ -76,7 +76,7 @@ func TestThatMachinePoolIsOwnedByCluster(t *testing.T) {
 	thenAzureMachinePoolShouldBeOwnedByMachinePool(ctx, t, ctrlClient, cluster.Namespace, azureMachinePool.Name)
 }
 
-func whenReconcilingMachinePool(ctx context.Context, ctrlClient client.Client, scheme *runtime.Scheme, machinePool *expcapiv1alpha3.MachinePool) error {
+func whenReconcilingMachinePool(ctx context.Context, ctrlClient client.Client, scheme *runtime.Scheme, machinePool *capiexp.MachinePool) error {
 	controller, err := New(Config{
 		CtrlClient: ctrlClient,
 		Logger:     microloggertest.New(),
@@ -89,40 +89,40 @@ func whenReconcilingMachinePool(ctx context.Context, ctrlClient client.Client, s
 	return controller.EnsureCreated(ctx, machinePool)
 }
 
-func givenCluster(ctx context.Context, ctrlClient client.Client, clusterNamespace, clusterName string) (*capiv1alpha3.Cluster, error) {
-	cluster := &capiv1alpha3.Cluster{
+func givenCluster(ctx context.Context, ctrlClient client.Client, clusterNamespace, clusterName string) (*capi.Cluster, error) {
+	cluster := &capi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 		},
-		Spec: capiv1alpha3.ClusterSpec{},
+		Spec: capi.ClusterSpec{},
 	}
 	err := ctrlClient.Create(ctx, cluster)
 	return cluster, err
 }
 
-func givenAzureMachinePool(ctx context.Context, ctrlClient client.Client, cluster *capiv1alpha3.Cluster) (*expcapzv1alpha3.AzureMachinePool, error) {
-	azureMachinePool := &expcapzv1alpha3.AzureMachinePool{
+func givenAzureMachinePool(ctx context.Context, ctrlClient client.Client, cluster *capi.Cluster) (*capzexp.AzureMachinePool, error) {
+	azureMachinePool := &capzexp.AzureMachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: cluster.Namespace,
 			Name:      cluster.Name,
 		},
-		Spec: expcapzv1alpha3.AzureMachinePoolSpec{},
+		Spec: capzexp.AzureMachinePoolSpec{},
 	}
 	err := ctrlClient.Create(ctx, azureMachinePool)
 	return azureMachinePool, err
 }
 
-func givenMachinePool(ctx context.Context, ctrlClient client.Client, cluster *capiv1alpha3.Cluster, azureMachinePool *expcapzv1alpha3.AzureMachinePool) (*expcapiv1alpha3.MachinePool, error) {
-	machinePool := &expcapiv1alpha3.MachinePool{
+func givenMachinePool(ctx context.Context, ctrlClient client.Client, cluster *capi.Cluster, azureMachinePool *capzexp.AzureMachinePool) (*capiexp.MachinePool, error) {
+	machinePool := &capiexp.MachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: cluster.Namespace,
 			Name:      cluster.Name,
 		},
-		Spec: expcapiv1alpha3.MachinePoolSpec{
+		Spec: capiexp.MachinePoolSpec{
 			ClusterName: cluster.Name,
-			Template: capiv1alpha3.MachineTemplateSpec{
-				Spec: capiv1alpha3.MachineSpec{
+			Template: capi.MachineTemplateSpec{
+				Spec: capi.MachineSpec{
 					InfrastructureRef: v1.ObjectReference{
 						Kind:      "AzureMachinePool",
 						Namespace: azureMachinePool.Namespace,
@@ -137,13 +137,13 @@ func givenMachinePool(ctx context.Context, ctrlClient client.Client, cluster *ca
 }
 
 func thenMachinePoolShouldLabeledWithClusterName(ctx context.Context, t *testing.T, ctrlClient client.Client, clusterNamespace, clusterName, machinePoolName string) {
-	machinePool := &expcapiv1alpha3.MachinePool{}
+	machinePool := &capiexp.MachinePool{}
 	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: clusterNamespace, Name: machinePoolName}, machinePool)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	labelClusterName, exists := machinePool.Labels[capiv1alpha3.ClusterLabelName]
+	labelClusterName, exists := machinePool.Labels[capi.ClusterLabelName]
 	if !exists {
 		t.Fatalf("MachinePool should be labeled with Cluster name")
 	}
@@ -154,13 +154,13 @@ func thenMachinePoolShouldLabeledWithClusterName(ctx context.Context, t *testing
 }
 
 func thenAzureMachinePoolShouldLabeledWithClusterName(ctx context.Context, t *testing.T, ctrlClient client.Client, clusterNamespace, clusterName, azureMachinePoolName string) {
-	azureMachinePool := &expcapzv1alpha3.AzureMachinePool{}
+	azureMachinePool := &capzexp.AzureMachinePool{}
 	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: clusterNamespace, Name: azureMachinePoolName}, azureMachinePool)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	labelClusterName, exists := azureMachinePool.Labels[capiv1alpha3.ClusterLabelName]
+	labelClusterName, exists := azureMachinePool.Labels[capi.ClusterLabelName]
 	if !exists {
 		t.Fatalf("AzureMachinePool should be labeled with Cluster name")
 	}
@@ -171,7 +171,7 @@ func thenAzureMachinePoolShouldLabeledWithClusterName(ctx context.Context, t *te
 }
 
 func thenMachinePoolShouldBeOwnedByCluster(ctx context.Context, t *testing.T, ctrlClient client.Client, machinePoolNamespace, machinePoolName string) {
-	machinePool := &expcapiv1alpha3.MachinePool{}
+	machinePool := &capiexp.MachinePool{}
 	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePoolNamespace, Name: machinePoolName}, machinePool)
 	if err != nil {
 		t.Fatal(err)
@@ -179,7 +179,7 @@ func thenMachinePoolShouldBeOwnedByCluster(ctx context.Context, t *testing.T, ct
 
 	found := false
 	for _, ref := range machinePool.OwnerReferences {
-		if ref.Kind == "Cluster" && ref.APIVersion == capiv1alpha3.GroupVersion.String() {
+		if ref.Kind == "Cluster" && ref.APIVersion == capi.GroupVersion.String() {
 			found = true
 		}
 	}
@@ -190,7 +190,7 @@ func thenMachinePoolShouldBeOwnedByCluster(ctx context.Context, t *testing.T, ct
 }
 
 func thenAzureMachinePoolShouldBeOwnedByMachinePool(ctx context.Context, t *testing.T, ctrlClient client.Client, azureMachinePoolNamespace, azureMachinePoolName string) {
-	azureMachinePool := &expcapzv1alpha3.AzureMachinePool{}
+	azureMachinePool := &capzexp.AzureMachinePool{}
 	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePoolNamespace, Name: azureMachinePoolName}, azureMachinePool)
 	if err != nil {
 		t.Fatal(err)
@@ -198,7 +198,7 @@ func thenAzureMachinePoolShouldBeOwnedByMachinePool(ctx context.Context, t *test
 
 	found := false
 	for _, ref := range azureMachinePool.OwnerReferences {
-		if ref.Kind == "MachinePool" && ref.APIVersion == expcapiv1alpha3.GroupVersion.String() && *ref.Controller {
+		if ref.Kind == "MachinePool" && ref.APIVersion == capiexp.GroupVersion.String() && *ref.Controller {
 			found = true
 		}
 	}

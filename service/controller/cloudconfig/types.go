@@ -1,13 +1,13 @@
 package cloudconfig
 
 import (
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v12/pkg/template"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 )
 
 type templateData struct {
@@ -52,12 +52,12 @@ type ingressLBFileParams struct {
 }
 
 type IgnitionTemplateData struct {
-	AzureMachinePool *expcapzv1alpha3.AzureMachinePool
-	AzureCluster     *capzv1alpha3.AzureCluster
-	Cluster          *capiv1alpha3.Cluster
+	AzureMachinePool *capzexp.AzureMachinePool
+	AzureCluster     *capz.AzureCluster
+	Cluster          *capi.Cluster
 	CustomObject     providerv1alpha1.AzureConfig
 	Images           k8scloudconfig.Images
-	MachinePool      *expcapiv1alpha3.MachinePool
+	MachinePool      *capiexp.MachinePool
 	MasterCertFiles  []certs.File
 	Versions         k8scloudconfig.Versions
 	WorkerCertFiles  []certs.File

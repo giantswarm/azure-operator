@@ -11,8 +11,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest"
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/giantswarm/to"
@@ -20,10 +20,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" // nolint:staticcheck
 	"sigs.k8s.io/yaml"
@@ -137,9 +137,9 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	// VERIFY: MachinePool is there.
 	{
 		opts := client.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+			capi.ClusterLabelName: key.ClusterID(cr),
 		}
-		mpList := new(expcapiv1alpha3.MachinePoolList)
+		mpList := new(capiexp.MachinePoolList)
 		err = ctrlClient.List(context.Background(), mpList, opts)
 		if err != nil {
 			t.Fatal(err)
@@ -153,9 +153,9 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	// VERIFY: AzureMachinePool is there.
 	{
 		opts := client.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
+			capi.ClusterLabelName: key.ClusterName(cr),
 		}
-		mpList := new(expcapzv1alpha3.AzureMachinePoolList)
+		mpList := new(capzexp.AzureMachinePoolList)
 		err = ctrlClient.List(context.Background(), mpList, opts)
 		if err != nil {
 			t.Fatal(err)
@@ -169,7 +169,7 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	// VERIFY: Spark CR is there.
 	{
 		opts := client.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
+			capi.ClusterLabelName: key.ClusterName(cr),
 		}
 		sparkList := new(corev1alpha1.SparkList)
 		err = ctrlClient.List(context.Background(), sparkList, opts)
@@ -250,7 +250,7 @@ func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
 	// VERIFY: DrainerConfig CRs are there.
 	{
 		opts := client.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+			capi.ClusterLabelName: key.ClusterID(cr),
 		}
 		dcList := new(corev1alpha1.DrainerConfigList)
 		err = ctrlClient.List(context.Background(), dcList, opts)
@@ -332,7 +332,7 @@ func TestVMSSIsNotDeletedBeforeDrainingIsDone(t *testing.T) {
 	// VERIFY: DrainerConfig CRs are there.
 	{
 		opts := client.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+			capi.ClusterLabelName: key.ClusterID(cr),
 		}
 		dcList := new(corev1alpha1.DrainerConfigList)
 		err = ctrlClient.List(context.Background(), dcList, opts)
@@ -420,7 +420,7 @@ func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
 	// VERIFY: DrainerConfig CRs are gone.
 	{
 		opts := client.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+			capi.ClusterLabelName: key.ClusterID(cr),
 		}
 		dcList := new(corev1alpha1.DrainerConfigList)
 		err = ctrlClient.List(context.Background(), dcList, opts)
@@ -669,7 +669,7 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 func ensureNodePoolIsReady(t *testing.T, ctrlClient client.Client, cr *providerv1alpha1.AzureConfig) {
 	t.Helper()
 
-	var azureMachinePool expcapzv1alpha3.AzureMachinePool
+	var azureMachinePool capzexp.AzureMachinePool
 	{
 		o := client.ObjectKey{Namespace: key.OrganizationNamespace(cr), Name: cr.Name}
 		err := ctrlClient.Get(context.Background(), o, &azureMachinePool)
@@ -685,7 +685,7 @@ func ensureNodePoolIsReady(t *testing.T, ctrlClient client.Client, cr *providerv
 		}
 	}
 
-	var machinePool expcapiv1alpha3.MachinePool
+	var machinePool capiexp.MachinePool
 	{
 		o := client.ObjectKey{Namespace: key.OrganizationNamespace(cr), Name: cr.Name}
 		err := ctrlClient.Get(context.Background(), o, &machinePool)
@@ -726,21 +726,21 @@ func loadCR(fName string) (runtime.Object, error) {
 	// Then construct correct CR object.
 	switch t.Kind {
 	case "Cluster":
-		obj = new(capiv1alpha3.Cluster)
+		obj = new(capi.Cluster)
 	case "AzureConfig":
 		obj = new(providerv1alpha1.AzureConfig)
 	case "AzureCluster":
-		obj = new(capzv1alpha3.AzureCluster)
+		obj = new(capz.AzureCluster)
 	case "AzureMachine":
-		obj = new(capzv1alpha3.AzureMachine)
+		obj = new(capz.AzureMachine)
 	case "AzureMachinePool":
-		obj = new(expcapzv1alpha3.AzureMachinePool)
+		obj = new(capzexp.AzureMachinePool)
 	case "DrainerConfig":
 		obj = new(corev1alpha1.DrainerConfig)
 	case "DrainerConfigList":
 		obj = new(corev1alpha1.DrainerConfigList)
 	case "MachinePool":
-		obj = new(expcapiv1alpha3.MachinePool)
+		obj = new(capiexp.MachinePool)
 	case "Namespace":
 		obj = new(corev1.Namespace)
 	case "NamespaceList":
@@ -777,22 +777,22 @@ func newBuiltinVMSS(nodeCount int, name string) azure.VMSS {
 func newFakeClient() client.Client {
 	scheme := runtime.NewScheme()
 
-	err := capiv1alpha3.AddToScheme(scheme)
+	err := capi.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
 
-	err = expcapiv1alpha3.AddToScheme(scheme)
+	err = capiexp.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
 
-	err = capzv1alpha3.AddToScheme(scheme)
+	err = capz.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
 
-	err = expcapzv1alpha3.AddToScheme(scheme)
+	err = capzexp.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
@@ -817,7 +817,7 @@ func newFakeClient() client.Client {
 
 func setDrainerConfigsAsDrained(t *testing.T, ctrlClient client.Client, cr *providerv1alpha1.AzureConfig) {
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+		capi.ClusterLabelName: key.ClusterID(cr),
 	}
 
 	var dcList corev1alpha1.DrainerConfigList

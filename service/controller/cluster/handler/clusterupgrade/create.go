@@ -3,14 +3,14 @@ package clusterupgrade
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v5/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
@@ -106,12 +106,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capiv1alpha3.Cluster) error {
+func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capi.Cluster) error {
 	if cr.Spec.InfrastructureRef == nil {
 		return microerror.Maskf(notFoundError, "infrastructure reference not yet set")
 	}
 
-	azureCluster := capzv1alpha3.AzureCluster{}
+	azureCluster := capz.AzureCluster{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Spec.InfrastructureRef.Name}, &azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
@@ -137,7 +137,7 @@ func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capi
 	return nil
 }
 
-func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1alpha3.Cluster) (bool, error) {
+func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capi.Cluster) (bool, error) {
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, &cluster)
 	if tenantcluster.IsAPINotAvailableError(err) {
 		r.logger.Debugf(ctx, "tenant API not available yet")
@@ -170,10 +170,10 @@ func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1al
 	return true, nil
 }
 
-func (r *Resource) ensureAzureMachineLastReleaseDeployedAnnotation(ctx context.Context, cluster *capiv1alpha3.Cluster) error {
+func (r *Resource) ensureAzureMachineLastReleaseDeployedAnnotation(ctx context.Context, cluster *capi.Cluster) error {
 	r.logger.Debugf(ctx, "ensuring that AzureMachine has annotation %q set to desired release %s", annotation.LastDeployedReleaseVersion, key.ReleaseVersion(cluster))
 	azureMachineName := key.AzureMachineName(cluster)
-	azureMachine := &capzv1alpha3.AzureMachine{}
+	azureMachine := &capz.AzureMachine{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: azureMachineName}, azureMachine)
 	if err != nil {
 		return microerror.Mask(err)
@@ -197,10 +197,10 @@ func (r *Resource) ensureAzureMachineLastReleaseDeployedAnnotation(ctx context.C
 	return nil
 }
 
-func machinePoolsNotUpgradedYet(cr capiv1alpha3.Cluster, machinePools []expcapiv1alpha3.MachinePool) ([]expcapiv1alpha3.MachinePool, error) {
+func machinePoolsNotUpgradedYet(cr capi.Cluster, machinePools []capiexp.MachinePool) ([]capiexp.MachinePool, error) {
 	desiredRelease := cr.Labels[label.ReleaseVersion]
 
-	var pendingUpgrade []expcapiv1alpha3.MachinePool
+	var pendingUpgrade []capiexp.MachinePool
 
 	for i := range machinePools {
 		machinePool := machinePools[i]
