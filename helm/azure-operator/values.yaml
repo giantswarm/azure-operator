@@ -65,3 +65,5 @@ registry:
   domain: ""
   dockerhub:
     token: ""
+verticalPodAutoscaler:
+  enabled: true
