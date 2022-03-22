@@ -18,6 +18,8 @@ spec:
   location: westeurope
   networkSpec:
     vnet:
+      cidrBlocks:
+      - 10.10.0.0/16
       name: c6fme-VirtualNetwork
       resourceGroup: c6fme
   resourceGroup: ""
