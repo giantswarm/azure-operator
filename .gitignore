@@ -16,3 +16,9 @@ scripts/*.tar.gz
 
 telepresence.log
 *.flowchart.generated.html
+
+# binaries
+/azure-operator-v*-*-linux
+/azure-operator-v*-*-linux-*
+/azure-operator-v*-*-darwin
+/azure-operator-v*-*-darwin-*

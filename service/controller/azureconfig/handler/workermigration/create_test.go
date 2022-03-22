@@ -630,7 +630,7 @@ func TestFinishedMigration(t *testing.T) {
 	// gomock verifies assertions on exit.
 }
 
-func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
+func ensureCRsExist(t *testing.T, ctrlClient client.Client, inputFiles []string) {
 	for _, f := range inputFiles {
 		o, err := loadCR(f)
 		if err != nil {
@@ -640,7 +640,7 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 		if o.GetObjectKind().GroupVersionKind().Kind == "DrainerConfigList" {
 			lst := o.(*corev1alpha1.DrainerConfigList)
 			for i := range lst.Items {
-				err = client.Create(context.Background(), &lst.Items[i])
+				err = ctrlClient.Create(context.Background(), &lst.Items[i])
 				if err != nil {
 					t.Fatalf("failed to create object from input file %s: %#v", f, err)
 				}
@@ -651,15 +651,20 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 		if o.GetObjectKind().GroupVersionKind().Kind == "NamespaceList" {
 			lst := o.(*corev1.NamespaceList)
 			for i := range lst.Items {
-				err = client.Create(context.Background(), &lst.Items[i])
+				err = ctrlClient.Create(context.Background(), &lst.Items[i])
 				if err != nil {
 					t.Fatalf("failed to create object from input file %s: %#v", f, err)
 				}
 			}
 			continue
 		}
+		// convert runtime.Object to clientObject
+		clientObject, ok := o.(client.Object)
+		if !ok {
+			t.Fatal("failed to convert runtime.Object to client.Object")
+		}
 
-		err = client.Create(context.Background(), o)
+		err = ctrlClient.Create(context.Background(), clientObject)
 		if err != nil {
 			t.Fatalf("failed to create object from input file %s: %#v", f, err)
 		}

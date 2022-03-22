@@ -1,4 +1,4 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureCluster
 metadata:
   annotations:
@@ -14,6 +14,7 @@ metadata:
   namespace: org-giantswarm
   resourceVersion: "2"
 spec:
+  bastionSpec: {}
   controlPlaneEndpoint:
     host: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
     port: 443

@@ -1,4 +1,4 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureCluster
 metadata:
   annotations:
@@ -14,6 +14,7 @@ metadata:
   namespace: org-giantswarm
   resourceVersion: "2"
 spec:
+  bastionSpec: {}
   controlPlaneEndpoint:
     host: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
     port: 443
@@ -25,9 +26,15 @@ spec:
       - 10.100.2.0/24
       id: nodepool-np201
       name: nodepool-np201
+      natGateway:
+        ip:
+          name: ""
+        name: ""
       role: node
-      routeTable: {}
-      securityGroup: {}
+      routeTable:
+        name: ""
+      securityGroup:
+        name: ""
     vnet:
       cidrBlocks:
       - 10.10.0.0/16
