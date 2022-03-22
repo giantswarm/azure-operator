@@ -1,4 +1,4 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureMachine
 metadata:
   creationTimestamp: null
@@ -13,7 +13,6 @@ metadata:
   namespace: default
   resourceVersion: "2"
 spec:
-  availabilityZone: {}
   failureDomain: "1"
   image:
     marketplace:
@@ -21,7 +20,6 @@ spec:
       publisher: kinvolk
       sku: stable
       version: 2345.3.1
-  location: westeurope
   osDisk:
     diskSizeGB: 50
     managedDisk:
