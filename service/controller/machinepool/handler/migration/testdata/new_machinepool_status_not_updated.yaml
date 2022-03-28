@@ -24,7 +24,7 @@ metadata:
     kind: Cluster
     name: 5jka7
     uid: a1ca3846-b3ea-4449-9c7a-118a8a08a39e
-  resourceVersion: "2"
+  resourceVersion: "1"
 spec:
   clusterName: 5jka7
   failureDomains:

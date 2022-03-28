@@ -75,12 +75,11 @@ func (r *Resource) ensureNewAzureMachinePoolCreated(ctx context.Context, namespa
 	return nil
 }
 
-func (r *Resource) ensureNewAzureMachinePoolOwnerReferencesUpdated(ctx context.Context, namespacedName types.NamespacedName) error {
+func (r *Resource) ensureNewAzureMachinePoolReferencesUpdated(ctx context.Context, namespacedName types.NamespacedName) error {
 	newAzureMachinePool := capzexp.AzureMachinePool{}
 	err := r.client.Get(ctx, namespacedName, &newAzureMachinePool)
 	if err != nil {
-		// return microerror.Mask(err)
-		return microerror.Maskf(invalidConfigError, "DAFUQ")
+		return microerror.Mask(err)
 	}
 
 	for i, ownerRef := range newAzureMachinePool.ObjectMeta.OwnerReferences {

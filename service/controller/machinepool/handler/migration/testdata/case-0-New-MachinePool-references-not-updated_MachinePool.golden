@@ -20,11 +20,11 @@ metadata:
   name: 5suzw
   namespace: org-giantswarm
   ownerReferences:
-  - apiVersion: cluster.x-k8s.io/v1beta1
+  - apiVersion: cluster.x-k8s.io/v1alpha3
     kind: Cluster
     name: 5jka7
     uid: a1ca3846-b3ea-4449-9c7a-118a8a08a39e
-  resourceVersion: "2"
+  resourceVersion: "1"
 spec:
   clusterName: 5jka7
   failureDomains:
@@ -48,7 +48,7 @@ spec:
           uid: d660fbd4-5cea-4b15-810f-13f52c041b5e
       clusterName: 5jka7
       infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
         kind: AzureMachinePool
         name: 5suzw
         namespace: org-giantswarm

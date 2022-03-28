@@ -1,6 +1,7 @@
 package unittest
 
 import (
+	oldcapiexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -25,7 +26,7 @@ type fakeK8sClient struct {
 	scheme     *runtime.Scheme
 }
 
-func FakeK8sClient() k8sclient.Interface {
+func FakeK8sClient(initObjs ...client.Object) k8sclient.Interface {
 	var err error
 
 	var k8sClient k8sclient.Interface
@@ -63,9 +64,13 @@ func FakeK8sClient() k8sclient.Interface {
 		if err != nil {
 			panic(err)
 		}
+		err = oldcapiexpv1alpha3.AddToScheme(scheme)
+		if err != nil {
+			panic(err)
+		}
 
 		k8sClient = &fakeK8sClient{
-			ctrlClient: fake.NewClientBuilder().WithScheme(scheme).Build(),
+			ctrlClient: fake.NewClientBuilder().WithScheme(scheme).WithObjects(initObjs...).Build(),
 			scheme:     scheme,
 		}
 	}

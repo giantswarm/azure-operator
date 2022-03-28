@@ -24,7 +24,7 @@ metadata:
     kind: Cluster
     name: 5jka7
     uid: a1ca3846-b3ea-4449-9c7a-118a8a08a39e
-  resourceVersion: "2"
+  resourceVersion: "1"
 spec:
   clusterName: 5jka7
   failureDomains:
@@ -55,6 +55,37 @@ spec:
         resourceVersion: "306655044"
         uid: 03a9de15-35ec-4959-b73a-e404b9acf69c
 status:
+  availableReplicas: 3
   bootstrapReady: false
-  infrastructureReady: false
-  replicas: 0
+  conditions:
+  - lastTransitionTime: "2022-02-04T16:30:48Z"
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2021-02-22T17:26:28Z"
+    message: Creation has been completed in 4m55.032560757s
+    reason: CreationCompleted
+    severity: Info
+    status: "False"
+    type: Creating
+  - lastTransitionTime: "2022-02-04T16:30:48Z"
+    status: "True"
+    type: InfrastructureReady
+  - lastTransitionTime: "2022-01-01T17:48:45Z"
+    status: "True"
+    type: ReplicasReady
+  - lastTransitionTime: "2021-12-22T09:38:50Z"
+    message: Upgrade has been completed in 4.905102529s
+    reason: UpgradeCompleted
+    severity: Info
+    status: "False"
+    type: Upgrading
+  infrastructureReady: true
+  nodeRefs:
+  - name: nodepool-5suzw-00000j
+    uid: 33bc6d61-6eb2-462b-885e-bab35b15c461
+  - name: nodepool-5suzw-00000n
+    uid: d6ba1946-caa2-4cbf-9186-9eeb60be4c61
+  - name: nodepool-5suzw-00000p
+    uid: 4b1e7f48-d3f0-4524-ac19-ec2a3da729f0
+  readyReplicas: 3
+  replicas: 3

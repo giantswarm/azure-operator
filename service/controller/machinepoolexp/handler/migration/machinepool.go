@@ -9,6 +9,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 )
@@ -69,7 +71,7 @@ func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePo
 	return nil
 }
 
-func (r *Resource) ensureNewMachinePoolInfrastructureRefUpdated(ctx context.Context, namespacedName types.NamespacedName) error {
+func (r *Resource) ensureNewMachinePoolReferencesUpdated(ctx context.Context, namespacedName types.NamespacedName) error {
 	newMachinePool := capiexp.MachinePool{}
 	err := r.client.Get(ctx, namespacedName, &newMachinePool)
 	if err != nil {
@@ -78,6 +80,12 @@ func (r *Resource) ensureNewMachinePoolInfrastructureRefUpdated(ctx context.Cont
 
 	if newMachinePool.Spec.Template.Spec.InfrastructureRef.APIVersion == oldcapzexpv1alpha3.GroupVersion.String() {
 		newMachinePool.Spec.Template.Spec.InfrastructureRef.APIVersion = capzexp.GroupVersion.String()
+	}
+
+	for i, ownerRef := range newMachinePool.ObjectMeta.OwnerReferences {
+		if ownerRef.APIVersion == capiv1alpha3.GroupVersion.String() {
+			newMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = capi.GroupVersion.String()
+		}
 	}
 
 	err = r.client.Update(ctx, &newMachinePool)
