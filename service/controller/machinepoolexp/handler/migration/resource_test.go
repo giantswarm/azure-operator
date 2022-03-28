@@ -19,7 +19,7 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
@@ -44,7 +44,7 @@ func loadCR(fName string) (client.Object, error) {
 	}
 
 	// First parse kind.
-	t := &v1.TypeMeta{}
+	t := &metav1.TypeMeta{}
 	err = yaml.Unmarshal(bs, t)
 	if err != nil {
 		return nil, microerror.Mask(err)
