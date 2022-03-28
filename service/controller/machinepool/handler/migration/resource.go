@@ -19,6 +19,11 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
+const (
+	// Name is the identifier of the resource.
+	Name = "migration"
+)
+
 type Config struct {
 	CtrlClient client.Client
 	Logger     micrologger.Logger
@@ -137,4 +142,14 @@ func cloneObject(oldObject interface{}, newObject interface{}) error {
 	}
 
 	return nil
+}
+
+// EnsureDeleted noop
+func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
+	return nil
+}
+
+// Name returns the resource name.
+func (r *Resource) Name() string {
+	return Name
 }

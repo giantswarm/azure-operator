@@ -41,6 +41,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool"
+	"github.com/giantswarm/azure-operator/v5/service/controller/machinepoolexp"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 	"github.com/giantswarm/azure-operator/v5/service/controller/unhealthynode"
 )
@@ -466,6 +467,22 @@ func New(config Config) (*Service, error) {
 		}
 
 		controllers = append(controllers, clusterController)
+	}
+
+	var machinePoolExpController *operatorkitcontroller.Controller
+	{
+		c := machinepoolexp.ControllerConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+			SentryDSN: sentryDSN,
+		}
+
+		machinePoolExpController, err = machinepoolexp.NewController(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		controllers = append(controllers, machinePoolExpController)
 	}
 
 	var machinePoolController *operatorkitcontroller.Controller

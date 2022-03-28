@@ -24,6 +24,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepooldependents"
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepoolownerreference"
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepoolupgrade"
+	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/migration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/nodestatus"
 )
 
@@ -112,6 +113,18 @@ func NewMachinePoolResourceSet(config ControllerConfig) ([]resource.Interface, e
 		}
 	}
 
+	var migrationResource resource.Interface
+	{
+		c := migration.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+		migrationResource, err = migration.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var machinePoolConditionsResource resource.Interface
 	{
 		c := conditionshandler.Config{
@@ -182,6 +195,7 @@ func NewMachinePoolResourceSet(config ControllerConfig) ([]resource.Interface, e
 	}
 
 	resources := []resource.Interface{
+		migrationResource,
 		machinePoolConditionsResource,
 		machinepoolDependentsResource,
 		ownerReferencesResource,
