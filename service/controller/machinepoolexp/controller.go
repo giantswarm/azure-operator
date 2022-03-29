@@ -3,6 +3,7 @@ package machinepoolexp
 import (
 	"context"
 
+	oldcapiexpv1alpha3 "github.com/giantswarm/apiextensions/v5/pkg/apis/capiexp/v1alpha3"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -11,7 +12,6 @@ import (
 	"github.com/giantswarm/operatorkit/v7/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v7/pkg/resource/wrapper/retryresource"
 	"k8s.io/apimachinery/pkg/labels"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
@@ -53,9 +53,9 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 			Logger:    config.Logger,
 			// Name is used to compute finalizer names. This results in something
 			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
-			Name: project.Name() + "-machine-pool-controller",
+			Name: project.Name() + "-machine-pool-exp-controller",
 			NewRuntimeObjectFunc: func() ctrlClient.Object {
-				return new(capiexp.MachinePool)
+				return new(oldcapiexpv1alpha3.MachinePool)
 			},
 			Resources: resources,
 			Selector: labels.SelectorFromSet(map[string]string{
