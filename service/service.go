@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	oldcapiexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
+	oldcapzexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	exporterkitcollector "github.com/giantswarm/exporterkit/collector"
@@ -205,6 +207,8 @@ func New(config Config) (*Service, error) {
 				capz.AddToScheme,
 				capiexp.AddToScheme,
 				capzexp.AddToScheme,
+				oldcapiexpv1alpha3.AddToScheme,
+				oldcapzexpv1alpha3.AddToScheme,
 			},
 
 			KubeConfigPath: kubeConfigPath,
