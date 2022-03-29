@@ -11,8 +11,8 @@ import (
 	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -22,6 +22,11 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "migration"
+)
+
+var (
+	DesiredCAPIGroupVersion = capi.GroupVersion.String()
+	DesiredCAPZGroupVersion = capz.GroupVersion.String()
 )
 
 type Config struct {
@@ -113,13 +118,14 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 func areReferencesUpdated(machinePool capiexp.MachinePool) bool {
 	// check Cluster owner reference
 	for _, ref := range machinePool.ObjectMeta.OwnerReferences {
-		if ref.Kind == "Cluster" && ref.APIVersion == capiexpv1alpha3.GroupVersion.String() {
+		if ref.Kind == "Cluster" && ref.APIVersion != DesiredCAPIGroupVersion {
 			return false
 		}
 	}
 
 	// check InfrastructureRef (AzureMachinePool) API version
-	if machinePool.Spec.Template.Spec.InfrastructureRef.APIVersion == capzexpv1alpha3.GroupVersion.String() {
+	if machinePool.Spec.Template.Spec.InfrastructureRef.Kind == "AzureMachinePool" &&
+		machinePool.Spec.Template.Spec.InfrastructureRef.APIVersion != DesiredCAPZGroupVersion {
 		return false
 	}
 
