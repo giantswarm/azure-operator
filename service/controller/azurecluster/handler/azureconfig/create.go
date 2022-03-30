@@ -288,8 +288,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	azureConfig.Spec.Azure.DNSZones.Ingress.Name = hostDNSZone
 	azureConfig.Spec.Azure.DNSZones.Ingress.ResourceGroup = hostResourceGroup
 
-	if len(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks) > 0 {
-		r.logger.Debugf(ctx, "Trying to use CIDRBlock %q", azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0])
+	if len(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks) > 0 && azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0] != "" {
 		_, vnet, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0])
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
