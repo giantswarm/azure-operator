@@ -289,7 +289,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	azureConfig.Spec.Azure.DNSZones.Ingress.ResourceGroup = hostResourceGroup
 
 	if len(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks) > 0 {
-		r.logger.LogCtx(ctx, "level", "warning", "message", "azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks is set. This means IPAM calculation is disabled. This is experimental.")
+		r.logger.Debugf(ctx, "Trying to use CIDRBlock %q", azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0])
 		_, vnet, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0])
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
@@ -298,7 +298,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 		// Ensure cidrblock is the desired size.
 		ones, _ := vnet.Mask.Size()
 		if ones != r.vnetMaskSize {
-			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
+			return providerv1alpha1.AzureConfig{}, microerror.Maskf(invalidSubnetMaskError, "azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0] has mask /%d, but only /%d is supported.", ones, r.vnetMaskSize)
 		}
 
 		azureNetwork, err := network.Compute(*vnet)
