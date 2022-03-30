@@ -21,6 +21,7 @@ import (
 	localannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/network"
 )
 
 const (
@@ -286,6 +287,30 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	azureConfig.Spec.Azure.DNSZones.Etcd.ResourceGroup = hostResourceGroup
 	azureConfig.Spec.Azure.DNSZones.Ingress.Name = hostDNSZone
 	azureConfig.Spec.Azure.DNSZones.Ingress.ResourceGroup = hostResourceGroup
+
+	if len(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks) > 0 {
+		r.logger.LogCtx(ctx, "level", "warning", "message", "azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks is set. This means IPAM calculation is disabled. This is experimental.")
+		_, vnet, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0])
+		if err != nil {
+			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
+		}
+
+		// Ensure cidrblock is the desired size.
+		ones, _ := vnet.Mask.Size()
+		if ones != r.vnetMaskSize {
+			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
+		}
+
+		azureNetwork, err := network.Compute(*vnet)
+		if err != nil {
+			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
+		}
+
+		azureConfig.Spec.Azure.VirtualNetwork.CIDR = vnet.String()
+		azureConfig.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR = azureNetwork.Calico.String()
+		azureConfig.Spec.Azure.VirtualNetwork.MasterSubnetCIDR = azureNetwork.Master.String()
+		azureConfig.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR = azureNetwork.Worker.String()
+	}
 
 	{
 

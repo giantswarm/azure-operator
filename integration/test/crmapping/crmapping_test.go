@@ -210,6 +210,7 @@ func constructAzureConfigHandler(t *testing.T, client client.Client) resource.In
 		ClusterIPRange:                 "172.31.0.0/16",
 		EtcdPrefix:                     "giantswarm.io",
 		ManagementClusterResourceGroup: "ghost",
+		VnetMaskSize:                   16,
 	}
 
 	r, err := azureconfig.New(c)

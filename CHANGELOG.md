@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added possibility to specify VNet CIDR in `AzureCluster`.
+
 ## [5.18.0] - 2022-03-21
 
 ### Added

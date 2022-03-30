@@ -25,6 +25,7 @@ type Config struct {
 	ClusterIPRange                 string
 	EtcdPrefix                     string
 	ManagementClusterResourceGroup string
+	VnetMaskSize                   int
 }
 
 type Resource struct {
@@ -36,6 +37,7 @@ type Resource struct {
 	clusterIPRange                 string
 	etcdPrefix                     string
 	managementClusterResourceGroup string
+	vnetMaskSize                   int
 }
 
 func New(config Config) (*Resource, error) {
@@ -44,6 +46,9 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.VnetMaskSize == 0 {
+		return nil, microerror.Maskf(invalidConfigError, "%T.VnetMaskSize must be set", config)
 	}
 	// No validation for configuration at this point. I'm not fully sure if any
 	// of that is actually needed.
@@ -57,6 +62,7 @@ func New(config Config) (*Resource, error) {
 		clusterIPRange:                 config.ClusterIPRange,
 		etcdPrefix:                     config.EtcdPrefix,
 		managementClusterResourceGroup: config.ManagementClusterResourceGroup,
+		vnetMaskSize:                   config.VnetMaskSize,
 	}
 
 	return newResource, nil
