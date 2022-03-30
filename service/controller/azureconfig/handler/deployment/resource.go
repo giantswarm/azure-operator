@@ -431,7 +431,7 @@ func (r *Resource) setResourceStatus(ctx context.Context, customObject providerv
 	}
 
 	{
-		err := r.ctrlClient.Update(ctx, &customObject)
+		err := r.ctrlClient.Status().Update(ctx, &customObject)
 		if err != nil {
 			return microerror.Mask(err)
 		}
