@@ -65,7 +65,7 @@ func FakeK8sClient() k8sclient.Interface {
 		}
 
 		k8sClient = &fakeK8sClient{
-			ctrlClient: fake.NewFakeClientWithScheme(scheme),
+			ctrlClient: fake.NewClientBuilder().WithScheme(scheme).Build(),
 			scheme:     scheme,
 		}
 	}

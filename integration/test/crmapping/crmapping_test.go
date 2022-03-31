@@ -306,7 +306,7 @@ func newFakeClient() client.Client {
 		panic(err)
 	}
 
-	return fake.NewFakeClientWithScheme(scheme)
+	return fake.NewClientBuilder().WithScheme(scheme).Build()
 }
 
 // normalizeFileName converts all non-digit, non-letter runes in input string to
