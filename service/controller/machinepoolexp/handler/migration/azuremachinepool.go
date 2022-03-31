@@ -40,7 +40,6 @@ func (r *Resource) ensureNewAzureMachinePoolCreated(ctx context.Context, namespa
 	if apierrors.IsNotFound(err) {
 		// New AzureMachinePool does not exist, and the old one does not exist,
 		// so there is just a MachinePool CR.
-		// TODO: check if it is possible that AzureMachinePool does not exist.
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)

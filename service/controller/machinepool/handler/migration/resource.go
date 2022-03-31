@@ -84,7 +84,10 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		// Old MachinePool not found, so nothing to do here.
 		return nil
 	} else if err != nil {
-		// TODO: cancel remaining reconciliation
+		// Migration from old to new MachinePool is not completed because we
+		// still didn't update the status in the new MachinePool, so we cancel
+		// remaining reconciliation.
+		reconciliationcanceledcontext.SetCanceled(ctx)
 		return microerror.Mask(err)
 	}
 
@@ -92,14 +95,20 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if isStatusEmpty(machinePool) {
 		err = cloneObject(&oldMachinePool.Status, &machinePool.Status)
 		if err != nil {
-			// TODO: cancel remaining reconciliation
+			// Migration from old to new MachinePool is not completed because
+			// we still didn't update the status in the new MachinePool, so we
+			// cancel remaining reconciliation.
+			reconciliationcanceledcontext.SetCanceled(ctx)
 			return microerror.Mask(err)
 		}
 
 		// Update new MachinePool
 		err = r.ctrlClient.Status().Update(ctx, &machinePool)
 		if err != nil {
-			// TODO: cancel remaining reconciliation
+			// Migration from old to new MachinePool is not completed because
+			// we still didn't update the status in the new MachinePool, so we
+			// cancel remaining reconciliation.
+			reconciliationcanceledcontext.SetCanceled(ctx)
 			return microerror.Mask(err)
 		}
 	}
@@ -107,8 +116,9 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// 2. Finally, delete the old MachinePool
 	err = r.deleteOldMachinePool(ctx, oldMachinePool)
 	if err != nil {
-		// We don't cancel the reconciliation, so it will again try to delete
-		// the old MachinePool.
+		// MachinePool status is updated, so we don't cancel the reconciliation,
+		// other handlers can continue working. It will try to delete the old
+		// MachinePool again in the next reconciliation loop.
 		return microerror.Mask(err)
 	}
 
@@ -129,6 +139,7 @@ func areReferencesUpdated(machinePool capiexp.MachinePool) bool {
 		return false
 	}
 
+	return true
 	return true
 }
 
