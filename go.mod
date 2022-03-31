@@ -134,6 +134,9 @@ require (
 )
 
 replace (
+	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.24
+	github.com/coreos/etcd v3.3.13+incompatible => github.com/coreos/etcd v3.3.27+incompatible
+	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 	github.com/gogo/protobuf v1.3.1 => github.com/gogo/protobuf v1.3.2
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.5
