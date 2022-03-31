@@ -25,28 +25,16 @@ func TestEnsureCreatedMachinePoolIsCorrect(t *testing.T) {
 			name:               "case 0: New MachinePool references not updated",
 			oldMachinePoolFile: "old_machinepool.yaml",
 			newMachinePoolFile: "new_machinepool_references_not_updated.yaml",
-			expected: expected{
-				newMachinePoolModificationsCount: 0,
-				oldMachinePoolDeleted:            false,
-			},
 		},
 		{
 			name:               "case 1: New MachinePool status not updated",
 			oldMachinePoolFile: "old_machinepool.yaml",
 			newMachinePoolFile: "new_machinepool_status_not_updated.yaml",
-			expected: expected{
-				newMachinePoolModificationsCount: 1,
-				oldMachinePoolDeleted:            true,
-			},
 		},
 		{
 			name:               "case 2: New MachinePool fully created",
 			oldMachinePoolFile: "old_machinepool.yaml",
 			newMachinePoolFile: "new_machinepool_fully_created.yaml",
-			expected: expected{
-				newMachinePoolModificationsCount: 0,
-				oldMachinePoolDeleted:            true,
-			},
 		},
 	}
 
@@ -88,54 +76,13 @@ func TestEnsureCreatedMachinePoolIsCorrect(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Assert 1: New MachinePool is correct
+			// Assert new MachinePool is correct
 			namespacedName := types.NamespacedName{
 				Namespace: newMachinePool.Namespace,
 				Name:      newMachinePool.Name,
 			}
 			newMachinePoolAfterEnsureCreated := &capiexp.MachinePool{}
 			verifyCR(t, fakeK8sClient.CtrlClient(), tc.name, newMachinePoolAfterEnsureCreated, namespacedName)
-
-			// Assert 2: MachinePool modifications (check resource version to
-			// see if there were updates)
-			versionBeforeUpdate, err := strconv.Atoi(newMachinePool.ObjectMeta.ResourceVersion)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			versionAfterUpdate, err := strconv.Atoi(newMachinePoolAfterEnsureCreated.ObjectMeta.ResourceVersion)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if versionAfterUpdate != versionBeforeUpdate+tc.expected.newMachinePoolModificationsCount {
-				t.Fatalf(
-					"expected %d new MachinePool modification(s), got %d",
-					tc.expected.newMachinePoolModificationsCount,
-					versionAfterUpdate-versionBeforeUpdate)
-			}
-
-			// Assert 3: old MachinePool exists or not
-			oldMachinePool = &oldcapiexpv1alpha3.MachinePool{}
-			err = fakeK8sClient.CtrlClient().Get(ctx, namespacedName, oldMachinePool)
-
-			oldMachinePoolDeleted := false
-			if err != nil {
-				if errors.IsNotFound(err) {
-					oldMachinePoolDeleted = true
-				} else {
-					t.Fatalf("unexpected error %#q", err)
-				}
-			}
-			if oldMachinePool.ObjectMeta.DeletionTimestamp != nil {
-				oldMachinePoolDeleted = true
-			}
-
-			if tc.expected.oldMachinePoolDeleted && !oldMachinePoolDeleted {
-				t.Fatalf("expected that old MachinePool is deleted, but it found it: %+v", oldMachinePool)
-			} else if !tc.expected.oldMachinePoolDeleted && oldMachinePoolDeleted {
-				t.Fatalf("expected that old MachinePool is not deleted, but it is deleted")
-			}
 		})
 	}
 }
@@ -321,12 +268,6 @@ func TestEnsureCreatedOldMachinePoolDeleted(t *testing.T) {
 				Namespace: newMachinePool.Namespace,
 				Name:      newMachinePool.Name,
 			}
-			newMachinePoolAfterEnsureCreated := &capiexp.MachinePool{}
-			err = fakeK8sClient.CtrlClient().Get(ctx, namespacedName, newMachinePoolAfterEnsureCreated)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			oldMachinePool = &oldcapiexpv1alpha3.MachinePool{}
 			err = fakeK8sClient.CtrlClient().Get(ctx, namespacedName, oldMachinePool)
 
@@ -337,6 +278,10 @@ func TestEnsureCreatedOldMachinePoolDeleted(t *testing.T) {
 				} else {
 					t.Fatalf("unexpected error %#q", err)
 				}
+			}
+			// if the CR has finalizers, fakeClient delete will just set DeletionTimestamp
+			if !oldMachinePoolDeleted && oldMachinePool.ObjectMeta.DeletionTimestamp != nil {
+				oldMachinePoolDeleted = true
 			}
 
 			if tc.expected.oldMachinePoolDeleted && !oldMachinePoolDeleted {

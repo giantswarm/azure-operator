@@ -9,6 +9,7 @@ metadata:
   creationTimestamp: "2021-02-22T17:21:33Z"
   finalizers:
   - operatorkit.giantswarm.io/azure-operator-machine-pool-controller
+  - operatorkit.giantswarm.io/azure-operator-machine-pool-exp-controller
   generation: 27
   labels:
     azure-operator.giantswarm.io/version: 5.12.0

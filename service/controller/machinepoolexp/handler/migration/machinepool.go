@@ -15,6 +15,10 @@ import (
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 )
 
+const (
+	operatorkitMachinePoolExpFinalizer = "operatorkit.giantswarm.io/azure-operator-machine-pool-exp-controller"
+)
+
 func (r *Resource) newMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
 	newMachinePool := capiexp.MachinePool{}
 	err := r.client.Get(ctx, namespacedName, &newMachinePool)
@@ -47,6 +51,10 @@ func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePo
 	newMachinePoolV1Alpha3 := capiexpv1alpha3.MachinePool{
 		ObjectMeta: cloneObjectMeta(oldMachinePoolV1alpha3.ObjectMeta),
 	}
+
+	// Remove old exp finalizer from new MachinePool, otherwise new MachinePool
+	// will get stuck while deleting.
+	newMachinePoolV1Alpha3.ObjectMeta = removeFinalizer(newMachinePoolV1Alpha3.ObjectMeta, operatorkitMachinePoolExpFinalizer)
 
 	// Now let's convert old exp v1alpha3 MachinePool.Spec to new non-exp
 	// v1alpha3 MachinePool.Spec.
