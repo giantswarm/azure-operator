@@ -195,6 +195,7 @@ func newAzureClusterResources(config ControllerConfig, certsSearcher certs.Inter
 			ClusterIPRange:                 config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
 			EtcdPrefix:                     config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
 			ManagementClusterResourceGroup: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
+			VnetMaskSize:                   config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 		}
 
 		azureConfigResource, err = azureconfig.New(c)

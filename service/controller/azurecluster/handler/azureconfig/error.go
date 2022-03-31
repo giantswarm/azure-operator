@@ -34,6 +34,15 @@ func IsInvalidDomain(err error) bool {
 	return microerror.Cause(err) == invalidDomainError
 }
 
+var invalidSubnetMaskError = &microerror.Error{
+	Kind: "invalidSubnetMaskError",
+}
+
+// IsInvalidSubnetMask asserts invalidSubnetMaskError.
+func IsInvalidSubnetMask(err error) bool {
+	return microerror.Cause(err) == invalidSubnetMaskError
+}
+
 var tooManyCredentialsError = &microerror.Error{
 	Kind: "tooManyCredentialsError",
 }
