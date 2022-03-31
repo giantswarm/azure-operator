@@ -11,7 +11,7 @@ require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v3 v3.1.1
-	github.com/giantswarm/conditions v0.4.1-0.20220317210012-57ab9a66aebf
+	github.com/giantswarm/conditions v0.5.0
 	github.com/giantswarm/conditions-handler v0.2.2-0.20220317213506-007caf58b680
 	github.com/giantswarm/errors v0.3.0
 	github.com/giantswarm/exporterkit v1.0.0
