@@ -140,7 +140,6 @@ func areReferencesUpdated(machinePool capiexp.MachinePool) bool {
 	}
 
 	return true
-	return true
 }
 
 func isStatusEmpty(machinePool capiexp.MachinePool) bool {
