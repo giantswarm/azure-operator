@@ -129,7 +129,7 @@ require (
 )
 
 require (
-	github.com/giantswarm/apiextensions/v5 v5.1.1-0.20220317123550-a091fdd33553
+	github.com/giantswarm/apiextensions/v5 v5.2.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
 )
 
