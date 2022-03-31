@@ -817,7 +817,7 @@ func newFakeClient() client.Client {
 		panic(err)
 	}
 
-	return fake.NewFakeClientWithScheme(scheme)
+	return fake.NewClientBuilder().WithScheme(scheme).Build()
 }
 
 func setDrainerConfigsAsDrained(t *testing.T, ctrlClient client.Client, cr *providerv1alpha1.AzureConfig) {
