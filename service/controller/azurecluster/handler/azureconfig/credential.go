@@ -3,8 +3,8 @@ package azureconfig
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v5/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

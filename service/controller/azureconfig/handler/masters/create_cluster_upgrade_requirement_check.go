@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/tenantcluster/v5/pkg/tenantcluster"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"

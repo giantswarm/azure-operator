@@ -3,8 +3,8 @@ package clusterupgrade
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v5/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

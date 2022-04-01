@@ -3,7 +3,7 @@ package nodepool
 import (
 	"context"
 
-	apiextensionslabels "github.com/giantswarm/apiextensions/v5/pkg/label"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"

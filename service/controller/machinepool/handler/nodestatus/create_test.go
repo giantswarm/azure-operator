@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/giantswarm/apiextensions/v5/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/golang/mock/gomock"
 	corev1 "k8s.io/api/core/v1"

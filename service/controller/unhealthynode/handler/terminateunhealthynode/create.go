@@ -7,8 +7,8 @@ import (
 	"github.com/giantswarm/tenantcluster/v5/pkg/tenantcluster"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v5/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/badnodedetector/pkg/detector"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"

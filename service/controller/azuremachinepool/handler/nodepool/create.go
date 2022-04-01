@@ -3,7 +3,7 @@ package nodepool
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v5/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	v1 "k8s.io/api/core/v1"

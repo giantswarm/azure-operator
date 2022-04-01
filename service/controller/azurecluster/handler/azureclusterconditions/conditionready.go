@@ -3,7 +3,7 @@ package azureclusterconditions
 import (
 	"context"
 
-	azureconditions "github.com/giantswarm/apiextensions/v5/pkg/conditions/azure"
+	azureconditions "github.com/giantswarm/apiextensions/v6/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"

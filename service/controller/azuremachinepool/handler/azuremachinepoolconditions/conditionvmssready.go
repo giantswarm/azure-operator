@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	azureconditions "github.com/giantswarm/apiextensions/v5/pkg/conditions/azure"
+	azureconditions "github.com/giantswarm/apiextensions/v6/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"

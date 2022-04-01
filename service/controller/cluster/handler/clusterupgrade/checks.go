@@ -1,8 +1,8 @@
 package clusterupgrade
 
 import (
-	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v5/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"

@@ -7,8 +7,8 @@ import (
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
-	azureconditions "github.com/giantswarm/apiextensions/v5/pkg/conditions/azure"
+	"github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
+	azureconditions "github.com/giantswarm/apiextensions/v6/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/finalizerskeptcontext"

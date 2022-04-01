@@ -3,8 +3,8 @@ package azureclusterupgrade
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v5/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v5/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

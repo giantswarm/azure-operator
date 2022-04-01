@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 

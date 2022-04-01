@@ -3,8 +3,8 @@ package spark
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v5/pkg/apis/provider/v1alpha1"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v5/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
