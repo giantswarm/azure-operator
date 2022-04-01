@@ -498,11 +498,10 @@ github.com/giantswarm/badnodedetector v1.0.1 h1:5rKD7SOErceMStnCkiop2nVj1PPiWVnu
 github.com/giantswarm/badnodedetector v1.0.1/go.mod h1:DZ8Nq4gdWL8RUcC1xy6ASxsDjE5IPeAVx0n9PVnrt5M=
 github.com/giantswarm/certs/v3 v3.1.1 h1:42+ApZHTpF/nUGc7eI4toMEXQcKRwGUMnoIO7cuio1Q=
 github.com/giantswarm/certs/v3 v3.1.1/go.mod h1:fkmIW3moxlrldZhN99fnbBohsDJaki/WCHeNyIN2sr8=
-github.com/giantswarm/conditions v0.4.1-0.20220317210012-57ab9a66aebf/go.mod h1:pikN26hSKzASOmSb87G1aBjXPlREGXDfdUxK2A2uRZg=
 github.com/giantswarm/conditions v0.5.0 h1:tRXkq7NadL9g+hyzWCXIk4TK/TZA88BwE8DZwK65Lrw=
 github.com/giantswarm/conditions v0.5.0/go.mod h1:oI2109qmNt8QhF2RLyXZ4rD3cLtYBS09fY4Pj+JoWzU=
-github.com/giantswarm/conditions-handler v0.2.2-0.20220317213506-007caf58b680 h1:7miNlocz7HGe61YGj+Xdo7Zhr1FjiXCy3uBu5h+lHag=
-github.com/giantswarm/conditions-handler v0.2.2-0.20220317213506-007caf58b680/go.mod h1:4McuhEcX8hr+LBT9TBlNJWCo9JlqNtOnB4rgbiz9wvM=
+github.com/giantswarm/conditions-handler v0.3.0 h1:XWv7+fB4Y/SniaxqAHtnuwXSO05GW8cokClBs7Xvy20=
+github.com/giantswarm/conditions-handler v0.3.0/go.mod h1:gyNJpUk/9Urw9ldzhO31FZqAugqtgHOlpxJGWwQKPCU=
 github.com/giantswarm/config-controller v0.5.1/go.mod h1:l77EQU5RzBvPzUHh8270/xeUmDp1N/HRYlHz2FkZo30=
 github.com/giantswarm/errors v0.3.0 h1:8y3L4496su7mqUjCb79edyXFkli9ythdXoFVaes442I=
 github.com/giantswarm/errors v0.3.0/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
