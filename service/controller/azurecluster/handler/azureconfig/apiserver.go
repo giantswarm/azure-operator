@@ -3,7 +3,7 @@ package azureconfig
 import (
 	"strings"
 
-	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/certs/v4/pkg/certs"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 )
 

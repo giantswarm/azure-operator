@@ -11,7 +11,7 @@ require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v6 v6.0.0
 	github.com/giantswarm/badnodedetector v1.0.1
-	github.com/giantswarm/certs/v3 v3.1.1
+	github.com/giantswarm/certs/v4 v4.0.0
 	github.com/giantswarm/conditions v0.5.0
 	github.com/giantswarm/conditions-handler v0.3.0
 	github.com/giantswarm/errors v0.3.0
@@ -27,7 +27,7 @@ require (
 	github.com/giantswarm/micrologger v0.6.0
 	github.com/giantswarm/operatorkit/v7 v7.0.1
 	github.com/giantswarm/release-operator/v3 v3.2.0
-	github.com/giantswarm/tenantcluster/v5 v5.0.0
+	github.com/giantswarm/tenantcluster/v6 v6.0.0
 	github.com/giantswarm/to v0.4.0
 	github.com/giantswarm/versionbundle v1.0.0
 	github.com/golang/mock v1.6.0

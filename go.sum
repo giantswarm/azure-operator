@@ -482,8 +482,8 @@ github.com/giantswarm/backoff v1.0.0 h1:1oeTvyPsm1tJrHlSmfxbIWuoCNWPOkWJCb8kfLvE
 github.com/giantswarm/backoff v1.0.0/go.mod h1:l/WqbggvG5Ndxxws0LUgVEvP5E82Qj5/PF8SMip/1QM=
 github.com/giantswarm/badnodedetector v1.0.1 h1:5rKD7SOErceMStnCkiop2nVj1PPiWVnuWE8v/6mE2tA=
 github.com/giantswarm/badnodedetector v1.0.1/go.mod h1:DZ8Nq4gdWL8RUcC1xy6ASxsDjE5IPeAVx0n9PVnrt5M=
-github.com/giantswarm/certs/v3 v3.1.1 h1:42+ApZHTpF/nUGc7eI4toMEXQcKRwGUMnoIO7cuio1Q=
-github.com/giantswarm/certs/v3 v3.1.1/go.mod h1:fkmIW3moxlrldZhN99fnbBohsDJaki/WCHeNyIN2sr8=
+github.com/giantswarm/certs/v4 v4.0.0 h1:kaxovkDF2fiXxkLNB8WZ/RLyYdNctSfFM7VhNqka9t4=
+github.com/giantswarm/certs/v4 v4.0.0/go.mod h1:9hGD/dtmE8f/T9M70zaW8QeXHsawevSv7Xy70bMG51A=
 github.com/giantswarm/conditions v0.5.0 h1:tRXkq7NadL9g+hyzWCXIk4TK/TZA88BwE8DZwK65Lrw=
 github.com/giantswarm/conditions v0.5.0/go.mod h1:oI2109qmNt8QhF2RLyXZ4rD3cLtYBS09fY4Pj+JoWzU=
 github.com/giantswarm/conditions-handler v0.3.0 h1:XWv7+fB4Y/SniaxqAHtnuwXSO05GW8cokClBs7Xvy20=
@@ -531,8 +531,8 @@ github.com/giantswarm/operatorkit/v7 v7.0.1 h1:RmebxAH7LRM9vPjVN0fZfAFpfDLe93s9i
 github.com/giantswarm/operatorkit/v7 v7.0.1/go.mod h1:5enwhyIjd4xKrYXV9+enqttcmB9BE2Ocl1V12IwJIuw=
 github.com/giantswarm/release-operator/v3 v3.2.0 h1:bZFiVGuEdx73222C+4m8sRGqpaNQR7ZCqsWGSwNDJkE=
 github.com/giantswarm/release-operator/v3 v3.2.0/go.mod h1:joFBezcw9qe089tVAfqhRTVMDtYBsfQ98mJ6tKau2sY=
-github.com/giantswarm/tenantcluster/v5 v5.0.0 h1:dbtKzAQB9A66od/TMcDHW3QTcTyik72KVryKktbVwLU=
-github.com/giantswarm/tenantcluster/v5 v5.0.0/go.mod h1:4LBKixZhIWQItNssiGdHHdPapzzgVB+UmsQodzhjBlk=
+github.com/giantswarm/tenantcluster/v6 v6.0.0 h1:IWJQ+3nj82a66cUsB+Nwi7O6lAvFI0MA0vtwM+28CU8=
+github.com/giantswarm/tenantcluster/v6 v6.0.0/go.mod h1:mH3WcxR5n20D/6g4iOMt55T1MFBp1syFbVjS/1+by9k=
 github.com/giantswarm/to v0.3.0/go.mod h1:RTRtw+Dyk6YqoiNBOGLO981BqhibtVwogdaFIMO1y/A=
 github.com/giantswarm/to v0.4.0 h1:x0GjbI94/nxcHztJiRtJzihCjgmUlEOto8RD98VA7WI=
 github.com/giantswarm/to v0.4.0/go.mod h1:RTRtw+Dyk6YqoiNBOGLO981BqhibtVwogdaFIMO1y/A=
