@@ -12,7 +12,7 @@ import (
 	"time"
 	"unicode"
 
-	oldcapzexpv1alpha3 "github.com/giantswarm/apiextensions/v5/pkg/apis/capzexp/v1alpha3"
+	oldcapzexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/api/meta"

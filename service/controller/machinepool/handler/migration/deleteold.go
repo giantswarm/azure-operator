@@ -3,7 +3,7 @@ package migration
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v5/pkg/apis/capiexp/v1alpha3"
+	"github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	"github.com/giantswarm/microerror"
 )
 
