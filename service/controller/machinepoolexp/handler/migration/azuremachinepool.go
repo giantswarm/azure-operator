@@ -26,12 +26,14 @@ func (r *Resource) newAzureMachinePoolExists(ctx context.Context, namespacedName
 }
 
 func (r *Resource) ensureNewAzureMachinePoolCreated(ctx context.Context, namespacedName types.NamespacedName) error {
+	r.logger.Debugf(ctx, "Ensuring new AzureMachinePool %s/%s has been created", namespacedName.Namespace, namespacedName.Name)
 	// First let's check if new AzureMachinePool has already been created.
 	exists, err := r.newAzureMachinePoolExists(ctx, namespacedName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	if exists {
+		r.logger.Debugf(ctx, "New AzureMachinePool %s/%s already exists", namespacedName.Namespace, namespacedName.Name)
 		return nil
 	}
 
@@ -40,6 +42,7 @@ func (r *Resource) ensureNewAzureMachinePoolCreated(ctx context.Context, namespa
 	if apierrors.IsNotFound(err) {
 		// New AzureMachinePool does not exist, and the old one does not exist,
 		// so there is just a MachinePool CR.
+		r.logger.Debugf(ctx, "Old AzureMachinePool %s/%s not found, nothing to migrate", namespacedName.Namespace, namespacedName.Name)
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -70,11 +73,13 @@ func (r *Resource) ensureNewAzureMachinePoolCreated(ctx context.Context, namespa
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "Ensured new AzureMachinePool %s/%s has been created", namespacedName.Namespace, namespacedName.Name)
 
 	return nil
 }
 
 func (r *Resource) ensureNewAzureMachinePoolReferencesUpdated(ctx context.Context, namespacedName types.NamespacedName) error {
+	r.logger.Debugf(ctx, "Ensuring new AzureMachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
 	newAzureMachinePool := capzexp.AzureMachinePool{}
 	err := r.client.Get(ctx, namespacedName, &newAzureMachinePool)
 	if err != nil {
@@ -91,6 +96,7 @@ func (r *Resource) ensureNewAzureMachinePoolReferencesUpdated(ctx context.Contex
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "Ensured new AzureMachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
 
 	return nil
 }

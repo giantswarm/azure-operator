@@ -32,6 +32,7 @@ func (r *Resource) newMachinePoolExists(ctx context.Context, namespacedName type
 }
 
 func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePoolV1alpha3 oldcapiexpv1alpha3.MachinePool) error {
+	r.logger.Debugf(ctx, "Ensuring new MachinePool %s/%s has been created", oldMachinePoolV1alpha3.Namespace, oldMachinePoolV1alpha3.Name)
 	namespacedName := types.NamespacedName{
 		Namespace: oldMachinePoolV1alpha3.Namespace,
 		Name:      oldMachinePoolV1alpha3.Name,
@@ -43,6 +44,7 @@ func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePo
 		return microerror.Mask(err)
 	}
 	if exists {
+		r.logger.Debugf(ctx, "New MachinePool %s/%s already exists", oldMachinePoolV1alpha3.Namespace, oldMachinePoolV1alpha3.Name)
 		return nil
 	}
 
@@ -75,11 +77,13 @@ func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePo
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "Ensured new MachinePool %s/%s has been created", oldMachinePoolV1alpha3.Namespace, oldMachinePoolV1alpha3.Name)
 
 	return nil
 }
 
 func (r *Resource) ensureNewMachinePoolReferencesUpdated(ctx context.Context, namespacedName types.NamespacedName) error {
+	r.logger.Debugf(ctx, "Ensuring new MachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
 	newMachinePool := capiexp.MachinePool{}
 	err := r.client.Get(ctx, namespacedName, &newMachinePool)
 	if err != nil {
@@ -100,6 +104,7 @@ func (r *Resource) ensureNewMachinePoolReferencesUpdated(ctx context.Context, na
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "Ensured new MachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
 
 	return nil
 }

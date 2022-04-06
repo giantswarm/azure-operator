@@ -44,11 +44,11 @@ func New(config Config) (*Resource, error) {
 
 // EnsureCreated creates non-experimental MachinePool CR if it doesn't already exist.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	// We do this even before upgrade? We must wait for new CRs in the upgrade handler!!!
 	oldMachinePool, err := key.ToOldExpMachinePool(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "Ensuring new MachinePool and AzureMachinePool %s/%s are created", oldMachinePool.Namespace, oldMachinePool.Name)
 
 	namespacedName := types.NamespacedName{
 		Namespace: oldMachinePool.Namespace,
@@ -73,6 +73,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "Ensured new MachinePool and AzureMachinePool %s/%s are created", oldMachinePool.Namespace, oldMachinePool.Name)
 
 	return nil
 }
