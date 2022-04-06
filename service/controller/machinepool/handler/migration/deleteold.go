@@ -12,7 +12,11 @@ const (
 )
 
 func (r *Resource) deleteOldMachinePool(ctx context.Context, oldMachinePool *v1alpha3.MachinePool) error {
+	r.logger.Debugf(ctx, "Deleting old MachinePool %s/%s", oldMachinePool.Namespace, oldMachinePool.Name)
 	var err error
+	finalizersUpdated := false
+	r.logger.Debugf(ctx, "Checking if old MachinePool %s/%s finalizers should be removed", oldMachinePool.Namespace, oldMachinePool.Name)
+
 	if len(oldMachinePool.ObjectMeta.Finalizers) > 0 {
 		// First we manually remove all finalizers (except for operatorkit finalizer
 		// for exp MachinePool which will be removed by the operatorkit). We do
@@ -34,14 +38,22 @@ func (r *Resource) deleteOldMachinePool(ctx context.Context, oldMachinePool *v1a
 				// update only if we really have more than one we already want
 				oldMachinePool.ObjectMeta.SetFinalizers([]string{operatorkitMachinePoolExpFinalizer})
 				err = r.ctrlClient.Update(ctx, oldMachinePool)
+				finalizersUpdated = true
 			}
 		} else {
 			oldMachinePool.ObjectMeta.SetFinalizers([]string{})
 			err = r.ctrlClient.Update(ctx, oldMachinePool)
+			finalizersUpdated = true
 		}
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
+
+	if finalizersUpdated {
+		r.logger.Debugf(ctx, "Removed old MachinePool %s/%s finalizers", oldMachinePool.Namespace, oldMachinePool.Name)
+	} else {
+		r.logger.Debugf(ctx, "No need to remove old MachinePool %s/%s finalizers", oldMachinePool.Namespace, oldMachinePool.Name)
 	}
 
 	// Finally, delete the old MachinePool
@@ -49,6 +61,7 @@ func (r *Resource) deleteOldMachinePool(ctx context.Context, oldMachinePool *v1a
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "Deleted old MachinePool %s/%s", oldMachinePool.Namespace, oldMachinePool.Name)
 
 	return nil
 }

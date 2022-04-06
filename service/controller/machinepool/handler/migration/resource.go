@@ -61,9 +61,12 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.Debugf(ctx, "Ensuring new MachinePool %s/%s has been migrated", machinePool.Namespace, machinePool.Name)
+
 	if !areReferencesUpdated(machinePool) {
 		// Migration from old to new MachinePool is not completed. Cancel
 		// remaining reconciliation.
+		r.logger.Debugf(ctx, "MachinePool %s/%s CR references have not been updated, assuming migration has not been completed, canceling reconciliation", machinePool.Namespace, machinePool.Name)
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return nil
 	}
@@ -82,22 +85,26 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	err = r.ctrlClient.Get(ctx, namespacedName, oldMachinePool)
 	if apierrors.IsNotFound(err) {
 		// Old MachinePool not found, so nothing to do here.
+		r.logger.Debugf(ctx, "Old MachinePool not found, assuming MachinePool %s/%s has been migrated", machinePool.Namespace, machinePool.Name)
 		return nil
 	} else if err != nil {
 		// Migration from old to new MachinePool is not completed because we
 		// still didn't update the status in the new MachinePool, so we cancel
 		// remaining reconciliation.
+		r.logger.Debugf(ctx, "Failed to fetch old MachinePool %s/%s, assuming migration has not been completed, canceling reconciliation", machinePool.Namespace, machinePool.Name)
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return microerror.Mask(err)
 	}
 
 	// 1. Update status in new MachinePool
 	if isStatusEmpty(machinePool) {
+		r.logger.Debugf(ctx, "Updating new MachinePool %s/%s status", machinePool.Namespace, machinePool.Name)
 		err = cloneObject(&oldMachinePool.Status, &machinePool.Status)
 		if err != nil {
 			// Migration from old to new MachinePool is not completed because
 			// we still didn't update the status in the new MachinePool, so we
 			// cancel remaining reconciliation.
+			r.logger.Debugf(ctx, "Failed to copy MachinePool %s/%s status from old MachinePool, assuming migration has not been completed, canceling reconciliation", machinePool.Namespace, machinePool.Name)
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return microerror.Mask(err)
 		}
@@ -108,9 +115,11 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// Migration from old to new MachinePool is not completed because
 			// we still didn't update the status in the new MachinePool, so we
 			// cancel remaining reconciliation.
+			r.logger.Debugf(ctx, "Failed to update MachinePool %s/%s status, assuming migration has not been completed, canceling reconciliation", machinePool.Namespace, machinePool.Name)
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return microerror.Mask(err)
 		}
+		r.logger.Debugf(ctx, "Updated new MachinePool %s/%s status", machinePool.Namespace, machinePool.Name)
 	}
 
 	// 2. Finally, delete the old MachinePool
@@ -122,6 +131,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.Debugf(ctx, "Ensured MachinePool %s/%s has completed migration", machinePool.Namespace, machinePool.Name)
 	return nil
 }
 
