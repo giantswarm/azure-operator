@@ -55,9 +55,12 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.Debugf(ctx, "Ensuring new AzureMachinePool %s/%s has been migrated", azureMachinePool.Namespace, azureMachinePool.Name)
+
 	if !areReferencesUpdated(azureMachinePool) {
 		// Migration from old to new MachinePool is not completed. Cancel
 		// remaining reconciliation.
+		r.logger.Debugf(ctx, "AzureMachinePool %s/%s CR references have not been updated, assuming migration has not been completed, canceling reconciliation", azureMachinePool.Namespace, azureMachinePool.Name)
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return nil
 	}
@@ -76,22 +79,26 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	err = r.ctrlClient.Get(ctx, namespacedName, oldAzureMachinePool)
 	if apierrors.IsNotFound(err) {
 		// Old AzureMachinePool not found, so nothing to do here.
+		r.logger.Debugf(ctx, "Old AzureMachinePool not found, assuming AzureMachinePool %s/%s has been migrated", azureMachinePool.Namespace, azureMachinePool.Name)
 		return nil
 	} else if err != nil {
 		// Migration from old to new AzureMachinePool is not completed
 		// because we still didn't update the status in the new AzureMachinePool,
 		// so we cancel remaining reconciliation.
+		r.logger.Debugf(ctx, "Failed to fetch old AzureMachinePool %s/%s, assuming migration has not been completed, canceling reconciliation", azureMachinePool.Namespace, azureMachinePool.Name)
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return microerror.Mask(err)
 	}
 
 	// 1. Update status in new AzureMachinePool
 	if isStatusEmpty(azureMachinePool) {
+		r.logger.Debugf(ctx, "Updating new AzureMachinePool %s/%s status", azureMachinePool.Namespace, azureMachinePool.Name)
 		err = cloneObject(&oldAzureMachinePool.Status, &azureMachinePool.Status)
 		if err != nil {
 			// Migration from old to new AzureMachinePool is not completed
 			// because we still didn't update the status in the new AzureMachinePool,
 			// so we cancel remaining reconciliation.
+			r.logger.Debugf(ctx, "Failed to copy AzureMachinePool %s/%s status from old AzureMachinePool, assuming migration has not been completed, canceling reconciliation", azureMachinePool.Namespace, azureMachinePool.Name)
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return microerror.Mask(err)
 		}
@@ -102,9 +109,11 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// Migration from old to new AzureMachinePool is not completed
 			// because we still didn't update the status in the new AzureMachinePool,
 			// so we cancel remaining reconciliation.
+			r.logger.Debugf(ctx, "Failed to update AzureMachinePool %s/%s status, assuming migration has not been completed, canceling reconciliation", azureMachinePool.Namespace, azureMachinePool.Name)
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return microerror.Mask(err)
 		}
+		r.logger.Debugf(ctx, "Updated new AzureMachinePool %s/%s status", azureMachinePool.Namespace, azureMachinePool.Name)
 	}
 
 	// 2. Finally, delete the old AzureMachinePool
@@ -116,6 +125,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.Debugf(ctx, "Ensured AzureMachinePool %s/%s has been migrated", azureMachinePool.Namespace, azureMachinePool.Name)
 	return nil
 }
 

@@ -131,7 +131,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "Ensured MachinePool %s/%s has completed migration", machinePool.Namespace, machinePool.Name)
+	r.logger.Debugf(ctx, "Ensured MachinePool %s/%s has been migrated", machinePool.Namespace, machinePool.Name)
 	return nil
 }
 
