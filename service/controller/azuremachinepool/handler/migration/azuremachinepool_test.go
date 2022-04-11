@@ -25,28 +25,16 @@ func TestEnsureCreatedAzureMachinePoolIsCorrect(t *testing.T) {
 			name:                    "case 0: New AzureMachinePool references not updated",
 			oldAzureMachinePoolFile: "old_azuremachinepool.yaml",
 			newAzureMachinePoolFile: "new_azuremachinepool_references_not_updated.yaml",
-			expected: expected{
-				newAzureMachinePoolModificationsCount: 0,
-				oldAzureMachinePoolDeleted:            false,
-			},
 		},
 		{
 			name:                    "case 1: New AzureMachinePool status not updated",
 			oldAzureMachinePoolFile: "old_azuremachinepool.yaml",
 			newAzureMachinePoolFile: "new_azuremachinepool_status_not_updated.yaml",
-			expected: expected{
-				newAzureMachinePoolModificationsCount: 1,
-				oldAzureMachinePoolDeleted:            true,
-			},
 		},
 		{
 			name:                    "case 2: New AzureMachinePool fully created",
 			oldAzureMachinePoolFile: "old_azuremachinepool.yaml",
 			newAzureMachinePoolFile: "new_azuremachinepool_fully_created.yaml",
-			expected: expected{
-				newAzureMachinePoolModificationsCount: 0,
-				oldAzureMachinePoolDeleted:            true,
-			},
 		},
 	}
 
