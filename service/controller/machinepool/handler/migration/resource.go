@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	oldcapiexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
-	oldcapzexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
@@ -85,17 +84,8 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	oldMachinePool := &oldcapiexpv1alpha3.MachinePool{}
 	err = r.ctrlClient.Get(ctx, namespacedName, oldMachinePool)
 	if apierrors.IsNotFound(err) {
+		// Old MachinePool not found, so nothing to do here.
 		r.logger.Debugf(ctx, "Old MachinePool not found, assuming MachinePool %s/%s has been migrated", machinePool.Namespace, machinePool.Name)
-		oldAzureMachinePoolExists, err := r.checkIfOldAzureMachinePoolExists(ctx, namespacedName)
-		if err != nil {
-			r.logger.Debugf(ctx, "Failed to fetch old AzureMachinePool %s/%s, assuming migration has not been completed, canceling reconciliation", namespacedName.Namespace, namespacedName.Name)
-			reconciliationcanceledcontext.SetCanceled(ctx)
-			return microerror.Mask(err)
-		}
-		if oldAzureMachinePoolExists {
-			r.logger.Debugf(ctx, "Found old AzureMachinePool %s/%s, assuming migration has not been completed, canceling reconciliation", namespacedName.Namespace, namespacedName.Name)
-			reconciliationcanceledcontext.SetCanceled(ctx)
-		}
 		return nil
 	} else if err != nil {
 		// Migration from old to new MachinePool is not completed because we
@@ -142,35 +132,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.Debugf(ctx, "Ensured MachinePool %s/%s has been migrated", machinePool.Namespace, machinePool.Name)
-
-	oldAzureMachinePoolExists, err := r.checkIfOldAzureMachinePoolExists(ctx, namespacedName)
-	if err != nil {
-		r.logger.Debugf(ctx, "Failed to fetch old AzureMachinePool %s/%s, assuming migration has not been completed, canceling reconciliation", namespacedName.Namespace, namespacedName.Name)
-		reconciliationcanceledcontext.SetCanceled(ctx)
-		return microerror.Mask(err)
-	}
-	if oldAzureMachinePoolExists {
-		r.logger.Debugf(ctx, "Found old AzureMachinePool %s/%s, assuming migration has not been completed, canceling reconciliation", namespacedName.Namespace, namespacedName.Name)
-		reconciliationcanceledcontext.SetCanceled(ctx)
-	}
-
 	return nil
-}
-
-func (r *Resource) checkIfOldAzureMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
-	r.logger.Debugf(ctx, "Checking if old exp AzureMachinePool %s/%s has been migrated", namespacedName.Namespace, namespacedName.Name)
-	oldAzureMachinePool := &oldcapzexpv1alpha3.AzureMachinePool{}
-	err := r.ctrlClient.Get(ctx, namespacedName, oldAzureMachinePool)
-	if apierrors.IsNotFound(err) {
-		r.logger.Debugf(ctx, "Old exp AzureMachinePool %s/%s not found", namespacedName.Namespace, namespacedName.Name)
-		return false, nil
-	} else if err != nil {
-		r.logger.Debugf(ctx, "Failed to fetch old exp AzureMachinePool %s/%s", namespacedName.Namespace, namespacedName.Name)
-		return false, microerror.Mask(err)
-	}
-
-	r.logger.Debugf(ctx, "Old exp AzureMachinePool %s/%s found", namespacedName.Namespace, namespacedName.Name)
-	return true, nil
 }
 
 func areReferencesUpdated(machinePool capiexp.MachinePool) bool {
