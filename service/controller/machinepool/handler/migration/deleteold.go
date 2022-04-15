@@ -3,7 +3,7 @@ package migration
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
+	oldcapiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	"github.com/giantswarm/microerror"
 )
 
@@ -11,7 +11,7 @@ const (
 	operatorkitMachinePoolExpFinalizer = "operatorkit.giantswarm.io/azure-operator-machine-pool-exp-controller"
 )
 
-func (r *Resource) deleteOldMachinePool(ctx context.Context, oldMachinePool *v1alpha3.MachinePool) error {
+func (r *Resource) deleteOldMachinePool(ctx context.Context, oldMachinePool *oldcapiexp.MachinePool) error {
 	r.logger.Debugf(ctx, "Deleting old MachinePool %s/%s", oldMachinePool.Namespace, oldMachinePool.Name)
 	var err error
 	finalizersUpdated := false

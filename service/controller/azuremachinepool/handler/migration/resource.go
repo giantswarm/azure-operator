@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"reflect"
 
-	oldcapiexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	oldcapzexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -15,6 +14,7 @@ import (
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/machinepoolmigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -57,7 +57,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.Debugf(ctx, "Ensuring new AzureMachinePool %s/%s has been migrated", azureMachinePool.Namespace, azureMachinePool.Name)
 
-	if !areReferencesUpdated(azureMachinePool) {
+	if !machinepoolmigration.AreAzureMachinePoolReferencesUpdated(azureMachinePool) {
 		// Migration from old to new MachinePool is not completed. Cancel
 		// remaining reconciliation.
 		r.logger.Debugf(ctx, "AzureMachinePool %s/%s CR references have not been updated, assuming migration has not been completed, canceling reconciliation", azureMachinePool.Namespace, azureMachinePool.Name)
@@ -127,17 +127,6 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.Debugf(ctx, "Ensured AzureMachinePool %s/%s has been migrated", azureMachinePool.Namespace, azureMachinePool.Name)
 	return nil
-}
-
-func areReferencesUpdated(azureMachinePool capzexp.AzureMachinePool) bool {
-	// check MachinePool owner reference
-	for _, ref := range azureMachinePool.ObjectMeta.OwnerReferences {
-		if ref.Kind == "MachinePool" && ref.APIVersion == oldcapiexpv1alpha3.GroupVersion.String() {
-			return false
-		}
-	}
-
-	return true
 }
 
 func isStatusEmpty(azureMachinePool capzexp.AzureMachinePool) bool {
