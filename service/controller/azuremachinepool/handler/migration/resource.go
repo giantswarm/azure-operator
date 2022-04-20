@@ -117,7 +117,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	// 2. Finally, delete the old AzureMachinePool
-	err = r.deleteOldAzureMachinePool(ctx, oldAzureMachinePool)
+	err = r.deleteOldAzureMachinePool(ctx, oldAzureMachinePool, &azureMachinePool)
 	if err != nil {
 		// AzureMachinePool status is updated, so we don't cancel the
 		// reconciliation, other handlers can continue working. It will try to

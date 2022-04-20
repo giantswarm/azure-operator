@@ -4,15 +4,13 @@ import (
 	"context"
 
 	oldcapiexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
-	oldcapzexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/machinepoolmigration"
 )
 
 const (
@@ -90,21 +88,29 @@ func (r *Resource) ensureNewMachinePoolReferencesUpdated(ctx context.Context, na
 		return microerror.Mask(err)
 	}
 
-	if newMachinePool.Spec.Template.Spec.InfrastructureRef.APIVersion == oldcapzexpv1alpha3.GroupVersion.String() {
-		newMachinePool.Spec.Template.Spec.InfrastructureRef.APIVersion = capzexp.GroupVersion.String()
+	update := false
+	if newMachinePool.Spec.Template.Spec.InfrastructureRef.Kind == "AzureMachinePool" &&
+		newMachinePool.Spec.Template.Spec.InfrastructureRef.APIVersion != machinepoolmigration.DesiredCAPZGroupVersion {
+		newMachinePool.Spec.Template.Spec.InfrastructureRef.APIVersion = machinepoolmigration.DesiredCAPZGroupVersion
+		update = true
 	}
 
 	for i, ownerRef := range newMachinePool.ObjectMeta.OwnerReferences {
-		if ownerRef.APIVersion == capiv1alpha3.GroupVersion.String() {
-			newMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = capi.GroupVersion.String()
+		if ownerRef.Kind == "Cluster" && ownerRef.APIVersion != machinepoolmigration.DesiredCAPIGroupVersion {
+			newMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = machinepoolmigration.DesiredCAPIGroupVersion
+			update = true
 		}
 	}
 
-	err = r.client.Update(ctx, &newMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
+	if update {
+		err = r.client.Update(ctx, &newMachinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		r.logger.Debugf(ctx, "Ensured new MachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
+	} else {
+		r.logger.Debugf(ctx, "New MachinePool %s/%s references have been already updated", namespacedName.Namespace, namespacedName.Name)
 	}
-	r.logger.Debugf(ctx, "Ensured new MachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
 
 	return nil
 }

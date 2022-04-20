@@ -39,12 +39,12 @@ func NewChecker(c CheckerConfig) (*Checker, error) {
 }
 
 func (c *Checker) NewAzureMachinePoolPendingCreation(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
-	migratedAzureMachinePoolExists, err := c.checkIfMigratedAzureMachinePoolExists(ctx, namespacedName)
+	migratedAzureMachinePoolExists, err := c.CheckIfMigratedAzureMachinePoolExists(ctx, namespacedName)
 	if err != nil {
 		c.logger.Debugf(ctx, "Failed to fetch migrated AzureMachinePool %s/%s, assuming migration has not been completed, should cancel reconciliation", namespacedName.Namespace, namespacedName.Name)
 		return false, microerror.Mask(err)
 	}
-	oldAzureMachinePoolExists, err := c.checkIfOldAzureMachinePoolExists(ctx, namespacedName)
+	oldAzureMachinePoolExists, err := c.CheckIfOldAzureMachinePoolExists(ctx, namespacedName)
 	if err != nil {
 		c.logger.Debugf(ctx, "Failed to fetch old AzureMachinePool %s/%s, assuming migration has not been completed, should cancel reconciliation", namespacedName.Namespace, namespacedName.Name)
 		return false, microerror.Mask(err)
@@ -59,7 +59,7 @@ func (c *Checker) NewAzureMachinePoolPendingCreation(ctx context.Context, namesp
 	return false, nil
 }
 
-func (c *Checker) checkIfOldAzureMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
+func (c *Checker) CheckIfOldAzureMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
 	c.logger.Debugf(ctx, "Checking if old exp AzureMachinePool %s/%s still exists", namespacedName.Namespace, namespacedName.Name)
 	oldAzureMachinePool := &oldcapzexpv1alpha3.AzureMachinePool{}
 	err := c.ctrlClient.Get(ctx, namespacedName, oldAzureMachinePool)
@@ -75,7 +75,7 @@ func (c *Checker) checkIfOldAzureMachinePoolExists(ctx context.Context, namespac
 	return true, nil
 }
 
-func (c *Checker) checkIfMigratedAzureMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
+func (c *Checker) CheckIfMigratedAzureMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
 	c.logger.Debugf(ctx, "Checking if migrated AzureMachinePool %s/%s has been created", namespacedName.Namespace, namespacedName.Name)
 	azureMachinePool := &capzexp.AzureMachinePool{}
 	err := c.ctrlClient.Get(ctx, namespacedName, azureMachinePool)

@@ -3,14 +3,14 @@ package migration
 import (
 	"context"
 
-	oldcapiexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	oldcapzexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/machinepoolmigration"
 )
 
 func (r *Resource) newAzureMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
@@ -86,17 +86,23 @@ func (r *Resource) ensureNewAzureMachinePoolReferencesUpdated(ctx context.Contex
 		return microerror.Mask(err)
 	}
 
+	update := false
 	for i, ownerRef := range newAzureMachinePool.ObjectMeta.OwnerReferences {
-		if ownerRef.APIVersion == oldcapiexpv1alpha3.GroupVersion.String() {
-			newAzureMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = capiexp.GroupVersion.String()
+		if ownerRef.Kind == "MachinePool" && ownerRef.APIVersion != machinepoolmigration.DesiredCAPIGroupVersion {
+			newAzureMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = machinepoolmigration.DesiredCAPIGroupVersion
+			update = true
 		}
 	}
 
-	err = r.client.Update(ctx, &newAzureMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
+	if update {
+		err = r.client.Update(ctx, &newAzureMachinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		r.logger.Debugf(ctx, "Ensured new AzureMachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
+	} else {
+		r.logger.Debugf(ctx, "New AzureMachinePool %s/%s references have been already updated", namespacedName.Namespace, namespacedName.Name)
 	}
-	r.logger.Debugf(ctx, "Ensured new AzureMachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
 
 	return nil
 }

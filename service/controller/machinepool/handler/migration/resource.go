@@ -148,27 +148,24 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	// Before deleting the old MachinePool, we first check if new AzureMachinePool
-	// has been created. We do this because we want new AzureMachinePool to be created
-	// before deleting old CRs.
-	newAzureMachinePoolPendingCreation, err := r.checker.NewAzureMachinePoolPendingCreation(ctx, namespacedName)
+	// has been fully migrated (new AzureMachinePool created, old AzureMachinePool
+	// deleted).
+	oldAzureMachinePoolExists, err := r.checker.CheckIfOldAzureMachinePoolExists(ctx, namespacedName)
 	if err != nil {
 		r.logger.Debugf(ctx, "Failed to check AzureMachinePool %s/%s migration, assuming migration has not been completed, canceling reconciliation", namespacedName.Namespace, namespacedName.Name)
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return microerror.Mask(err)
 	}
-	if newAzureMachinePoolPendingCreation {
-		r.logger.Debugf(ctx, "Still waiting for new AzureMachinePool %s/%s, assuming migration has not been completed, canceling reconciliation", namespacedName.Namespace, namespacedName.Name)
-		reconciliationcanceledcontext.SetCanceled(ctx)
-		return nil
-	}
 
-	// 2. Finally, delete the old MachinePool
-	err = r.deleteOldMachinePool(ctx, oldMachinePool)
-	if err != nil {
-		// MachinePool status is updated, so we don't cancel the reconciliation,
-		// other handlers can continue working. It will try to delete the old
-		// MachinePool again in the next reconciliation loop.
-		return microerror.Mask(err)
+	// 2. Finally, delete the old MachinePool when AzureMachinePool has been fully migrated
+	if !oldAzureMachinePoolExists {
+		err = r.deleteOldMachinePool(ctx, oldMachinePool)
+		if err != nil {
+			// MachinePool status is updated, so we don't cancel the reconciliation,
+			// other handlers can continue working. It will try to delete the old
+			// MachinePool again in the next reconciliation loop.
+			return microerror.Mask(err)
+		}
 	}
 
 	r.logger.Debugf(ctx, "Ensured MachinePool %s/%s has been migrated", machinePool.Namespace, machinePool.Name)
