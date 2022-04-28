@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
@@ -44,7 +44,7 @@ func NewAzureMachinePoolSubnetReleaser(config AzureMachinePoolSubnetReleaserConf
 func (r *AzureMachinePoolSubnetReleaser) Release(ctx context.Context, subnet net.IPNet, namespace, name string) error {
 	r.logger.Debugf(ctx, "releasing allocated subnet from AzureCluster CR")
 
-	azureMachinePool := &v1alpha3.AzureMachinePool{}
+	azureMachinePool := &capzexp.AzureMachinePool{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
@@ -59,7 +59,7 @@ func (r *AzureMachinePoolSubnetReleaser) Release(ctx context.Context, subnet net
 	return nil
 }
 
-func (r *AzureMachinePoolSubnetReleaser) removeSubnetFromAzureCluster(ctx context.Context, subnet net.IPNet, azureMachinePool *v1alpha3.AzureMachinePool) error {
+func (r *AzureMachinePoolSubnetReleaser) removeSubnetFromAzureCluster(ctx context.Context, subnet net.IPNet, azureMachinePool *capzexp.AzureMachinePool) error {
 	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		errorMessage := "error while getting AzureCluster CR from AzureMachinePool CR metadata"

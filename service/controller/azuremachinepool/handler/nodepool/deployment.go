@@ -10,14 +10,14 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/nodepool/template"
@@ -31,7 +31,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
-func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster, vmss compute.VirtualMachineScaleSet) (azureresource.Deployment, error) {
+func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexp.MachinePool, azureMachinePool *capzexp.AzureMachinePool, azureCluster *capz.AzureCluster, vmss compute.VirtualMachineScaleSet) (azureresource.Deployment, error) {
 	encrypterObject, err := r.getEncrypterObject(ctx, key.CertificateEncryptionSecretName(azureCluster))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -137,7 +137,7 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	return deployment, nil
 }
 
-func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, string, error) {
+func (r Resource) getSubnetName(azureMachinePool *capzexp.AzureMachinePool, azureCluster *capz.AzureCluster) (string, string, error) {
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
 		if azureMachinePool.Name == subnet.Name {
 			if subnet.ID == "" {
@@ -223,8 +223,8 @@ func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (e
 }
 
 // getMachinePoolByName finds and return a MachinePool object using the specified params.
-func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*capiexpv1alpha3.MachinePool, error) {
-	machinePool := &capiexpv1alpha3.MachinePool{}
+func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*capiexp.MachinePool, error) {
+	machinePool := &capiexp.MachinePool{}
 	objectKey := ctrlclient.ObjectKey{Name: name, Namespace: namespace}
 	if err := r.CtrlClient.Get(ctx, objectKey, machinePool); err != nil {
 		return nil, err
@@ -236,9 +236,9 @@ func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name str
 }
 
 // getOwnerMachinePool returns the MachinePool object owning the current resource.
-func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*capiexpv1alpha3.MachinePool, error) {
+func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*capiexp.MachinePool, error) {
 	for _, ref := range obj.OwnerReferences {
-		if ref.Kind == "MachinePool" && ref.APIVersion == capiexpv1alpha3.GroupVersion.String() {
+		if ref.Kind == "MachinePool" && ref.APIVersion == capiexp.GroupVersion.String() {
 			return r.getMachinePoolByName(ctx, obj.Namespace, ref.Name)
 		}
 	}
@@ -246,8 +246,8 @@ func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMet
 	return nil, nil
 }
 
-func (r *Resource) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
-	azureCluster := &capzv1alpha3.AzureCluster{}
+func (r *Resource) getAzureClusterFromCluster(ctx context.Context, cluster *capi.Cluster) (*capz.AzureCluster, error) {
+	azureCluster := &capz.AzureCluster{}
 	azureClusterName := ctrlclient.ObjectKey{
 		Namespace: cluster.Namespace,
 		Name:      cluster.Spec.InfrastructureRef.Name,

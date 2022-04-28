@@ -3,17 +3,17 @@ package helpers
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
-func InitAzureMachineAnnotations(ctx context.Context, ctrlClient client.Client, logger micrologger.Logger, azureMachine *v1alpha3.AzureMachine) error {
+func InitAzureMachineAnnotations(ctx context.Context, ctrlClient client.Client, logger micrologger.Logger, azureMachine *capz.AzureMachine) error {
 	// We want to initialize release.giantswarm.io/last-deployed-version annotation
 	// and set it to the whatever is the latest deployed release version.
 	// This will ensure that AzureMachine CRs for existing clusters get Creating

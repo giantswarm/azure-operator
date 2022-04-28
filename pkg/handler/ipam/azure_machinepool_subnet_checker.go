@@ -6,8 +6,8 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
@@ -48,21 +48,21 @@ func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace str
 	c.logger.Debugf(ctx, "checking if node pool subnet has to be allocated")
 	var err error
 
-	var azureMachinePool *expcapzv1alpha3.AzureMachinePool
+	var azureMachinePool *capzexp.AzureMachinePool
 	{
 		objectKey := client.ObjectKey{
 			Namespace: namespace,
 			Name:      name,
 		}
 
-		azureMachinePool = &expcapzv1alpha3.AzureMachinePool{}
+		azureMachinePool = &capzexp.AzureMachinePool{}
 		err = c.ctrlClient.Get(ctx, objectKey, azureMachinePool)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	var azureCluster *capzv1alpha3.AzureCluster
+	var azureCluster *capz.AzureCluster
 	{
 		azureCluster, err = helpers.GetAzureClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
 		if err != nil {

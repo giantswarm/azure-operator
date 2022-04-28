@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
@@ -53,8 +53,8 @@ func (r *Resource) Name() string {
 }
 
 // getMachinePoolByName finds and return a MachinePool object using the specified params.
-func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*expcapiv1alpha3.MachinePool, error) {
-	machinePool := &expcapiv1alpha3.MachinePool{}
+func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*capiexp.MachinePool, error) {
+	machinePool := &capiexp.MachinePool{}
 	objectKey := ctrlclient.ObjectKey{Name: name, Namespace: namespace}
 	if err := r.ctrlClient.Get(ctx, objectKey, machinePool); err != nil {
 		return nil, err
@@ -66,9 +66,9 @@ func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name str
 }
 
 // getOwnerMachinePool returns the MachinePool object owning the current resource.
-func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*expcapiv1alpha3.MachinePool, error) {
+func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*capiexp.MachinePool, error) {
 	for _, ref := range obj.OwnerReferences {
-		if ref.Kind == "MachinePool" && ref.APIVersion == expcapiv1alpha3.GroupVersion.String() {
+		if ref.Kind == "MachinePool" && ref.APIVersion == capiexp.GroupVersion.String() {
 			return r.getMachinePoolByName(ctx, obj.Namespace, ref.Name)
 		}
 	}

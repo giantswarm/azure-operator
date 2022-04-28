@@ -3,7 +3,7 @@ package clusterreleaseversion
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
 	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 

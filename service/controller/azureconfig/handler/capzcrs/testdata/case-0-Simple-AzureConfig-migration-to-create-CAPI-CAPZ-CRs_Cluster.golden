@@ -1,4 +1,4 @@
-apiVersion: cluster.x-k8s.io/v1alpha3
+apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   annotations:
@@ -30,5 +30,5 @@ spec:
     name: c6fme
     namespace: org-giantswarm
 status:
-  controlPlaneInitialized: false
+  controlPlaneReady: false
   infrastructureReady: false

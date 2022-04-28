@@ -1,7 +1,7 @@
 package vmss
 
 import (
-	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/certs/v4/pkg/certs"
 )
 
 type Node struct {

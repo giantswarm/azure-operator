@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"golang.org/x/sync/errgroup"
-	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
@@ -134,7 +134,7 @@ func (c *AzureMachinePoolSubnetCollector) Collect(ctx context.Context, obj inter
 }
 
 // collectSubnetsFromAzureClusterCR returns all subnets specified in AzureCluster CR.
-func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
+func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(ctx context.Context, azureCluster *capz.AzureCluster) ([]net.IPNet, error) {
 	c.logger.Debugf(ctx, "finding allocated subnets in AzureCluster CR")
 	azureClusterCRSubnets := make([]net.IPNet, len(azureCluster.Spec.NetworkSpec.Subnets))
 
@@ -157,7 +157,7 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(ctx c
 }
 
 // collectSubnetsFromAzureVNet returns all subnets that are deployed in Azure virtual network.
-func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
+func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capz.AzureCluster) ([]net.IPNet, error) {
 	// Not assuming VNet name here, keeping it flexible. In order to keep it correct and stable, we
 	// should have a webhook for enforcing a VNet name convention.
 	if azureCluster.Spec.NetworkSpec.Vnet.Name == "" {

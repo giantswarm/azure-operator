@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/certs/v4/pkg/certs"
 	"github.com/giantswarm/errors/tenant"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
+	"github.com/giantswarm/tenantcluster/v6/pkg/tenantcluster"
 	"k8s.io/client-go/rest"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -51,7 +51,7 @@ func NewFactory(certsSearcher certs.Interface, logger micrologger.Logger) (Facto
 	return f, nil
 }
 
-func (tcf *tenantClientFactory) GetAllClients(ctx context.Context, cr *capiv1alpha3.Cluster) (k8sclient.Interface, error) {
+func (tcf *tenantClientFactory) GetAllClients(ctx context.Context, cr *capi.Cluster) (k8sclient.Interface, error) {
 	tcf.logger.Debugf(ctx, "creating tenant cluster k8s client for cluster %#q", key.ClusterID(cr))
 	var k8sClient k8sclient.Interface
 	{
@@ -78,7 +78,7 @@ func (tcf *tenantClientFactory) GetAllClients(ctx context.Context, cr *capiv1alp
 	return k8sClient, nil
 }
 
-func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
+func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capi.Cluster) (client.Client, error) {
 	all, err := tcf.GetAllClients(ctx, cr)
 	if err != nil {
 		return nil, microerror.Mask(err)

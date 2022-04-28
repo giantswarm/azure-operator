@@ -4,14 +4,14 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 )
 
 type Parameters struct {
 	AzureOperatorVersion        string
 	ClusterID                   string
 	CGroupsVersion              string
-	DataDisks                   []v1alpha3.DataDisk
+	DataDisks                   []capz.DataDisk
 	EnableAcceleratedNetworking bool
 	KubernetesVersion           string
 	NodepoolName                string
@@ -112,7 +112,7 @@ func toARMParam(v interface{}) interface{} {
 
 func newParameters(parameters map[string]interface{}, cast func(param interface{}) interface{}) (Parameters, error) {
 	// DataDisks is an untyped array so we need to work a little bit to get the right types.
-	var dataDisks []v1alpha3.DataDisk
+	var dataDisks []capz.DataDisk
 	disks, ok := cast(parameters["dataDisks"]).([]interface{})
 	if !ok {
 		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []interface, got '%T'", cast(parameters["dataDisks"]))
@@ -123,7 +123,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		if !ok {
 			return Parameters{}, microerror.Maskf(wrongTypeError, "disk should be map[string]interface{}, got '%T'", disk)
 		}
-		dataDisks = append(dataDisks, v1alpha3.DataDisk{
+		dataDisks = append(dataDisks, capz.DataDisk{
 			NameSuffix: d["nameSuffix"].(string),
 			DiskSizeGB: int32(d["diskSizeGB"].(float64)),
 			Lun:        to.Int32Ptr(int32(d["lun"].(float64))),

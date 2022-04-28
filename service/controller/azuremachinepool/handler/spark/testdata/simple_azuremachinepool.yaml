@@ -1,4 +1,4 @@
-apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureMachinePool
 metadata:
   labels:
@@ -11,11 +11,12 @@ metadata:
   name: nopo1
   namespace: default
   ownerReferences:
-    - apiVersion: exp.cluster.x-k8s.io/v1alpha3
+    - apiVersion: cluster.x-k8s.io/v1beta1
       blockOwnerDeletion: true
       controller: true
       kind: MachinePool
       name: nopo1
+      uid: 849a3391-cf77-4f66-bd42-27f27cf3eeb3
 spec:
   location: westeurope
   template:

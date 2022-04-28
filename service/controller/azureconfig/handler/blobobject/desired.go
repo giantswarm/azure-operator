@@ -4,13 +4,13 @@ import (
 	"context"
 	"sync"
 
-	"github.com/giantswarm/certs/v3/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
+	"github.com/giantswarm/certs/v4/pkg/certs"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v13/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/resourcecanceledcontext"
 	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
@@ -118,9 +118,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	var cluster capiv1alpha3.Cluster
+	var cluster capi.Cluster
 	{
-		cluster = capiv1alpha3.Cluster{}
+		cluster = capi.Cluster{}
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: key.OrganizationNamespace(&cr), Name: cr.Name}, &cluster)
 		if err != nil {
 			return nil, microerror.Mask(err)

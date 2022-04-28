@@ -3,7 +3,7 @@ package azuremachinemetadata
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
 

@@ -6,8 +6,8 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
@@ -47,7 +47,7 @@ func NewAzureMachinePoolSubnetPersister(config AzureMachinePoolSubnetPersisterCo
 func (p *AzureMachinePoolSubnetPersister) Persist(ctx context.Context, subnet net.IPNet, namespace string, name string) error {
 	p.logger.Debugf(ctx, "persisting allocated subnet in AzureCluster CR")
 
-	azureMachinePool := &v1alpha3.AzureMachinePool{}
+	azureMachinePool := &capzexp.AzureMachinePool{}
 	err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
@@ -62,7 +62,7 @@ func (p *AzureMachinePoolSubnetPersister) Persist(ctx context.Context, subnet ne
 	return nil
 }
 
-func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Context, subnet net.IPNet, azureMachinePool *v1alpha3.AzureMachinePool) error {
+func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Context, subnet net.IPNet, azureMachinePool *capzexp.AzureMachinePool) error {
 	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, p.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		errorMessage := "error while getting AzureCluster CR from AzureMachinePool CR metadata"
@@ -70,8 +70,8 @@ func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Co
 		return microerror.Mask(err)
 	}
 
-	azureMachinePoolSubnet := &capzv1alpha3.SubnetSpec{
-		Role:       capzv1alpha3.SubnetNode,
+	azureMachinePoolSubnet := capz.SubnetSpec{
+		Role:       capz.SubnetNode,
 		Name:       azureMachinePool.Name,
 		CIDRBlocks: []string{subnet.String()},
 	}

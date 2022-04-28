@@ -6,12 +6,12 @@ import (
 	"time"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
@@ -33,8 +33,8 @@ const (
 
 type Config struct {
 	Debugger         *debugger.Debugger
-	G8sClient        versioned.Interface
 	InstallationName string
+	CtrlClient       ctrlClient.Client
 	Logger           micrologger.Logger
 
 	Azure                      setting.Azure
@@ -46,8 +46,8 @@ type Config struct {
 
 type Resource struct {
 	debugger         *debugger.Debugger
-	g8sClient        versioned.Interface
 	installationName string
+	ctrlClient       ctrlClient.Client
 	logger           micrologger.Logger
 
 	azure                      setting.Azure
@@ -69,11 +69,11 @@ func New(config Config) (*Resource, error) {
 	if config.Debugger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
 	}
-	if config.G8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
-	}
 	if config.InstallationName == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
+	}
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -87,8 +87,8 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		debugger:         config.Debugger,
-		g8sClient:        config.G8sClient,
 		installationName: config.InstallationName,
+		ctrlClient:       config.CtrlClient,
 		logger:           config.Logger,
 
 		azure:                      config.Azure,
@@ -350,7 +350,12 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClie
 
 func (r *Resource) getResourceStatus(ctx context.Context, customObject providerv1alpha1.AzureConfig, t string) (string, error) {
 	{
-		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(ctx, customObject.Name, metav1.GetOptions{})
+		objectKey := ctrlClient.ObjectKey{
+			Namespace: customObject.Namespace,
+			Name:      customObject.Name,
+		}
+		c := &providerv1alpha1.AzureConfig{}
+		err := r.ctrlClient.Get(ctx, objectKey, c)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -380,7 +385,12 @@ func (r *Resource) setResourceStatus(ctx context.Context, customObject providerv
 	//	 latest version and try again
 	//
 	{
-		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(ctx, customObject.Name, metav1.GetOptions{})
+		objectKey := ctrlClient.ObjectKey{
+			Namespace: customObject.Namespace,
+			Name:      customObject.Name,
+		}
+		c := &providerv1alpha1.AzureConfig{}
+		err := r.ctrlClient.Get(ctx, objectKey, c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -421,8 +431,7 @@ func (r *Resource) setResourceStatus(ctx context.Context, customObject providerv
 	}
 
 	{
-		n := customObject.GetNamespace()
-		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(ctx, &customObject, metav1.UpdateOptions{})
+		err := r.ctrlClient.Update(ctx, &customObject)
 		if err != nil {
 			return microerror.Mask(err)
 		}

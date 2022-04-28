@@ -13,21 +13,21 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/certs/v3/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v11/pkg/template"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/certs/v4/pkg/certs"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v13/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	capiutil "sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -221,7 +221,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster, machinePool *expcapiv1alpha3.MachinePool, azureMachinePool *expcapzv1alpha3.AzureMachinePool) ([]byte, error) {
+func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capi.Cluster, azureCluster *capz.AzureCluster, machinePool *capiexp.MachinePool, azureMachinePool *capzexp.AzureMachinePool) ([]byte, error) {
 	release, err := r.getRelease(ctx, machinePool.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -398,12 +398,12 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 }
 
 // getAzureCluster finds and returns an AzureCluster object using the specified params.
-func (r *Resource) getAzureCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
+func (r *Resource) getAzureCluster(ctx context.Context, cluster *capi.Cluster) (*capz.AzureCluster, error) {
 	if cluster.Spec.InfrastructureRef == nil {
 		return nil, microerror.Maskf(executionFailedError, "Cluster.Spec.InfrasturctureRef == nil")
 	}
 
-	azureCluster := &capzv1alpha3.AzureCluster{}
+	azureCluster := &capz.AzureCluster{}
 	objectKey := client.ObjectKey{Name: cluster.Spec.InfrastructureRef.Name, Namespace: cluster.Namespace}
 	if err := r.ctrlClient.Get(ctx, objectKey, azureCluster); err != nil {
 		return nil, microerror.Mask(err)
@@ -415,8 +415,8 @@ func (r *Resource) getAzureCluster(ctx context.Context, cluster *capiv1alpha3.Cl
 }
 
 // getMachinePoolByName finds and return a MachinePool object using the specified params.
-func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*expcapiv1alpha3.MachinePool, error) {
-	machinePool := &expcapiv1alpha3.MachinePool{}
+func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*capiexp.MachinePool, error) {
+	machinePool := &capiexp.MachinePool{}
 	objectKey := client.ObjectKey{Name: name, Namespace: namespace}
 	if err := r.ctrlClient.Get(ctx, objectKey, machinePool); err != nil {
 		return nil, err
@@ -428,9 +428,9 @@ func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name str
 }
 
 // getOwnerMachinePool returns the MachinePool object owning the current resource.
-func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*expcapiv1alpha3.MachinePool, error) {
+func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*capiexp.MachinePool, error) {
 	for _, ref := range obj.OwnerReferences {
-		if ref.Kind == "MachinePool" && ref.APIVersion == expcapiv1alpha3.GroupVersion.String() {
+		if ref.Kind == "MachinePool" && ref.APIVersion == capiexp.GroupVersion.String() {
 			return r.getMachinePoolByName(ctx, obj.Namespace, ref.Name)
 		}
 	}
@@ -453,7 +453,7 @@ func (r *Resource) getRelease(ctx context.Context, obj metav1.ObjectMeta) (*rele
 	return release, nil
 }
 
-func getAvailabilityZones(machinePool expcapiv1alpha3.MachinePool) ([]int, error) {
+func getAvailabilityZones(machinePool capiexp.MachinePool) ([]int, error) {
 	var availabilityZones []int
 	for _, fd := range machinePool.Spec.FailureDomains {
 		intFd, err := strconv.Atoi(fd)
@@ -466,7 +466,7 @@ func getAvailabilityZones(machinePool expcapiv1alpha3.MachinePool) ([]int, error
 	return availabilityZones, nil
 }
 
-func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster, machinePool *expcapiv1alpha3.MachinePool, azureMachinePool *expcapzv1alpha3.AzureMachinePool, credentialSecret *providerv1alpha1.CredentialSecret) (providerv1alpha1.AzureConfig, error) {
+func (r *Resource) buildAzureConfig(cluster *capi.Cluster, azureCluster *capz.AzureCluster, machinePool *capiexp.MachinePool, azureMachinePool *capzexp.AzureMachinePool, credentialSecret *providerv1alpha1.CredentialSecret) (providerv1alpha1.AzureConfig, error) {
 	var err error
 
 	azureConfig := providerv1alpha1.AzureConfig{}
@@ -490,7 +490,7 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 
 	{
 		azureConfig.Labels[label.Cluster] = key.ClusterName(cluster)
-		azureConfig.Labels[capiv1alpha3.ClusterLabelName] = key.ClusterName(cluster)
+		azureConfig.Labels[capi.ClusterLabelName] = key.ClusterName(cluster)
 		azureConfig.Labels[label.Organization] = key.OrganizationID(cluster)
 		azureConfig.Labels[label.ReleaseVersion] = key.ReleaseVersion(cluster)
 		azureConfig.Labels[label.OperatorVersion] = key.OperatorVersion(azureCluster)
@@ -558,7 +558,7 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 	return azureConfig, nil
 }
 
-func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster, machinePool *expcapiv1alpha3.MachinePool) (providerv1alpha1.Cluster, error) {
+func (r *Resource) newCluster(cluster *capi.Cluster, azureCluster *capz.AzureCluster, machinePool *capiexp.MachinePool) (providerv1alpha1.Cluster, error) {
 	commonCluster := providerv1alpha1.Cluster{}
 
 	{
@@ -680,7 +680,7 @@ func newSpecClusterWorkerNodes(numWorkers int) []providerv1alpha1.ClusterNode {
 	return workerNodes
 }
 
-func newAPIServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
+func newAPIServerDomain(cr capz.AzureCluster) (string, error) {
 	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
 	splitted[0] = certs.APICert.String()
 	apiServerDomain := strings.Join(splitted, ".")
@@ -688,7 +688,7 @@ func newAPIServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
 	return apiServerDomain, nil
 }
 
-func newEtcdServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
+func newEtcdServerDomain(cr capz.AzureCluster) (string, error) {
 	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
 	splitted[0] = certs.EtcdCert.String()
 	etcdServerDomain := strings.Join(splitted, ".")
@@ -696,7 +696,7 @@ func newEtcdServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
 	return etcdServerDomain, nil
 }
 
-func newKubeletDomain(cr capzv1alpha3.AzureCluster) (string, error) {
+func newKubeletDomain(cr capz.AzureCluster) (string, error) {
 	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
 	splitted[0] = certs.WorkerCert.String()
 	kubeletDomain := strings.Join(splitted, ".")

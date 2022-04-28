@@ -3,10 +3,10 @@ package nodepool
 import (
 	"context"
 
-	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -66,7 +66,7 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	return CordonOldWorkerInstances, nil
 }
 
-func countReadyNodes(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *v1alpha3.AzureMachinePool, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
+func countReadyNodes(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *capzexp.AzureMachinePool, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
 	nodeList := &corev1.NodeList{}
 	labelSelector := ctrlclient.MatchingLabels{apiextensionslabels.MachinePool: azureMachinePool.Name}
 	err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
@@ -84,7 +84,7 @@ func countReadyNodes(ctx context.Context, tenantClusterK8sClient ctrlclient.Clie
 	return numNodes, nil
 }
 
-func areNodesReadyForTransitioning(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *v1alpha3.AzureMachinePool, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
+func areNodesReadyForTransitioning(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *capzexp.AzureMachinePool, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
 	numNodes, err := countReadyNodes(ctx, tenantClusterK8sClient, azureMachinePool, nodeRoleMatchFunc)
 	if err != nil {
 		return false, microerror.Mask(err)

@@ -12,9 +12,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
@@ -122,7 +122,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, natGatewaysClient *network.NatGatewaysClient, azureCluster *capzv1alpha3.AzureCluster) error {
+func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, natGatewaysClient *network.NatGatewaysClient, azureCluster *capz.AzureCluster) error {
 	natGw, err := natGatewaysClient.Get(ctx, key.ClusterID(azureCluster), "workers-nat-gw", "")
 	if IsNotFound(err) {
 		return microerror.Mask(natGatewayNotReadyError)
@@ -231,7 +231,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 
 // garbageCollectSubnets removes subnets that have an ARM deployment in Azure but are not defined in `AzureCluster`.
 // This is required because when removing a node pool, we remove the subnet from `AzureCluster`, so we can remove it here from Azure.
-func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, subnetsClient *network.SubnetsClient, azureCluster capzv1alpha3.AzureCluster) error {
+func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, subnetsClient *network.SubnetsClient, azureCluster capz.AzureCluster) error {
 	subnetsIterator, err := subnetsClient.ListComplete(ctx, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name)
 	if IsNotFound(err) {
 		r.logger.Debugf(ctx, "Vnet %#q not found, cancelling resource", azureCluster.Spec.NetworkSpec.Vnet.Name)
@@ -309,7 +309,7 @@ func isProtectedSubnet(subnetName string) bool {
 	return strings.HasSuffix(subnetName, "-MasterSubnet") || strings.HasSuffix(subnetName, "-WorkerSubnet") || strings.HasSuffix(subnetName, key.VNetGatewaySubnetName())
 }
 
-func isSubnetInAzureClusterSpec(azureCluster capzv1alpha3.AzureCluster, subnetName string) bool {
+func isSubnetInAzureClusterSpec(azureCluster capz.AzureCluster, subnetName string) bool {
 	for _, subnetInSpec := range azureCluster.Spec.NetworkSpec.Subnets {
 		if subnetInSpec.Name == subnetName {
 			return true
@@ -333,7 +333,7 @@ func getSubnetIDFromDeploymentOutput(currentDeployment azureresource.DeploymentE
 	return subnetID["value"].(string), nil
 }
 
-func (r *Resource) ensureSubnetIsAllowedToStorageAccount(ctx context.Context, storageAccountsClient *storage.AccountsClient, azureCluster *capzv1alpha3.AzureCluster, allocatedSubnet *capzv1alpha3.SubnetSpec) error {
+func (r *Resource) ensureSubnetIsAllowedToStorageAccount(ctx context.Context, storageAccountsClient *storage.AccountsClient, azureCluster *capz.AzureCluster, allocatedSubnet capz.SubnetSpec) error {
 	storageAccount, err := storageAccountsClient.GetProperties(ctx, key.ClusterID(azureCluster), key.StorageAccountName(azureCluster), "")
 	if err != nil {
 		return microerror.Mask(err)
@@ -385,7 +385,7 @@ func isSubnetAllowedToStorageAccount(storageAccount storage.Account, subnetID st
 
 // This functions decides whether or not the ARM deployment is out of date.
 // We only take into consideration the subnet's name and CIDR.
-func (r *Resource) isDeploymentOutOfDate(ctx context.Context, allocatedSubnet *capzv1alpha3.SubnetSpec, currentDeployment azureresource.DeploymentExtended) (bool, error) {
+func (r *Resource) isDeploymentOutOfDate(ctx context.Context, allocatedSubnet capz.SubnetSpec, currentDeployment azureresource.DeploymentExtended) (bool, error) {
 	currentParams, ok := currentDeployment.Properties.Parameters.(map[string]interface{})
 	if !ok {
 		return false, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, currentDeployment.Properties.Parameters)
@@ -406,7 +406,7 @@ func (r *Resource) isDeploymentOutOfDate(ctx context.Context, allocatedSubnet *c
 	return allocatedSubnet.Name != nodepoolName || allocatedSubnet.CIDRBlocks[0] != subnetCidr, nil
 }
 
-func (r *Resource) getDeploymentParameters(azureCluster *capzv1alpha3.AzureCluster, natGatewayId string, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
+func (r *Resource) getDeploymentParameters(azureCluster *capz.AzureCluster, natGatewayId string, allocatedSubnet capz.SubnetSpec) (map[string]interface{}, error) {
 	// @TODO: nat gateway, route table and security group names should come from CR state instead of convention.
 	return map[string]interface{}{
 		"natGatewayId":       natGatewayId,

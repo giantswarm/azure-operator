@@ -8,10 +8,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -206,7 +206,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 }
 
-func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, azureMachinePool *capzexpv1alpha3.AzureMachinePool, vmss compute.VirtualMachineScaleSet) error {
+func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, azureMachinePool *capzexp.AzureMachinePool, vmss compute.VirtualMachineScaleSet) error {
 	if vmss.IsHTTPStatus(http.StatusNotFound) {
 		return nil
 	}
@@ -235,7 +235,7 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetV
 		return microerror.Mask(err)
 	}
 
-	provisioningState := capzv1alpha3.VMState(*vmss.ProvisioningState)
+	provisioningState := capz.ProvisioningState(*vmss.ProvisioningState)
 	azureMachinePool.Status.ProvisioningState = &provisioningState
 	azureMachinePool.Status.Ready = provisioningState == "Succeeded"
 	azureMachinePool.Status.Replicas = int32(len(instances))
@@ -259,7 +259,7 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func (r *Resource) ensureDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, desiredDeployment azureresource.Deployment, azureMachinePool *capzexpv1alpha3.AzureMachinePool) (azureresource.Deployment, error) {
+func (r *Resource) ensureDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, desiredDeployment azureresource.Deployment, azureMachinePool *capzexp.AzureMachinePool) (azureresource.Deployment, error) {
 	r.Logger.Debugf(ctx, "ensuring deployment")
 
 	err := r.CreateARMDeployment(ctx, deploymentsClient, desiredDeployment, key.ClusterID(azureMachinePool), key.NodePoolDeploymentName(azureMachinePool))

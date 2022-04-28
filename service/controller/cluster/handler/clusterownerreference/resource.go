@@ -9,9 +9,9 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -95,11 +95,11 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.Cluster) error {
+func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capi.Cluster) error {
 	var err error
-	r.logger.Debugf(ctx, "Ensuring %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name)
+	r.logger.Debugf(ctx, "Ensuring %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capi.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name)
 
-	azureCluster := v1alpha3.AzureCluster{}
+	azureCluster := capz.AzureCluster{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: cluster.Spec.InfrastructureRef.Name}, &azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
@@ -112,7 +112,7 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 	if azureCluster.Labels == nil {
 		azureCluster.Labels = make(map[string]string)
 	}
-	azureCluster.Labels[capiv1alpha3.ClusterLabelName] = cluster.Name
+	azureCluster.Labels[capi.ClusterLabelName] = cluster.Name
 
 	// Set Cluster as owner of AzureCluster
 	err = controllerutil.SetControllerReference(&cluster, &azureCluster, r.scheme)
@@ -129,7 +129,7 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "Ensured %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name)
+	r.logger.Debugf(ctx, "Ensured %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capi.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name)
 
 	if cluster.Spec.InfrastructureRef != nil && cluster.Spec.InfrastructureRef.APIVersion != "" {
 		// Correct Cluster.Spec.InfrastructureRef with APIVersion is already set
@@ -158,13 +158,13 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 	return nil
 }
 
-func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.Cluster) error {
+func (r *Resource) ensureMachinePools(ctx context.Context, cluster capi.Cluster) error {
 	var err error
 
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterName(&cluster),
+		capi.ClusterLabelName: key.ClusterName(&cluster),
 	}
-	mpList := new(expcapiv1alpha3.MachinePoolList)
+	mpList := new(capiexp.MachinePoolList)
 	err = r.ctrlClient.List(ctx, mpList, o)
 	if err != nil {
 		return microerror.Mask(err)
@@ -178,12 +178,12 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 			continue
 		}
 
-		r.logger.Debugf(ctx, "Ensuring %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name)
+		r.logger.Debugf(ctx, "Ensuring %s label and 'ownerReference' fields on MachinePool '%s/%s'", capi.ClusterLabelName, machinePool.Namespace, machinePool.Name)
 
 		if machinePool.Labels == nil {
 			machinePool.Labels = make(map[string]string)
 		}
-		machinePool.Labels[capiv1alpha3.ClusterLabelName] = cluster.Name
+		machinePool.Labels[capi.ClusterLabelName] = cluster.Name
 
 		// Set Cluster as owner of MachinePool
 		err = controllerutil.SetControllerReference(&cluster, &machinePool, r.scheme)
@@ -200,7 +200,7 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 			return microerror.Mask(err)
 		}
 
-		r.logger.Debugf(ctx, "Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name)
+		r.logger.Debugf(ctx, "Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capi.ClusterLabelName, machinePool.Namespace, machinePool.Name)
 	}
 
 	return nil

@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/unittest"
@@ -78,12 +78,12 @@ func givenSparkCRInK8sAPI(ctx context.Context, t *testing.T, ctrlClient client.C
 }
 
 func whenNodePoolIsDeleted(ctx context.Context, t *testing.T, handler Resource, azureMachinePoolNamespace, azureMachinePoolName string) {
-	azureMachinePool := &v1alpha3.AzureMachinePool{
+	azureMachinePool := &capzexp.AzureMachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: azureMachinePoolNamespace,
 			Name:      azureMachinePoolName,
 		},
-		Spec: v1alpha3.AzureMachinePoolSpec{},
+		Spec: capzexp.AzureMachinePoolSpec{},
 	}
 
 	err := handler.EnsureDeleted(ctx, azureMachinePool)

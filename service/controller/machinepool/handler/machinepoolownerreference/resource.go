@@ -9,8 +9,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiutil "sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -64,9 +64,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "Ensuring %#q label and 'ownerReference' fields on MachinePool '%s/%s' and AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name)
+	r.logger.Debugf(ctx, "Ensuring %#q label and 'ownerReference' fields on MachinePool '%s/%s' and AzureMachinePool '%s/%s'", capi.ClusterLabelName, machinePool.Namespace, machinePool.Name, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name)
 
-	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
+	azureMachinePool := capzexp.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if apierrors.IsNotFound(err) {
 		r.logger.Debugf(ctx, "AzureMachinePool %s/%s was not found for MachinePool %#q, skipping setting owner reference", machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name, machinePool.Name)
@@ -84,12 +84,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if machinePool.Labels == nil {
 		machinePool.Labels = make(map[string]string)
 	}
-	machinePool.Labels[capiv1alpha3.ClusterLabelName] = machinePool.Spec.ClusterName
+	machinePool.Labels[capi.ClusterLabelName] = machinePool.Spec.ClusterName
 
 	if azureMachinePool.Labels == nil {
 		azureMachinePool.Labels = make(map[string]string)
 	}
-	azureMachinePool.Labels[capiv1alpha3.ClusterLabelName] = machinePool.Spec.ClusterName
+	azureMachinePool.Labels[capi.ClusterLabelName] = machinePool.Spec.ClusterName
 
 	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.Namespace, machinePool.Spec.ClusterName)
 	if err != nil {
@@ -103,7 +103,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	// Set Cluster as owner of MachinePool
 	machinePool.OwnerReferences = capiutil.EnsureOwnerRef(machinePool.OwnerReferences, metav1.OwnerReference{
-		APIVersion: capiv1alpha3.GroupVersion.String(),
+		APIVersion: capi.GroupVersion.String(),
 		Kind:       "Cluster",
 		Name:       cluster.Name,
 		UID:        cluster.UID,
@@ -118,7 +118,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capi.ClusterLabelName, machinePool.Namespace, machinePool.Name))
 
 	// Set MachinePool as owner of AzureMachinePool
 	err = controllerutil.SetControllerReference(&machinePool, &azureMachinePool, r.scheme)
@@ -135,7 +135,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name))
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureMachinePool '%s/%s'", capi.ClusterLabelName, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name))
 
 	return nil
 }

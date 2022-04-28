@@ -4,19 +4,19 @@ import (
 	"context"
 	"time"
 
-	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/certs/v4/pkg/certs"
 	"github.com/giantswarm/conditions-handler/pkg/factory"
 	conditionshandler "github.com/giantswarm/conditions-handler/pkg/handler"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/metricsresource"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/wrapper/metricsresource"
+	"github.com/giantswarm/operatorkit/v7/pkg/resource/wrapper/retryresource"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -62,8 +62,8 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 			// Name is used to compute finalizer names. This results in something
 			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
 			Name: project.Name() + "-machine-pool-controller",
-			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(expcapiv1alpha3.MachinePool)
+			NewRuntimeObjectFunc: func() ctrlClient.Object {
+				return new(capiexp.MachinePool)
 			},
 			Resources: resources,
 			Selector: labels.SelectorFromSet(map[string]string{

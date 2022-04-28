@@ -6,11 +6,11 @@ import (
 	"strconv"
 
 	"github.com/Azure/go-autorest/autorest/to"
-	apiextannotation "github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
-	apiextlabel "github.com/giantswarm/apiextensions/v3/pkg/label"
+	apiextannotation "github.com/giantswarm/apiextensions/v6/pkg/annotation"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
+	apiextlabel "github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -18,10 +18,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/reference"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/azure"
@@ -184,7 +184,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 func (r *Resource) allDrainerConfigsWithDrainedState(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
+		capi.ClusterLabelName: key.ClusterID(&cr),
 	}
 
 	var dcList corev1alpha1.DrainerConfigList
@@ -204,7 +204,7 @@ func (r *Resource) allDrainerConfigsWithDrainedState(ctx context.Context, cr pro
 
 func (r *Resource) deleteTimedOutDrainerConfigs(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
+		capi.ClusterLabelName: key.ClusterID(&cr),
 	}
 
 	var dcList corev1alpha1.DrainerConfigList
@@ -226,7 +226,7 @@ func (r *Resource) deleteTimedOutDrainerConfigs(ctx context.Context, cr provider
 }
 
 func (r *Resource) deleteDrainerConfigs(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
-	err := r.ctrlClient.DeleteAllOf(ctx, &corev1alpha1.DrainerConfig{}, client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterID(&cr)}, client.InNamespace(key.ClusterID(&cr)))
+	err := r.ctrlClient.DeleteAllOf(ctx, &corev1alpha1.DrainerConfig{}, client.MatchingLabels{capi.ClusterLabelName: key.ClusterID(&cr)}, client.InNamespace(key.ClusterID(&cr)))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -234,8 +234,8 @@ func (r *Resource) deleteDrainerConfigs(ctx context.Context, cr providerv1alpha1
 	return nil
 }
 
-func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr providerv1alpha1.AzureConfig, vmSize string) (expcapzv1alpha3.AzureMachinePool, error) {
-	var azureMachinePool expcapzv1alpha3.AzureMachinePool
+func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr providerv1alpha1.AzureConfig, vmSize string) (capzexp.AzureMachinePool, error) {
+	var azureMachinePool capzexp.AzureMachinePool
 
 	nsName := types.NamespacedName{
 		Name:      cr.GetName(),
@@ -248,7 +248,7 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 	} else if errors.IsNotFound(err) {
 		// This is ok. CR gets created in a bit.
 	} else if err != nil {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Mask(err)
+		return capzexp.AzureMachinePool{}, microerror.Mask(err)
 	}
 
 	var dockerDiskSizeGB int
@@ -269,23 +269,23 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 	}
 
 	// CR didn't exist so it's created here.
-	azureMachinePool = expcapzv1alpha3.AzureMachinePool{
+	azureMachinePool = capzexp.AzureMachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
-				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
-				label.Cluster:                 key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
-				label.MachinePool:             key.ClusterID(&cr),
-				label.Organization:            key.OrganizationID(&cr),
-				label.ReleaseVersion:          key.ReleaseVersion(&cr),
+				label.AzureOperatorVersion: key.OperatorVersion(&cr),
+				label.Cluster:              key.ClusterID(&cr),
+				capi.ClusterLabelName:      key.ClusterName(&cr),
+				label.MachinePool:          key.ClusterID(&cr),
+				label.Organization:         key.OrganizationID(&cr),
+				label.ReleaseVersion:       key.ReleaseVersion(&cr),
 			},
 		},
-		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
+		Spec: capzexp.AzureMachinePoolSpec{
 			Location: r.location,
-			Template: expcapzv1alpha3.AzureMachineTemplate{
-				DataDisks: []capzv1alpha3.DataDisk{
+			Template: capzexp.AzureMachinePoolMachineTemplate{
+				DataDisks: []capz.DataDisk{
 					{
 						NameSuffix: "docker",
 						DiskSizeGB: int32(dockerDiskSizeGB),
@@ -304,7 +304,7 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 
 	err = r.ctrlClient.Create(ctx, &azureMachinePool)
 	if err != nil {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Mask(err)
+		return capzexp.AzureMachinePool{}, microerror.Mask(err)
 	}
 
 	return azureMachinePool, nil
@@ -324,8 +324,8 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 		c := &corev1alpha1.DrainerConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Labels: map[string]string{
-					label.Cluster:                 key.ClusterID(&cr),
-					capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
+					label.Cluster:         key.ClusterID(&cr),
+					capi.ClusterLabelName: key.ClusterID(&cr),
 				},
 				Name:      name,
 				Namespace: key.ClusterID(&cr),
@@ -362,8 +362,8 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 	return nil
 }
 
-func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alpha1.Spark, cr providerv1alpha1.AzureConfig, azureMachinePool expcapzv1alpha3.AzureMachinePool, replicas int) (expcapiv1alpha3.MachinePool, error) {
-	var machinePool expcapiv1alpha3.MachinePool
+func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alpha1.Spark, cr providerv1alpha1.AzureConfig, azureMachinePool capzexp.AzureMachinePool, replicas int) (capiexp.MachinePool, error) {
+	var machinePool capiexp.MachinePool
 
 	nsName := types.NamespacedName{
 		Name:      cr.GetName(),
@@ -376,7 +376,7 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alph
 	} else if errors.IsNotFound(err) {
 		// This is ok. CR gets created in a bit.
 	} else if err != nil {
-		return expcapiv1alpha3.MachinePool{}, microerror.Mask(err)
+		return capiexp.MachinePool{}, microerror.Mask(err)
 	}
 
 	s := runtime.NewScheme()
@@ -386,9 +386,9 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alph
 			panic(fmt.Sprintf("corev1alpha1.AddToScheme: %+v", err))
 		}
 
-		err = expcapzv1alpha3.AddToScheme(s)
+		err = capzexp.AddToScheme(s)
 		if err != nil {
-			panic(fmt.Sprintf("expcapzv1alpha3.AddToScheme: %+v", err))
+			panic(fmt.Sprintf("capzexp.AddToScheme: %+v", err))
 		}
 	}
 
@@ -408,14 +408,14 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alph
 		}
 	}
 
-	mp := expcapiv1alpha3.MachinePool{
+	mp := capiexp.MachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
 				apiextlabel.AzureOperatorVersion: key.OperatorVersion(&cr),
 				apiextlabel.Cluster:              key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName:    key.ClusterID(&cr),
+				capi.ClusterLabelName:            key.ClusterID(&cr),
 				apiextlabel.MachinePool:          key.ClusterID(&cr),
 				apiextlabel.Organization:         key.OrganizationID(&cr),
 				apiextlabel.ReleaseVersion:       key.ReleaseVersion(&cr),
@@ -426,13 +426,13 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alph
 				apiextannotation.NodePoolMaxSize: fmt.Sprintf("%d", replicas),
 			},
 		},
-		Spec: expcapiv1alpha3.MachinePoolSpec{
+		Spec: capiexp.MachinePoolSpec{
 			ClusterName:    key.ClusterID(&cr),
 			Replicas:       to.Int32Ptr(int32(replicas)),
 			FailureDomains: intSliceToStringSlice(key.AvailabilityZones(cr, r.location)),
-			Template: capiv1alpha3.MachineTemplateSpec{
-				Spec: capiv1alpha3.MachineSpec{
-					Bootstrap: capiv1alpha3.Bootstrap{
+			Template: capi.MachineTemplateSpec{
+				Spec: capi.MachineSpec{
+					Bootstrap: capi.Bootstrap{
 						ConfigRef: bootstrapCRRef,
 					},
 					ClusterName:       key.ClusterID(&cr),
@@ -444,7 +444,7 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alph
 
 	err = r.ctrlClient.Create(ctx, &mp)
 	if err != nil {
-		return expcapiv1alpha3.MachinePool{}, microerror.Mask(err)
+		return capiexp.MachinePool{}, microerror.Mask(err)
 	}
 
 	return mp, nil
@@ -472,9 +472,9 @@ func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.Az
 			Name:      cr.Name,
 			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
-				apiextlabel.Cluster:           key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
-				apiextlabel.ReleaseVersion:    key.ReleaseVersion(&cr),
+				apiextlabel.Cluster:        key.ClusterID(&cr),
+				capi.ClusterLabelName:      key.ClusterName(&cr),
+				apiextlabel.ReleaseVersion: key.ReleaseVersion(&cr),
 			},
 		},
 		Spec: corev1alpha1.SparkSpec{},

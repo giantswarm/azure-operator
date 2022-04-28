@@ -3,11 +3,11 @@ package azuremachinepoolconditions
 import (
 	"context"
 
-	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
+	azureconditions "github.com/giantswarm/apiextensions/v6/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 )
 

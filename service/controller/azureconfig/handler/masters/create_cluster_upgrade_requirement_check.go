@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/giantswarm/errors/tenant"
-	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
+	"github.com/giantswarm/tenantcluster/v6/pkg/tenantcluster"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
@@ -73,11 +73,11 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	return DeploymentCompleted, nil
 }
 
-func (r *Resource) getCluster(ctx context.Context, cr *providerv1alpha1.AzureConfig) (*capiv1alpha3.Cluster, error) {
+func (r *Resource) getCluster(ctx context.Context, cr *providerv1alpha1.AzureConfig) (*capi.Cluster, error) {
 	orgNs := key.OrganizationNamespace(cr)
 
-	cluster := &capiv1alpha3.Cluster{}
-	err := r.ctrlClient.Get(ctx, client.ObjectKey{Name: cr.Labels[capiv1alpha3.ClusterLabelName], Namespace: orgNs}, cluster)
+	cluster := &capi.Cluster{}
+	err := r.ctrlClient.Get(ctx, client.ObjectKey{Name: cr.Labels[capi.ClusterLabelName], Namespace: orgNs}, cluster)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -62,7 +62,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) removeSubnetFromAzureCluster(ctx context.Context, azureCluster *capzv1alpha3.AzureCluster, subnetName string) error {
+func (r *Resource) removeSubnetFromAzureCluster(ctx context.Context, azureCluster *capz.AzureCluster, subnetName string) error {
 	subnetPosition := -1
 	for i, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
 		if subnet.Name == subnetName {
@@ -87,7 +87,7 @@ func (r *Resource) removeSubnetFromAzureCluster(ctx context.Context, azureCluste
 	return nil
 }
 
-func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
+func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
 	var err error
 
 	err = r.deleteARMDeployment(ctx, azureMachinePool, key.ClusterID(azureMachinePool), key.NodePoolDeploymentName(azureMachinePool))
@@ -105,7 +105,7 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp
 
 // Deletes all the node objects belonging to the node pool using the k8s API.
 // This happens automatically eventually, but we make this much quicker by doing it on the API server directly.
-func (r *Resource) removeNodesFromK8s(ctx context.Context, ctrlClient client.Client, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
+func (r *Resource) removeNodesFromK8s(ctx context.Context, ctrlClient client.Client, azureMachinePool *capzexp.AzureMachinePool) error {
 	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting nodes from k8s API for machine pool %s", azureMachinePool.Name))
 
 	err := ctrlClient.DeleteAllOf(ctx, &corev1.Node{}, client.MatchingLabels{label.MachinePool: azureMachinePool.Name})
@@ -119,7 +119,7 @@ func (r *Resource) removeNodesFromK8s(ctx context.Context, ctrlClient client.Cli
 }
 
 // deleteARMDeployment deletes the ARM deployment from Azure.
-func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, deploymentName string) error {
+func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool, resourceGroupName, deploymentName string) error {
 	r.Logger.Debugf(ctx, "Deleting machine pool ARM deployment")
 
 	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
@@ -141,7 +141,7 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *ca
 }
 
 // deleteVMSS deletes the VMSS from Azure.
-func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, vmssName string) error {
+func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool, resourceGroupName, vmssName string) error {
 	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
@@ -181,7 +181,7 @@ func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexpv1al
 }
 
 // removeRoleAssignment deletes the role assignment from a node pool's VMSS to allow recreation of a node pool with the same name.
-func (r *Resource) removeRoleAssignmentForPrincipalID(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, principalID string) error {
+func (r *Resource) removeRoleAssignmentForPrincipalID(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool, principalID string) error {
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS's role assignment(s)")
 
 	roleAssignmentsClient, err := r.ClientFactory.GetRoleAssignmentsClient(ctx, azureMachinePool.ObjectMeta)

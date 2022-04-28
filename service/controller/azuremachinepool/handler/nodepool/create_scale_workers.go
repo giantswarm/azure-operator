@@ -6,11 +6,11 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/coreos/go-semver/semver"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -155,7 +155,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	return WaitForWorkersToBecomeReady, nil
 }
 
-func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachinePool capzv1alpha3.AzureMachinePool) ([]compute.VirtualMachineScaleSetVM, []compute.VirtualMachineScaleSetVM, error) {
+func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachinePool capzexp.AzureMachinePool) ([]compute.VirtualMachineScaleSetVM, []compute.VirtualMachineScaleSetVM, error) {
 	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
@@ -236,7 +236,7 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantCluste
 	return nil, nil
 }
 
-func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, cluster *capiv1alpha3.Cluster, azureMachinePool capzv1alpha3.AzureMachinePool, instance compute.VirtualMachineScaleSetVM) (bool, error) {
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, cluster *capi.Cluster, azureMachinePool capzexp.AzureMachinePool, instance compute.VirtualMachineScaleSetVM) (bool, error) {
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if err != nil {
 		return false, microerror.Mask(err)
@@ -291,7 +291,7 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clus
 	return false, nil
 }
 
-func (r *Resource) scaleVMSS(ctx context.Context, azureMachinePool capzv1alpha3.AzureMachinePool, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) (int64, error) {
+func (r *Resource) scaleVMSS(ctx context.Context, azureMachinePool capzexp.AzureMachinePool, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) (int64, error) {
 	resourceGroup := key.ClusterID(&azureMachinePool)
 	vmssName := key.NodePoolVMSSName(&azureMachinePool)
 

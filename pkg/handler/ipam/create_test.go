@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/giantswarm/micrologger/microloggertest"
-	capzExpV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 )
@@ -78,7 +78,7 @@ func Test_SubnetAllocator(t *testing.T) {
 				}
 			}
 
-			err = newResource.EnsureCreated(context.Background(), &capzExpV1alpha3.AzureMachinePool{})
+			err = newResource.EnsureCreated(context.Background(), &capzexp.AzureMachinePool{})
 			if err != nil {
 				t.Fatal(err)
 			}

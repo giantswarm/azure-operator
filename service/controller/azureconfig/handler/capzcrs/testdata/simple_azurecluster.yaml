@@ -1,4 +1,4 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureCluster
 metadata:
   annotations:
@@ -24,9 +24,4 @@ spec:
       resourceGroup: c6fme
   resourceGroup: ""
 status:
-  network:
-    apiServerIp: {}
-    apiServerLb:
-      backendPool: {}
-      frontendIpConfig: {}
   ready: false

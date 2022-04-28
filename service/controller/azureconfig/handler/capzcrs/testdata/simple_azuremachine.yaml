@@ -1,4 +1,4 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureMachine
 metadata:
   labels:
@@ -11,7 +11,6 @@ metadata:
   name: c6fme-master-0
   namespace: org-giantswarm
 spec:
-  availabilityZone: {}
   failureDomain: "1"
   image:
     marketplace:
@@ -20,7 +19,6 @@ spec:
       sku: stable
       thirdPartyImage: false
       version: 2345.3.1
-  location: westeurope
   osDisk:
     diskSizeGB: 50
     managedDisk:

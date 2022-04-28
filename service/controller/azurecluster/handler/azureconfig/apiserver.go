@@ -3,11 +3,11 @@ package azureconfig
 import (
 	"strings"
 
-	"github.com/giantswarm/certs/v3/pkg/certs"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	"github.com/giantswarm/certs/v4/pkg/certs"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 )
 
-func newAPIServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
+func newAPIServerDomain(cr capz.AzureCluster) (string, error) {
 	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
 	splitted[0] = certs.APICert.String()
 	apiServerDomain := strings.Join(splitted, ".")
@@ -15,7 +15,7 @@ func newAPIServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
 	return apiServerDomain, nil
 }
 
-func newEtcdServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
+func newEtcdServerDomain(cr capz.AzureCluster) (string, error) {
 	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
 	splitted[0] = certs.EtcdCert.String()
 	etcdServerDomain := strings.Join(splitted, ".")
@@ -23,7 +23,7 @@ func newEtcdServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
 	return etcdServerDomain, nil
 }
 
-func newKubeletDomain(cr capzv1alpha3.AzureCluster) (string, error) {
+func newKubeletDomain(cr capz.AzureCluster) (string, error) {
 	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
 	splitted[0] = certs.WorkerCert.String()
 	kubeletDomain := strings.Join(splitted, ".")

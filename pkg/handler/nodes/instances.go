@@ -6,12 +6,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
-func (r *Resource) GetVMSSInstances(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool) ([]compute.VirtualMachineScaleSetVM, error) {
+func (r *Resource) GetVMSSInstances(ctx context.Context, azureMachinePool capzexp.AzureMachinePool) ([]compute.VirtualMachineScaleSetVM, error) {
 	resourceGroupName := key.ClusterID(&azureMachinePool)
 	vmssName := key.NodePoolVMSSName(&azureMachinePool)
 

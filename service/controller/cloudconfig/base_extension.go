@@ -2,9 +2,9 @@ package cloudconfig
 
 import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs/v3/pkg/certs"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/certs/v4/pkg/certs"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -14,7 +14,7 @@ import (
 type baseExtension struct {
 	azure                        setting.Azure
 	azureClientCredentialsConfig auth.ClientCredentialsConfig
-	azureMachinePool             *capzexpv1alpha3.AzureMachinePool
+	azureMachinePool             *capzexp.AzureMachinePool
 	calicoCIDR                   string
 	certFiles                    []certs.File
 	customObject                 providerv1alpha1.AzureConfig

@@ -7,13 +7,13 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
@@ -88,7 +88,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 }
 
 // getCloudConfigFromBootstrapSecret returns the Bootstrap cloud config from the Bootstrap secret.
-func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, machinePool *expcapiv1alpha3.MachinePool) (string, error) {
+func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, machinePool *capiexp.MachinePool) (string, error) {
 	var err error
 	var bootstrapSecretName string
 	{
@@ -112,7 +112,7 @@ func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, machin
 
 // getBootstrapSecretName will try to find Ignition CRs instead of Spark CRs when Ignition Operator is deployed.
 // It tries to find a Bootstrap CR which is named after the MachinePool. We may want to change it so we use `MachinePool.Spec.Template.Spec.Bootstrap`.
-func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *expcapiv1alpha3.MachinePool) (string, error) {
+func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *capiexp.MachinePool) (string, error) {
 	var sparkCR corev1alpha1.Spark
 	{
 		r.logger.Debugf(ctx, "Trying to find Bootstrap CR %#q", machinePool.Name)
@@ -129,7 +129,7 @@ func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *expc
 	return sparkCR.Status.DataSecretName, nil
 }
 
-func (r *Resource) getContainerURL(ctx context.Context, azureMachinePool *v1alpha3.AzureMachinePool, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
+func (r *Resource) getContainerURL(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
 	r.logger.Debugf(ctx, "Finding ContainerURL to upload bootstrap config")
 
 	storageAccountsClient, err := r.clientFactory.GetStorageAccountsClient(ctx, azureMachinePool.ObjectMeta)

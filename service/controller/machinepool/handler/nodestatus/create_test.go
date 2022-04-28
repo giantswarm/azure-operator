@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/golang/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/mock/mock_tenantcluster"
@@ -157,36 +157,36 @@ func Test_NodeStatusIsSavedWhenThereIsOneNodeNotReady(t *testing.T) {
 	}
 }
 
-func givenNodePool(ctx context.Context, ctrclient client.Client, ready bool, replicas int) (*expcapiv1alpha3.MachinePool, *expcapzv1alpha3.AzureMachinePool, error) {
-	cluster := &capiv1alpha3.Cluster{
+func givenNodePool(ctx context.Context, ctrclient client.Client, ready bool, replicas int) (*capiexp.MachinePool, *capzexp.AzureMachinePool, error) {
+	cluster := &capi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "clustername",
 			Namespace: metav1.NamespaceDefault,
 			Labels: map[string]string{
-				label.Cluster:                 "clustername",
-				capiv1alpha3.ClusterLabelName: "clustername",
+				label.Cluster:         "clustername",
+				capi.ClusterLabelName: "clustername",
 			},
 		},
-		Spec: capiv1alpha3.ClusterSpec{},
+		Spec: capi.ClusterSpec{},
 	}
 	err := ctrclient.Create(ctx, cluster)
 	if err != nil {
-		return &expcapiv1alpha3.MachinePool{}, &expcapzv1alpha3.AzureMachinePool{}, err
+		return &capiexp.MachinePool{}, &capzexp.AzureMachinePool{}, err
 	}
 
-	azureMachinePool := &expcapzv1alpha3.AzureMachinePool{
+	azureMachinePool := &capzexp.AzureMachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: metav1.NamespaceDefault,
 			Name:      "my-azure-machine-pool",
 			Labels: map[string]string{
-				label.Cluster:                 "clustername",
-				capiv1alpha3.ClusterLabelName: "clustername",
+				label.Cluster:         "clustername",
+				capi.ClusterLabelName: "clustername",
 			},
 		},
-		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
+		Spec: capzexp.AzureMachinePoolSpec{
 			ProviderIDList: []string{"azure://worker1", "azure://worker2", "azure://worker3", "azure://worker4"},
 		},
-		Status: expcapzv1alpha3.AzureMachinePoolStatus{
+		Status: capzexp.AzureMachinePoolStatus{
 			Ready:             ready,
 			Replicas:          int32(replicas),
 			ProvisioningState: nil,
@@ -197,21 +197,21 @@ func givenNodePool(ctx context.Context, ctrclient client.Client, ready bool, rep
 
 	err = ctrclient.Create(ctx, azureMachinePool)
 	if err != nil {
-		return &expcapiv1alpha3.MachinePool{}, &expcapzv1alpha3.AzureMachinePool{}, err
+		return &capiexp.MachinePool{}, &capzexp.AzureMachinePool{}, err
 	}
 
-	machinePool := &expcapiv1alpha3.MachinePool{
+	machinePool := &capiexp.MachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: metav1.NamespaceDefault,
 			Name:      "my-machine-pool",
 			Labels: map[string]string{
-				label.Cluster:                 "clustername",
-				capiv1alpha3.ClusterLabelName: "clustername",
+				label.Cluster:         "clustername",
+				capi.ClusterLabelName: "clustername",
 			},
 		},
-		Spec: expcapiv1alpha3.MachinePoolSpec{
-			Template: capiv1alpha3.MachineTemplateSpec{
-				Spec: capiv1alpha3.MachineSpec{
+		Spec: capiexp.MachinePoolSpec{
+			Template: capi.MachineTemplateSpec{
+				Spec: capi.MachineSpec{
 					InfrastructureRef: corev1.ObjectReference{
 						Kind:      azureMachinePool.Kind,
 						Namespace: metav1.NamespaceDefault,
@@ -224,7 +224,7 @@ func givenNodePool(ctx context.Context, ctrclient client.Client, ready bool, rep
 
 	err = ctrclient.Create(ctx, machinePool)
 	if err != nil {
-		return &expcapiv1alpha3.MachinePool{}, &expcapzv1alpha3.AzureMachinePool{}, err
+		return &capiexp.MachinePool{}, &capzexp.AzureMachinePool{}, err
 	}
 
 	return machinePool, azureMachinePool, nil

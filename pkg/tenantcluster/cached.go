@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	gocache "github.com/patrickmn/go-cache"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -40,7 +40,7 @@ func NewCachedFactory(tenantClientFactory Factory, logger micrologger.Logger) (F
 	}, nil
 }
 
-func (ctcf *cachedTenantClientFactory) GetAllClients(ctx context.Context, cr *capiv1alpha3.Cluster) (k8sclient.Interface, error) {
+func (ctcf *cachedTenantClientFactory) GetAllClients(ctx context.Context, cr *capi.Cluster) (k8sclient.Interface, error) {
 	ctcf.logger.Debugf(ctx, "trying to fetch tenant cluster %#q k8s client from cache before creating it", key.ClusterID(cr))
 	tenantClusterClient, inCache := ctcf.cache.Get(key.ClusterID(cr))
 	if inCache {
@@ -59,7 +59,7 @@ func (ctcf *cachedTenantClientFactory) GetAllClients(ctx context.Context, cr *ca
 	return tenantClusterClient.(k8sclient.Interface), nil
 }
 
-func (ctcf *cachedTenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
+func (ctcf *cachedTenantClientFactory) GetClient(ctx context.Context, cr *capi.Cluster) (client.Client, error) {
 	all, err := ctcf.GetAllClients(ctx, cr)
 	if err != nil {
 		return nil, microerror.Mask(err)

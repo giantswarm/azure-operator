@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/normalize"
@@ -45,7 +45,7 @@ func InternalELBNameAPI(getter LabelsGetter) string {
 }
 
 func IsControlPlaneMachine(getter LabelsGetter) bool {
-	_, ok := getter.GetLabels()[capiv1alpha3.MachineControlPlaneLabelName]
+	_, ok := getter.GetLabels()[capi.MachineControlPlaneLabelName]
 	return ok
 }
 
