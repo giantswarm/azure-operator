@@ -19,6 +19,10 @@ rules:
       - clusters/status
       - azureclusters
       - azureclusters/status
+      - machinepools
+      - machinepools/status
+      - azuremachinepools
+      - azuremachinepools/status
       - azuremachines
       - azuremachines/status
       - azureclusteridentities
@@ -72,7 +76,7 @@ rules:
       - create
       - delete
       - update
-  # The operator needs access to the provider agnostic CAPI CRDs.
+  # Old experimental v1alpha3 MachinePool
   - apiGroups:
       - exp.cluster.x-k8s.io
     resources:
@@ -80,8 +84,7 @@ rules:
       - machinepools/status
     verbs:
       - "*"
-  # The operator needs read and write access to all provider specific
-  # infrastructure CRs we manage for Tenant Clusters.
+  # Old experimental v1alpha3 AzureMachinePool
   - apiGroups:
       - exp.infrastructure.cluster.x-k8s.io
     resources:

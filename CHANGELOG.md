@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added possibility to specify VNet CIDR in `AzureCluster`.
+- Migrate MachinePool CRs from `exp.cluster.x-k8s.io/v1alpha3` to `cluster.x-k8s.io/v1beta1`
+- Migrate AzureMachinePool CRs from `exp.infrastructure.cluster.x-k8s.io/v1alpha3` to `infrastructure.cluster.x-k8s.io/v1beta1`
 
 ### Changed
 
@@ -19,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update github.com/giantswarm/conditions to v0.5.0
 - Update github.com/giantswarm/conditions-handler to v0.3.0
 - Update github.com/giantswarm/k8sclient to v7.0.1
-- Update github.com/giantswarm/k8scloudconfig to v13.2.0
+- Update github.com/giantswarm/k8scloudconfig to v13.4.0
 - Update github.com/giantswarm/operatorkit to v7.0.1
 - Update github.com/giantswarm/release-operator to v3.2.0
 - Update github.com/giantswarm/tenantcluster to v6.0.0
