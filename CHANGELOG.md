@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added possibility to specify VNet CIDR in `AzureCluster`.
 
+### Changed
+
+- Update github.com/Azure/azure-sdk-for-go to v58.1.0+incompatible
+- Update github.com/giantswarm/apiextensions to v6.0.0
+- Update github.com/giantswarm/certs to v4.0.0
+- Update github.com/giantswarm/conditions to v0.5.0
+- Update github.com/giantswarm/conditions-handler to v0.3.0
+- Update github.com/giantswarm/k8sclient to v7.0.1
+- Update github.com/giantswarm/k8scloudconfig to v13.2.0
+- Update github.com/giantswarm/operatorkit to v7.0.1
+- Update github.com/giantswarm/release-operator to v3.2.0
+- Update github.com/giantswarm/tenantcluster to v6.0.0
+- Update k8s.io/api to v0.22.2
+- Update k8s.io/apiextensions-apiserver to v0.22.2
+- Update k8s.io/apimachinery to v0.22.2
+- Update k8s.io/client-go to v0.22.2
+- Update sigs.k8s.io/cluster-api to v1.0.5
+- Update sigs.k8s.io/cluster-api-provider-azure to v1.0.2
+- Update sigs.k8s.io/controller-runtime to v0.10.3
+
 ## [5.18.0] - 2022-03-21
 
 ### Added
