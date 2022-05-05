@@ -43,5 +43,8 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureMachine *capz.
 	// Now check current Ready condition so we can log the value
 	r.logConditionStatus(ctx, azureMachine, capi.ReadyCondition)
 	r.logger.Debugf(ctx, "ensured condition Ready")
+
+	azureMachine.Status.Ready = capiconditions.IsTrue(azureMachine, capi.ReadyCondition)
+
 	return nil
 }

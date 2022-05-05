@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update sigs.k8s.io/cluster-api-provider-azure to v1.0.2
 - Update sigs.k8s.io/controller-runtime to v0.10.3
 
+### Fixed
+
+- Set `AzureMachine.Status.Ready` according to AzureMachine's Ready condition.
+
 ## [5.18.0] - 2022-03-21
 
 ### Added
