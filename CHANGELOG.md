@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Use systemd cgroup driver on masters and cgroups v2 worker nodes. 
 - Update github.com/Azure/azure-sdk-for-go to v58.1.0+incompatible
 - Update github.com/giantswarm/apiextensions to v6.0.0
 - Update github.com/giantswarm/certs to v4.0.0
