@@ -1,7 +1,6 @@
 package employees
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -67,7 +66,7 @@ func Test_FromDraughtsmanString(t *testing.T) {
 			case err == nil && tc.errorMatcher == nil:
 				// No error, compare the output.
 				if !reflect.DeepEqual(list, tc.output) {
-					t.Fatal(fmt.Sprintf("Wrong output: expected %s got %s", tc.output, list))
+					t.Fatalf("Wrong output: expected %s got %s", tc.output, list)
 				}
 			case err != nil && tc.errorMatcher == nil:
 				t.Fatalf("expected %#v got %#v", nil, err)

@@ -77,7 +77,7 @@ const (
 	OrganizationSecretsLabelSelector = "app=credentiald" // nolint:gosec
 
 	credentialDefaultNamespace = "giantswarm"
-	credentialDefaultName      = "credential-default"
+	credentialDefaultName      = "credential-default" // nolint:gosec
 )
 
 // Container image versions for k8scloudconfig.

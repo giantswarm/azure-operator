@@ -25,7 +25,7 @@ import (
 const (
 	cacheHitLogKey       = "cacheHit"
 	clientTypeLogKey     = "clientType"
-	credentialNameLogKey = "credentialName"
+	credentialNameLogKey = "credentialName" // nolint:gosec
 	logLevelLogKey       = "level"
 	logLevelDebug        = "debug"
 	messageLogKey        = "message"

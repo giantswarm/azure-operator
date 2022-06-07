@@ -53,7 +53,7 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 			}
 
 			if chk != tc.expectedChecksum {
-				t.Fatal(fmt.Sprintf("Wrong checksum: expected %s got %s", tc.expectedChecksum, chk))
+				t.Fatalf("Wrong checksum: expected %s got %s", tc.expectedChecksum, chk)
 			}
 		})
 	}

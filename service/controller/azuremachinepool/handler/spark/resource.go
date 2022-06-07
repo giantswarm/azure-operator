@@ -24,7 +24,7 @@ import (
 const (
 	Name = "spark"
 
-	credentialDefaultName      = "credential-default"
+	credentialDefaultName      = "credential-default" // nolint:gosec
 	credentialDefaultNamespace = "giantswarm"
 )
 

@@ -16,7 +16,7 @@ const (
 
 	// States
 	DeploymentUninitialized     = ""
-	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS"
+	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS" // nolint:gosec
 	CordonOldWorkerInstances    = "CordonOldWorkerInstances"
 	DrainOldWorkerInstances     = "DrainOldWorkerInstances"
 	TerminateOldWorkerInstances = "TerminateOldWorkerInstances"

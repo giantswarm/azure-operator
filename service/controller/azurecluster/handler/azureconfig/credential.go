@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	credentialDefaultName      = "credential-default"
+	credentialDefaultName      = "credential-default" // nolint:gosec
 	credentialDefaultNamespace = "giantswarm"
 )
 
