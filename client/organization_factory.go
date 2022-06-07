@@ -23,7 +23,7 @@ import (
 
 const (
 	credentialDefaultNamespace = "giantswarm"
-	credentialDefaultName      = "credential-default"
+	credentialDefaultName      = "credential-default" // nolint:gosec
 )
 
 type Interface interface {
