@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.19.0] - 2022-06-07
+
 ### Added
 
 - Added possibility to specify VNet CIDR in `AzureCluster`.
@@ -552,7 +554,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.18.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.19.0...HEAD
+[5.19.0]: https://github.com/giantswarm/azure-operator/compare/v5.18.0...v5.19.0
 [5.18.0]: https://github.com/giantswarm/azure-operator/compare/v5.17.0...v5.18.0
 [5.17.0]: https://github.com/giantswarm/azure-operator/compare/v5.16.0...v5.17.0
 [5.16.0]: https://github.com/giantswarm/azure-operator/compare/v5.15.0...v5.16.0
