@@ -1,7 +1,6 @@
 package employees
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
