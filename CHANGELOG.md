@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update sigs.k8s.io/cluster-api to v1.0.5
 - Update sigs.k8s.io/cluster-api-provider-azure to v1.0.2
 - Update sigs.k8s.io/controller-runtime to v0.10.3
+- Bump various other dependencies to address CVEs.
 
 ### Fixed
 
