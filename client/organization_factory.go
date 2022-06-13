@@ -336,8 +336,16 @@ func (f *OrganizationFactory) tryMigrateLegacyCredentialSecret(ctx context.Conte
 	// If we reached this point, we are already sure there is no secret in the org namespace for this org.
 	secret := secretList.Items[0]
 	{
-		newSecret := secret.DeepCopy()
-		newSecret.ObjectMeta.Namespace = key.OrganizationNamespace(&objectMeta)
+		newSecret := &corev1.Secret{
+			ObjectMeta: v1.ObjectMeta{
+				Name:        secret.Name,
+				Namespace:   key.OrganizationNamespace(&objectMeta),
+				Labels:      secret.Labels,
+				Annotations: secret.Annotations,
+			},
+			Data: secret.Data,
+			Type: secret.Type,
+		}
 
 		err := f.ctrlClient.Create(ctx, newSecret)
 		if err != nil {
