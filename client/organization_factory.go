@@ -348,6 +348,8 @@ func (f *OrganizationFactory) tryMigrateLegacyCredentialSecret(ctx context.Conte
 		return nil, microerror.Mask(credentialsNotFoundError)
 	}
 
+	f.logger.Debugf(ctx, "migrating secret from legacy namespace %q to org namespace %q", credentialLegacyNamespace, key.OrganizationNamespace(&objectMeta))
+
 	{
 		newSecret := &corev1.Secret{
 			ObjectMeta: v1.ObjectMeta{
