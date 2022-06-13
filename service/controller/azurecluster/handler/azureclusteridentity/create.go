@@ -83,7 +83,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		// Ensure AzureClusterIdentity is up to date.
 		azureClusterIdentity := capz.AzureClusterIdentity{}
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Name: azureCluster.Spec.IdentityRef.Name, Namespace: azureCluster.Spec.IdentityRef.Namespace}, &azureClusterIdentity)
-		if err != nil {
+		if apierrors.IsNotFound(err) {
+			// identityRef is set to a non-existing object. Empty the reference.
+			r.logger.Debugf(ctx, "AzureClusterIdentity %s/%s was not found for AzureCluster %q", azureCluster.Spec.IdentityRef.Namespace, azureCluster.Spec.IdentityRef.Name, azureCluster.Name)
+			azureCluster.Spec.IdentityRef = nil
+			err = r.ctrlClient.Update(ctx, &azureCluster)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 

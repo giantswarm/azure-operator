@@ -23,6 +23,7 @@ import (
 
 const (
 	credentialDefaultNamespace = "giantswarm"
+	credentialLegacyNamespace  = "giantswarm"
 	credentialDefaultName      = "credential-default" // nolint:gosec
 )
 
@@ -238,9 +239,10 @@ func (f *OrganizationFactory) GetCredentialSecret(ctx context.Context, objectMet
 
 	credentialSecret, err = f.getOrganizationCredentialSecret(ctx, objectMeta)
 	if IsCredentialsNotFoundError(err) {
-		credentialSecret, err = f.getLegacyCredentialSecret(ctx, objectMeta)
+		// TODO remove once all credentials are migrated to the org namespace.
+		credentialSecret, err = f.tryMigrateLegacyCredentialSecret(ctx, objectMeta)
 		if IsCredentialsNotFoundError(err) {
-			f.logger.Debugf(ctx, "did not find credential secret, using default '%s/%s'", credentialDefaultNamespace, credentialDefaultName)
+			f.logger.Debugf(ctx, "did not find credentials in the org nor in the legacy namespaces. Using default credentials %s/%s", credentialDefaultNamespace, credentialDefaultName)
 			return &v1alpha1.CredentialSecret{
 				Namespace: credentialDefaultNamespace,
 				Name:      credentialDefaultName,
@@ -257,16 +259,18 @@ func (f *OrganizationFactory) GetCredentialSecret(ctx context.Context, objectMet
 
 // getOrganizationCredentialSecret tries to find a Secret in the organization namespace.
 func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	f.logger.Debugf(ctx, "try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta))
+	ns := key.OrganizationNamespace(&objectMeta)
+	name := key.OrganizationID(&objectMeta)
+	f.logger.Debugf(ctx, "try in namespace %#q filtering by organization %#q", ns, name)
 	secretList := &corev1.SecretList{}
 	{
 		err := f.ctrlClient.List(
 			ctx,
 			secretList,
-			client.InNamespace(objectMeta.Namespace),
+			client.InNamespace(ns),
 			client.MatchingLabels{
 				label.App:                     "credentiald",
-				k8smetadatalabel.Organization: key.OrganizationID(&objectMeta),
+				k8smetadatalabel.Organization: name,
 			},
 		)
 		if err != nil {
@@ -297,10 +301,11 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 	return credentialSecret, nil
 }
 
-// getLegacyCredentialSecret tries to find a Secret in the default credentials namespace but labeled with the organization name.
-// This is needed while we migrate everything to the org namespace and org credentials are created in the org namespace instead of the default namespace.
-func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	f.logger.Debugf(ctx, "try in namespace %#q filtering by organization %#q", credentialDefaultNamespace, key.OrganizationID(&objectMeta))
+// tryMigrateLegacyCredentialSecret tries to find a Secret in the default credentials namespace but labeled with the organization name.
+// This is the legacy location where credentials used to be stored.
+// In case such credential is found, an attempt to move it to the org namespace is made.
+func (f *OrganizationFactory) tryMigrateLegacyCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
+	f.logger.Debugf(ctx, "try in namespace %#q filtering by organization %#q", credentialLegacyNamespace, key.OrganizationID(&objectMeta))
 	secretList := &corev1.SecretList{}
 	{
 		err := f.ctrlClient.List(
@@ -327,8 +332,28 @@ func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, obj
 		return nil, microerror.Mask(credentialsNotFoundError)
 	}
 
-	// If one credential secret is found, we use that.
+	// One secret was found in the legacy location, migrate it.
+	// If we reached this point, we are already sure there is no secret in the org namespace for this org.
 	secret := secretList.Items[0]
+	{
+		newSecret := secret.DeepCopy()
+		newSecret.ObjectMeta.Namespace = key.OrganizationNamespace(&objectMeta)
+
+		err := f.ctrlClient.Create(ctx, newSecret)
+		if err != nil {
+			f.logger.Debugf(ctx, "error migrating secret from legacy namespace %q to org namespace %q", credentialLegacyNamespace, key.OrganizationNamespace(&objectMeta))
+			return nil, microerror.Mask(err)
+		}
+
+		// Delete old secret object.
+		err = f.ctrlClient.Delete(ctx, &secret)
+		if err != nil {
+			f.logger.Debugf(ctx, "error cleaning up legacy secret %q/%q after successful migration to org namespace", credentialLegacyNamespace, secret.Name)
+			return nil, microerror.Mask(err)
+		}
+
+		secret = *newSecret
+	}
 
 	credentialSecret := &v1alpha1.CredentialSecret{
 		Namespace: secret.Namespace,

@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" // nolint:staticcheck
 	"sigs.k8s.io/yaml"
 
+	client2 "github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azurecluster/handler/azureconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/capzcrs"
 )
@@ -201,6 +202,11 @@ func constructCapzcrsHandler(t *testing.T, client client.Client, location string
 func constructAzureConfigHandler(t *testing.T, client client.Client) resource.Interface {
 	t.Helper()
 
+	clientFactory := client2.NewOrganizationFactory(client2.OrganizationFactoryConfig{
+		CtrlClient: client,
+		Logger:     microloggertest.New(),
+	})
+
 	c := azureconfig.Config{
 		CtrlClient: client,
 		Logger:     microloggertest.New(),
@@ -211,6 +217,7 @@ func constructAzureConfigHandler(t *testing.T, client client.Client) resource.In
 			MTU:      1430,
 			Subnet:   "10.1.0.0/16",
 		},
+		ClientFactory:                  clientFactory,
 		ClusterIPRange:                 "172.31.0.0/16",
 		EtcdPrefix:                     "giantswarm.io",
 		ManagementClusterResourceGroup: "ghost",
