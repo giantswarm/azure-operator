@@ -291,6 +291,12 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 	// If one credential secret is found, we use that.
 	secret := secretList.Items[0]
 
+	if secret.Name == credentialDefaultName {
+		// Some default credentials might have the 'giantswarm' organization label.
+		// We want to avoid using the default credentials secret as org credentials
+		return nil, microerror.Mask(credentialsNotFoundError)
+	}
+
 	credentialSecret := &v1alpha1.CredentialSecret{
 		Namespace: secret.Namespace,
 		Name:      secret.Name,
