@@ -20,9 +20,6 @@ import (
 
 const (
 	Name = "spark"
-
-	credentialDefaultName      = "credential-default" // nolint:gosec
-	credentialDefaultNamespace = "giantswarm"
 )
 
 type Config struct {
