@@ -44,7 +44,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 
 	for _, k := range cloudConfigURLs {
 		blobURL := cc.ContainerURL.NewBlockBlobURL(k)
-		_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
+		_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{}, azblob.ClientProvidedKeyOptions{})
 		// if blob is not ready - stop instance resource reconciliation
 		if err != nil {
 			return azureresource.Deployment{}, microerror.Mask(err)
