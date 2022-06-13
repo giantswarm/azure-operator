@@ -341,6 +341,13 @@ func (f *OrganizationFactory) tryMigrateLegacyCredentialSecret(ctx context.Conte
 	// One secret was found in the legacy location, migrate it.
 	// If we reached this point, we are already sure there is no secret in the org namespace for this org.
 	secret := secretList.Items[0]
+
+	if secret.Name == credentialDefaultName {
+		// Some default credentials might have the 'giantswarm' organization label.
+		// We want to avoid using the default credentials secret as org credentials
+		return nil, microerror.Mask(credentialsNotFoundError)
+	}
+
 	{
 		newSecret := &corev1.Secret{
 			ObjectMeta: v1.ObjectMeta{
