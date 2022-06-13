@@ -40,6 +40,8 @@ func PutBlockBlob(ctx context.Context, blobName string, payload string, containe
 		azblob.BlobAccessConditions{},
 		azblob.DefaultAccessTier,
 		nil,
+		azblob.ClientProvidedKeyOptions{},
+		azblob.ImmutabilityPolicyOptions{},
 	)
 	if err != nil {
 		return azblob.BlockBlobURL{}, microerror.Mask(err)
@@ -51,7 +53,7 @@ func PutBlockBlob(ctx context.Context, blobName string, payload string, containe
 func GetBlockBlob(ctx context.Context, blobName string, containerURL *azblob.ContainerURL) ([]byte, error) {
 	blobURL := containerURL.NewBlockBlobURL(blobName)
 
-	response, err := blobURL.Download(ctx, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
+	response, err := blobURL.Download(ctx, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false, azblob.ClientProvidedKeyOptions{})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
