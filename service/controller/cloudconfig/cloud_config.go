@@ -1,18 +1,12 @@
 package cloudconfig
 
 import (
-	"context"
-
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v6/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v13/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
@@ -99,37 +93,6 @@ func New(config Config) (*CloudConfig, error) {
 	}
 
 	return c, nil
-}
-
-func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject providerv1alpha1.AzureConfig) (string, error) {
-	secretList := &corev1.SecretList{}
-	{
-		c.logger.Debugf(ctx, "try to find encryption secret")
-		err := c.ctrlClient.List(
-			ctx,
-			secretList,
-			ctrl.MatchingLabels{
-				randomKeyLabel:              randomKeyLabelValue,
-				apiextensionslabels.Cluster: key.ClusterID(&customObject),
-			},
-		)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-	}
-
-	if len(secretList.Items) > 0 {
-		c.logger.Debugf(ctx, "found encryption secret in namespace '%s/%s'", secretList.Items[0].Namespace, secretList.Items[0].Name)
-		randomkey, ok := secretList.Items[0].Data[secretKey]
-		if !ok {
-			return "", microerror.Maskf(invalidSecretError, "%q key missing", secretKey)
-		}
-
-		return string(randomkey), nil
-	}
-
-	return "", microerror.Mask(secretNotFoundError)
-
 }
 
 func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {

@@ -56,6 +56,7 @@ type IgnitionTemplateData struct {
 	AzureCluster     *capz.AzureCluster
 	Cluster          *capi.Cluster
 	CustomObject     providerv1alpha1.AzureConfig
+	EncryptionConf   string
 	Images           k8scloudconfig.Images
 	MachinePool      *capiexp.MachinePool
 	MasterCertFiles  []certs.File

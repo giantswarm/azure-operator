@@ -23,11 +23,7 @@ const (
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
-	apiserverEncryptionKey, err := c.getEncryptionkey(ctx, data.CustomObject)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
+	var err error
 	var k8sAPIExtraArgs []string
 	{
 		oidcExtraArgs := c.oidcExtraArgs(ctx, data)
@@ -50,7 +46,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 
 		params = k8scloudconfig.Params{}
 		params.BaseDomain = key.ClusterBaseDomain(data.CustomObject)
-		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
 		params.DockerhubToken = c.dockerhubToken
@@ -112,12 +107,16 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.RegistryMirrors = c.registryMirrors
 		params.Versions = data.Versions
 		params.SSOPublicKey = c.ssoPublicKey
+		params.DisableEncryptionAtREST = true // encryption key is now managed by encription-provider-operator
 	}
 	ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignition.Path)
 	params.Files, err = k8scloudconfig.RenderFiles(ignitionPath, params)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
+
+	// Add encryption at rest config.
+	params.Files["/etc/kubernetes/encryption/k8s-encryption-config.yaml.enc"] = data.EncryptionConf
 
 	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
 }

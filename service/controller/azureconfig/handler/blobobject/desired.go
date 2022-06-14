@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/resourcecanceledcontext"
 	"golang.org/x/sync/errgroup"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -118,6 +119,25 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
+	var encryptionConfig string
+	{
+		var secret corev1.Secret
+		err := r.ctrlClient.Get(
+			ctx, client.ObjectKey{
+				Name:      key.EncryptionConfigSecretName(key.ClusterID(&cr)),
+				Namespace: cr.Namespace,
+			},
+			&secret)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+		data, err := encrypter.Encrypt(secret.Data[encryptionProviderConfigKeyName])
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+		encryptionConfig = string(data)
+	}
+
 	var cluster capi.Cluster
 	{
 		cluster = capi.Cluster{}
@@ -149,6 +169,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 			CustomObject:    cr,
 			Images:          images,
 			MasterCertFiles: masterCertFiles,
+			EncryptionConf:  encryptionConfig,
 			Versions:        versions,
 			WorkerCertFiles: workerCertFiles,
 		}

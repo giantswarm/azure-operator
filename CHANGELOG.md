@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Changes to EncryptionConfig in order to fully work with `encryption-provider-operator`.
+
 ### Fixed
 
 - Add pause annotation before deleting old machinepool and azuremachinepool CRs during migration to non-exp.
