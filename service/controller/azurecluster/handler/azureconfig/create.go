@@ -338,7 +338,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capi.Cluster, a
 	}
 
 	{
-		credentialSecret, err := r.getCredentialSecret(ctx, cluster.ObjectMeta)
+		credentialSecret, err := r.clientFactory.GetCredentialSecret(ctx, cluster.ObjectMeta)
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
 		}
