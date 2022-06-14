@@ -94,8 +94,14 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			},
 		}
 
+		encryptedEncryptionConfig, err := encrypter.Encrypt(data.EncryptionConf)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
 		params.Extension = &masterExtension{
-			baseExtension: be,
+			baseExtension:             be,
+			encryptedEncryptionConfig: string(encryptedEncryptionConfig),
 		}
 		params.ExtraManifests = []string{}
 		params.Debug = k8scloudconfig.Debug{
@@ -115,14 +121,13 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		return "", microerror.Mask(err)
 	}
 
-	// Add encryption at rest config.
-	params.Files["/etc/kubernetes/encryption/k8s-encryption-config.yaml.enc"] = data.EncryptionConf
-
 	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
 }
 
 type masterExtension struct {
 	baseExtension
+
+	encryptedEncryptionConfig string
 }
 
 // oidcExtraArgs returns oidc parameters reading the configuration from `Cluster` annotations.
@@ -264,6 +269,28 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		fileAssets = append(fileAssets, asset)
 	}
 
+	// Add encryption at rest config.
+	{
+		m := k8scloudconfig.FileMetadata{
+			Path: "/etc/kubernetes/encryption/k8s-encryption-config.yaml.enc",
+			Owner: k8scloudconfig.Owner{
+				Group: k8scloudconfig.Group{
+					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
+			},
+			Permissions: CertFilePermission,
+		}
+
+		asset := k8scloudconfig.FileAsset{
+			Metadata: m,
+			Content:  me.encryptedEncryptionConfig,
+		}
+
+		fileAssets = append(fileAssets, asset)
+	}
 	return fileAssets, nil
 }
 

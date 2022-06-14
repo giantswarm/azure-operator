@@ -119,7 +119,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	var encryptionConfig string
+	var encryptionConfig []byte
 	{
 		var secret corev1.Secret
 		err := r.ctrlClient.Get(
@@ -131,11 +131,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
-		data, err := encrypter.Encrypt(secret.Data[encryptionProviderConfigKeyName])
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-		encryptionConfig = string(data)
+		encryptionConfig = secret.Data[encryptionProviderConfigKeyName]
 	}
 
 	var cluster capi.Cluster
