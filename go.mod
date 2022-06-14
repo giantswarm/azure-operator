@@ -126,7 +126,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 	k8s.io/apiserver v0.22.5 // indirect
 	k8s.io/component-base v0.22.5 // indirect
-	k8s.io/klog/v2 v2.10.0 // indirect
+	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
@@ -134,6 +134,8 @@ require (
 
 replace (
 	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.24
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.6
+	github.com/containerd/imgcrypt => github.com/containerd/imgcrypt v1.1.6
 	github.com/coredns/coredns => github.com/coredns/coredns v1.9.3
 	github.com/coreos/etcd v3.3.13+incompatible => github.com/coreos/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
@@ -150,7 +152,7 @@ replace (
 	github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.2
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.4
-	github.com/valyala/fasthttp => github.com/valyala/fasthttp v1.29.0
+	github.com/valyala/fasthttp => github.com/valyala/fasthttp v1.37.0
 	go.mongodb.org/mongo-driver => go.mongodb.org/mongo-driver v1.9.1
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.9.0
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20211110013926-83f114cd0513
