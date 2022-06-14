@@ -4,6 +4,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	v5client "github.com/giantswarm/azure-operator/v5/client"
 )
 
 const (
@@ -22,6 +24,7 @@ type Config struct {
 
 	APIServerSecurePort            int
 	Calico                         CalicoConfig
+	ClientFactory                  v5client.OrganizationFactory
 	ClusterIPRange                 string
 	EtcdPrefix                     string
 	ManagementClusterResourceGroup string
@@ -34,6 +37,7 @@ type Resource struct {
 
 	apiServerSecurePort            int
 	calico                         CalicoConfig
+	clientFactory                  v5client.OrganizationFactory
 	clusterIPRange                 string
 	etcdPrefix                     string
 	managementClusterResourceGroup string
@@ -59,6 +63,7 @@ func New(config Config) (*Resource, error) {
 
 		apiServerSecurePort:            config.APIServerSecurePort,
 		calico:                         config.Calico,
+		clientFactory:                  config.ClientFactory,
 		clusterIPRange:                 config.ClusterIPRange,
 		etcdPrefix:                     config.EtcdPrefix,
 		managementClusterResourceGroup: config.ManagementClusterResourceGroup,

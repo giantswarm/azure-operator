@@ -227,7 +227,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capi.Cluster
 		return nil, microerror.Mask(err)
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, azureMachinePool.ObjectMeta)
+	credentialSecret, err := r.clientFactory.GetCredentialSecret(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
