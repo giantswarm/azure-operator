@@ -125,7 +125,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		err := r.ctrlClient.Get(
 			ctx, client.ObjectKey{
 				Name:      key.EncryptionConfigSecretName(key.ClusterID(&cr)),
-				Namespace: cr.Namespace,
+				Namespace: key.OrganizationNamespace(&cr),
 			},
 			&secret)
 		if err != nil {
