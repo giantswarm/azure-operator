@@ -101,7 +101,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 
 		params.Extension = &masterExtension{
 			baseExtension:             be,
-			encryptedEncryptionConfig: string(encryptedEncryptionConfig),
+			encryptedEncryptionConfig: encryptedEncryptionConfig,
 		}
 		params.ExtraManifests = []string{}
 		params.Debug = k8scloudconfig.Debug{
@@ -127,7 +127,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 type masterExtension struct {
 	baseExtension
 
-	encryptedEncryptionConfig string
+	encryptedEncryptionConfig []byte
 }
 
 // oidcExtraArgs returns oidc parameters reading the configuration from `Cluster` annotations.
@@ -286,7 +286,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 
 		asset := k8scloudconfig.FileAsset{
 			Metadata: m,
-			Content:  me.encryptedEncryptionConfig,
+			Content:  base64.StdEncoding.EncodeToString(me.encryptedEncryptionConfig),
 		}
 
 		fileAssets = append(fileAssets, asset)
