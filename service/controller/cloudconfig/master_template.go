@@ -18,6 +18,8 @@ const (
 	defaultEtcdPort                  = 2379
 	defaultImagePullProgressDeadline = "1m"
 	EtcdInitialClusterStateNew       = "new"
+
+	encryptionConfigFilePath = "/etc/kubernetes/encryption/k8s-encryption-config.yaml"
 )
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
@@ -272,7 +274,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	// Add encryption at rest config.
 	{
 		m := k8scloudconfig.FileMetadata{
-			Path: "/etc/kubernetes/encryption/k8s-encryption-config.yaml.enc",
+			Path: encryptionConfigFilePath + ".enc",
 			Owner: k8scloudconfig.Owner{
 				Group: k8scloudconfig.Group{
 					Name: FileOwnerGroupName,
@@ -330,6 +332,9 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	}
 
 	data := me.templateData(me.certFiles)
+
+	// To use the certificate decrypter unit for the etcd data encryption config file.
+	data.certificateDecrypterUnitParams.CertsPaths = append(data.certificateDecrypterUnitParams.CertsPaths, encryptionConfigFilePath)
 
 	var newUnits []k8scloudconfig.UnitAsset
 
