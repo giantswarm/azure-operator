@@ -30,6 +30,8 @@ func (e *baseExtension) templateData(certFiles []certs.File) templateData {
 		certsPaths = append(certsPaths, file.AbsolutePath)
 	}
 
+	certsPaths = append(certsPaths, "/etc/kubernetes/encryption/k8s-encryption-config.yaml.enc")
+
 	primaryScaleSetName := key.WorkerVMSSName(e.customObject)
 	if e.azureMachinePool != nil {
 		primaryScaleSetName = key.NodePoolVMSSName(e.azureMachinePool)
