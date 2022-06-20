@@ -279,10 +279,7 @@ func getAzureClusterIdentitySpec(azureCluster *capz.AzureCluster, legacySecret c
 			Name:      newName,
 			Namespace: newNamespace,
 		},
-		TenantID: tenantID,
-		AllowedNamespaces: &capz.AllowedNamespaces{
-			NamespaceList: make([]string, 0),
-			Selector:      nil,
-		},
+		TenantID:          tenantID,
+		AllowedNamespaces: nil,
 	}
 }

@@ -17,19 +17,19 @@ const (
 	operatorkitMachinePoolExpFinalizer = "operatorkit.giantswarm.io/azure-operator-machine-pool-exp-controller"
 )
 
-func (r *Resource) newMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
+func (r *Resource) newMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (*capiexp.MachinePool, error) {
 	newMachinePool := capiexp.MachinePool{}
 	err := r.client.Get(ctx, namespacedName, &newMachinePool)
 	if apierrors.IsNotFound(err) {
-		return false, nil
+		return nil, nil
 	} else if err != nil {
-		return false, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
-	return true, nil
+	return &newMachinePool, nil
 }
 
-func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePoolV1alpha3 oldcapiexpv1alpha3.MachinePool) error {
+func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePoolV1alpha3 oldcapiexpv1alpha3.MachinePool) (*capiexp.MachinePool, error) {
 	r.logger.Debugf(ctx, "Ensuring new MachinePool %s/%s has been created", oldMachinePoolV1alpha3.Namespace, oldMachinePoolV1alpha3.Name)
 	namespacedName := types.NamespacedName{
 		Namespace: oldMachinePoolV1alpha3.Namespace,
@@ -37,13 +37,13 @@ func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePo
 	}
 
 	// First let's check if new MachinePool has already been created.
-	exists, err := r.newMachinePoolExists(ctx, namespacedName)
+	mp, err := r.newMachinePoolExists(ctx, namespacedName)
 	if err != nil {
-		return microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
-	if exists {
+	if mp != nil {
 		r.logger.Debugf(ctx, "New MachinePool %s/%s already exists", oldMachinePoolV1alpha3.Namespace, oldMachinePoolV1alpha3.Name)
-		return nil
+		return mp, nil
 	}
 
 	// Let's create a new non-exp v1alpha3 MachinePool where we will clone
@@ -60,7 +60,7 @@ func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePo
 	// v1alpha3 MachinePool.Spec.
 	err = convertSpec(&oldMachinePoolV1alpha3.Spec, &newMachinePoolV1Alpha3.Spec)
 	if err != nil {
-		return microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
 	// Finally, we convert new MachinePool from v1alpha3 to v1beta1. We call
@@ -68,16 +68,23 @@ func (r *Resource) ensureNewMachinePoolCreated(ctx context.Context, oldMachinePo
 	newMachinePool := capiexp.MachinePool{}
 	err = newMachinePoolV1Alpha3.ConvertTo(&newMachinePool)
 	if err != nil {
-		return microerror.Mask(err)
+		return nil, microerror.Mask(err)
+	}
+
+	// Adjust ownerReferences.
+	for i, ownerRef := range newMachinePool.ObjectMeta.OwnerReferences {
+		if ownerRef.Kind == "Cluster" && ownerRef.APIVersion != machinepoolmigration.DesiredCAPIGroupVersion {
+			newMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = machinepoolmigration.DesiredCAPIGroupVersion
+		}
 	}
 
 	err = r.client.Create(ctx, &newMachinePool)
 	if err != nil {
-		return microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 	r.logger.Debugf(ctx, "Ensured new MachinePool %s/%s has been created", oldMachinePoolV1alpha3.Namespace, oldMachinePoolV1alpha3.Name)
 
-	return nil
+	return &newMachinePool, nil
 }
 
 func (r *Resource) ensureNewMachinePoolReferencesUpdated(ctx context.Context, namespacedName types.NamespacedName) error {
@@ -93,13 +100,6 @@ func (r *Resource) ensureNewMachinePoolReferencesUpdated(ctx context.Context, na
 		newMachinePool.Spec.Template.Spec.InfrastructureRef.APIVersion != machinepoolmigration.DesiredCAPZGroupVersion {
 		newMachinePool.Spec.Template.Spec.InfrastructureRef.APIVersion = machinepoolmigration.DesiredCAPZGroupVersion
 		update = true
-	}
-
-	for i, ownerRef := range newMachinePool.ObjectMeta.OwnerReferences {
-		if ownerRef.Kind == "Cluster" && ownerRef.APIVersion != machinepoolmigration.DesiredCAPIGroupVersion {
-			newMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = machinepoolmigration.DesiredCAPIGroupVersion
-			update = true
-		}
 	}
 
 	if update {

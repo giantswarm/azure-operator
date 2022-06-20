@@ -54,22 +54,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		Namespace: oldMachinePool.Namespace,
 		Name:      oldMachinePool.Name,
 	}
-	err = r.ensureNewMachinePoolCreated(ctx, oldMachinePool)
+	mp, err := r.ensureNewMachinePoolCreated(ctx, oldMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = r.ensureNewAzureMachinePoolCreated(ctx, namespacedName)
+	err = r.ensureNewAzureMachinePoolCreated(ctx, namespacedName, mp)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	err = r.ensureNewMachinePoolReferencesUpdated(ctx, namespacedName)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.ensureNewAzureMachinePoolReferencesUpdated(ctx, namespacedName)
 	if err != nil {
 		return microerror.Mask(err)
 	}

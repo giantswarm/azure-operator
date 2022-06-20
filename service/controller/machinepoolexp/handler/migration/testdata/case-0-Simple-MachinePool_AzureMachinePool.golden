@@ -21,8 +21,8 @@ metadata:
     controller: true
     kind: MachinePool
     name: 5suzw
-    uid: 52212476-9aaf-4c5c-8f86-68d382ff5d78
-  resourceVersion: "2"
+    uid: ""
+  resourceVersion: "1"
 spec:
   identity: None
   location: westeurope

@@ -9,6 +9,13 @@ import (
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 )
 
+var (
+	pauseAnnotations = map[string]string{
+		"cluster.x-k8s.io/paused":          "true",
+		"operatorkit.giantswarm.io/paused": "true",
+	}
+)
+
 func (r *Resource) deleteOldAzureMachinePool(ctx context.Context, oldAzureMachinePool *oldcapzexpv1alpha3.AzureMachinePool, newAzureMachinePool *capzexp.AzureMachinePool) error {
 	// First we manually remove all finalizers, because new CR is replacing old
 	// CR, so the new one will have all required finalizers, and we don't want
@@ -34,12 +41,23 @@ func (r *Resource) deleteOldAzureMachinePool(ctx context.Context, oldAzureMachin
 		update = true
 	}
 
+	// Ensure pause annotations are in place.
+	for k, v := range pauseAnnotations {
+		if oldAzureMachinePool.GetAnnotations()[k] != v {
+			if oldAzureMachinePool.Annotations == nil {
+				oldAzureMachinePool.Annotations = make(map[string]string)
+			}
+			oldAzureMachinePool.Annotations[k] = v
+			update = true
+		}
+	}
+
 	if update {
 		err := r.ctrlClient.Update(ctx, oldAzureMachinePool)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.Debugf(ctx, "Updated old AzureMachinePool %s/%s", oldAzureMachinePool.Namespace, oldAzureMachinePool.Name)
+		r.logger.Debugf(ctx, "Removed finalizers and ensured pause annotations on old AzureMachinePool %s/%s", oldAzureMachinePool.Namespace, oldAzureMachinePool.Name)
 	}
 
 	// Finally, delete the old AzureMachinePool
