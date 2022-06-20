@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	"sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/machinepoolmigration"
 )
@@ -25,7 +26,7 @@ func (r *Resource) newAzureMachinePoolExists(ctx context.Context, namespacedName
 	return true, nil
 }
 
-func (r *Resource) ensureNewAzureMachinePoolCreated(ctx context.Context, namespacedName types.NamespacedName) error {
+func (r *Resource) ensureNewAzureMachinePoolCreated(ctx context.Context, namespacedName types.NamespacedName, owner *v1beta1.MachinePool) error {
 	r.logger.Debugf(ctx, "Ensuring new AzureMachinePool %s/%s has been created", namespacedName.Namespace, namespacedName.Name)
 	// First let's check if new AzureMachinePool has already been created.
 	exists, err := r.newAzureMachinePoolExists(ctx, namespacedName)
@@ -69,40 +70,18 @@ func (r *Resource) ensureNewAzureMachinePoolCreated(ctx context.Context, namespa
 		return microerror.Mask(err)
 	}
 
+	for i, ownerRef := range newAzureMachinePool.ObjectMeta.OwnerReferences {
+		if ownerRef.Kind == "MachinePool" && ownerRef.APIVersion != machinepoolmigration.DesiredCAPIGroupVersion {
+			newAzureMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = machinepoolmigration.DesiredCAPIGroupVersion
+			newAzureMachinePool.ObjectMeta.OwnerReferences[i].UID = owner.UID
+		}
+	}
+
 	err = r.client.Create(ctx, &newAzureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	r.logger.Debugf(ctx, "Ensured new AzureMachinePool %s/%s has been created", namespacedName.Namespace, namespacedName.Name)
-
-	return nil
-}
-
-func (r *Resource) ensureNewAzureMachinePoolReferencesUpdated(ctx context.Context, namespacedName types.NamespacedName) error {
-	r.logger.Debugf(ctx, "Ensuring new AzureMachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
-	newAzureMachinePool := capzexp.AzureMachinePool{}
-	err := r.client.Get(ctx, namespacedName, &newAzureMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	update := false
-	for i, ownerRef := range newAzureMachinePool.ObjectMeta.OwnerReferences {
-		if ownerRef.Kind == "MachinePool" && ownerRef.APIVersion != machinepoolmigration.DesiredCAPIGroupVersion {
-			newAzureMachinePool.ObjectMeta.OwnerReferences[i].APIVersion = machinepoolmigration.DesiredCAPIGroupVersion
-			update = true
-		}
-	}
-
-	if update {
-		err = r.client.Update(ctx, &newAzureMachinePool)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		r.logger.Debugf(ctx, "Ensured new AzureMachinePool %s/%s references have been updated", namespacedName.Namespace, namespacedName.Name)
-	} else {
-		r.logger.Debugf(ctx, "New AzureMachinePool %s/%s references have been already updated", namespacedName.Namespace, namespacedName.Name)
-	}
 
 	return nil
 }

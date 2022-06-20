@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.20.0] - 2022-06-07
 
+
+### Fixed
+
+- Add pause annotation before deleting old machinepool and azuremachinepool CRs during migration to non-exp.
+- Update ownerReference UIDs during migration to non-exp.
+
 ### Changed
 
 - Bumped k8scc to latest version to fix `localhost` node name problem.

@@ -7,53 +7,43 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-const (
-	operatorkitMachinePoolExpFinalizer = "operatorkit.giantswarm.io/azure-operator-machine-pool-exp-controller"
+var (
+	pauseAnnotations = map[string]string{
+		"cluster.x-k8s.io/paused":          "true",
+		"operatorkit.giantswarm.io/paused": "true",
+	}
 )
 
 func (r *Resource) deleteOldMachinePool(ctx context.Context, oldMachinePool *oldcapiexp.MachinePool) error {
 	r.logger.Debugf(ctx, "Deleting old MachinePool %s/%s", oldMachinePool.Namespace, oldMachinePool.Name)
 	var err error
-	finalizersUpdated := false
+
+	update := false
 	r.logger.Debugf(ctx, "Checking if old MachinePool %s/%s finalizers should be removed", oldMachinePool.Namespace, oldMachinePool.Name)
 
+	// Delete all finalizers.
 	if len(oldMachinePool.ObjectMeta.Finalizers) > 0 {
-		// First we manually remove all finalizers (except for operatorkit finalizer
-		// for exp MachinePool which will be removed by the operatorkit). We do
-		// this because new CR is replacing old CR, therefore all operators will
-		// now use the new CR and ignore the old one. We don't want that
-		// finalizers to block the deletion of the old MachinePool, so we remove
-		// them manually.
-		operatorkitFinalizerFound := false
-		for _, s := range oldMachinePool.ObjectMeta.Finalizers {
-			if s == operatorkitMachinePoolExpFinalizer {
-				operatorkitFinalizerFound = true
-				break
-			}
-		}
+		oldMachinePool.ObjectMeta.SetFinalizers([]string{})
+		update = true
+	}
 
-		if operatorkitFinalizerFound {
-			// Just keep the operatorkit finalizer
-			if len(oldMachinePool.ObjectMeta.Finalizers) > 1 {
-				// update only if we really have more than one we already want
-				oldMachinePool.ObjectMeta.SetFinalizers([]string{operatorkitMachinePoolExpFinalizer})
-				err = r.ctrlClient.Update(ctx, oldMachinePool)
-				finalizersUpdated = true
+	// Ensure pause annotations are in place.
+	for k, v := range pauseAnnotations {
+		if oldMachinePool.GetAnnotations()[k] != v {
+			if oldMachinePool.Annotations == nil {
+				oldMachinePool.Annotations = make(map[string]string)
 			}
-		} else {
-			oldMachinePool.ObjectMeta.SetFinalizers([]string{})
-			err = r.ctrlClient.Update(ctx, oldMachinePool)
-			finalizersUpdated = true
-		}
-		if err != nil {
-			return microerror.Mask(err)
+			oldMachinePool.Annotations[k] = v
+			update = true
 		}
 	}
 
-	if finalizersUpdated {
-		r.logger.Debugf(ctx, "Removed old MachinePool %s/%s finalizers", oldMachinePool.Namespace, oldMachinePool.Name)
-	} else {
-		r.logger.Debugf(ctx, "No need to remove old MachinePool %s/%s finalizers", oldMachinePool.Namespace, oldMachinePool.Name)
+	if update {
+		err := r.ctrlClient.Update(ctx, oldMachinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		r.logger.Debugf(ctx, "Removed finalizers and ensured pause annotations on old MachinePool %s/%s", oldMachinePool.Namespace, oldMachinePool.Name)
 	}
 
 	// Finally, delete the old MachinePool
