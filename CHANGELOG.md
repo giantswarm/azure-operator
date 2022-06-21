@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add pause annotation before deleting old machinepool and azuremachinepool CRs during migration to non-exp.
 - Update ownerReference UIDs during migration to non-exp.
 - Avoid updating `AzureCluster` at every reconciliation loop in the `subnet` resource.
+- Avoid saving `AzureCluster` status if there are no changes to avoid useless reconciliation loops.
 
 ## [5.20.0] - 2022-06-07
 
