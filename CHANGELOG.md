@@ -7,13 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [5.20.0] - 2022-06-07
-
-
 ### Fixed
 
 - Add pause annotation before deleting old machinepool and azuremachinepool CRs during migration to non-exp.
 - Update ownerReference UIDs during migration to non-exp.
+
+## [5.20.0] - 2022-06-07
 
 ### Changed
 
