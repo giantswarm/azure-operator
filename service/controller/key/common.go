@@ -92,3 +92,7 @@ func KubernetesVersion(release releasev1alpha1.Release) (string, error) {
 func OSVersion(release releasev1alpha1.Release) (string, error) {
 	return ComponentVersion(release, ComponentOS)
 }
+
+func EncryptionConfigSecretName(clusterName string) string {
+	return fmt.Sprintf("%s-encryption-provider-config", clusterName)
+}

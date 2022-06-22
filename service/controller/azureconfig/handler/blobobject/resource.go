@@ -19,6 +19,8 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "blobobject"
+
+	encryptionProviderConfigKeyName = "encryption"
 )
 
 type Config struct {

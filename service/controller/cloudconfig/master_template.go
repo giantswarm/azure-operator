@@ -18,16 +18,14 @@ const (
 	defaultEtcdPort                  = 2379
 	defaultImagePullProgressDeadline = "1m"
 	EtcdInitialClusterStateNew       = "new"
+
+	encryptionConfigFilePath = "/etc/kubernetes/encryption/k8s-encryption-config.yaml"
 )
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
-	apiserverEncryptionKey, err := c.getEncryptionkey(ctx, data.CustomObject)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
+	var err error
 	var k8sAPIExtraArgs []string
 	{
 		oidcExtraArgs := c.oidcExtraArgs(ctx, data)
@@ -50,7 +48,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 
 		params = k8scloudconfig.Params{}
 		params.BaseDomain = key.ClusterBaseDomain(data.CustomObject)
-		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
 		params.DockerhubToken = c.dockerhubToken
@@ -99,8 +96,14 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			},
 		}
 
+		encryptedEncryptionConfig, err := encrypter.Encrypt(data.EncryptionConf)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
 		params.Extension = &masterExtension{
-			baseExtension: be,
+			baseExtension:             be,
+			encryptedEncryptionConfig: encryptedEncryptionConfig,
 		}
 		params.ExtraManifests = []string{}
 		params.Debug = k8scloudconfig.Debug{
@@ -112,6 +115,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.RegistryMirrors = c.registryMirrors
 		params.Versions = data.Versions
 		params.SSOPublicKey = c.ssoPublicKey
+		params.DisableEncryptionAtREST = true // encryption key is now managed by encription-provider-operator
 	}
 	ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignition.Path)
 	params.Files, err = k8scloudconfig.RenderFiles(ignitionPath, params)
@@ -124,6 +128,8 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 
 type masterExtension struct {
 	baseExtension
+
+	encryptedEncryptionConfig []byte
 }
 
 // oidcExtraArgs returns oidc parameters reading the configuration from `Cluster` annotations.
@@ -265,6 +271,28 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		fileAssets = append(fileAssets, asset)
 	}
 
+	// Add encryption at rest config.
+	{
+		m := k8scloudconfig.FileMetadata{
+			Path: encryptionConfigFilePath + ".enc",
+			Owner: k8scloudconfig.Owner{
+				Group: k8scloudconfig.Group{
+					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
+			},
+			Permissions: CertFilePermission,
+		}
+
+		asset := k8scloudconfig.FileAsset{
+			Metadata: m,
+			Content:  base64.StdEncoding.EncodeToString(me.encryptedEncryptionConfig),
+		}
+
+		fileAssets = append(fileAssets, asset)
+	}
 	return fileAssets, nil
 }
 
@@ -304,6 +332,9 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	}
 
 	data := me.templateData(me.certFiles)
+
+	// To use the certificate decrypter unit for the etcd data encryption config file.
+	data.certificateDecrypterUnitParams.CertsPaths = append(data.certificateDecrypterUnitParams.CertsPaths, encryptionConfigFilePath)
 
 	var newUnits []k8scloudconfig.UnitAsset
 

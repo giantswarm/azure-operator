@@ -207,23 +207,25 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 				return microerror.Mask(err)
 			}
 
-			azureCluster.Spec.NetworkSpec.Subnets[i].ID = subnetID
+			if azureCluster.Spec.NetworkSpec.Subnets[i].ID != subnetID {
+				azureCluster.Spec.NetworkSpec.Subnets[i].ID = subnetID
+
+				// Update AzureCluster so that subnet.ID is saved.
+				err = r.ctrlClient.Update(ctx, azureCluster)
+				if apierrors.IsConflict(err) {
+					r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
+					r.logger.Debugf(ctx, "cancelling resource")
+					return nil
+				} else if err != nil {
+					return microerror.Mask(err)
+				}
+			}
 
 			err = r.ensureSubnetIsAllowedToStorageAccount(ctx, storageAccountsClient, azureCluster, azureCluster.Spec.NetworkSpec.Subnets[i])
 			if err != nil {
 				return microerror.Mask(err)
 			}
 		}
-	}
-
-	// Update AzureCluster so that subnet.ID is saved.
-	err = r.ctrlClient.Update(ctx, azureCluster)
-	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
-		r.logger.Debugf(ctx, "cancelling resource")
-		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
 	}
 
 	return nil
