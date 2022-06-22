@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.21.0] - 2022-06-22
+
 ### Changed
 
 - Changes to EncryptionConfig in order to work with `encryption-provider-operator`.
@@ -571,7 +573,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.20.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.21.0...HEAD
+[5.21.0]: https://github.com/giantswarm/azure-operator/compare/v5.20.0...v5.21.0
 [5.20.0]: https://github.com/giantswarm/azure-operator/compare/v5.19.0...v5.20.0
 [5.19.0]: https://github.com/giantswarm/azure-operator/compare/v5.18.0...v5.19.0
 [5.18.0]: https://github.com/giantswarm/azure-operator/compare/v5.17.0...v5.18.0
