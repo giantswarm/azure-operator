@@ -89,22 +89,28 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	oldStatus := machinePool.Status
+
 	machinePool.Status.Replicas = azureMachinePool.Status.Replicas
 	machinePool.Status.ReadyReplicas = int32(nodeRefsResult.ready)
 	machinePool.Status.AvailableReplicas = int32(nodeRefsResult.available)
 	machinePool.Status.UnavailableReplicas = machinePool.Status.Replicas - machinePool.Status.AvailableReplicas
 	machinePool.Status.NodeRefs = nodeRefsResult.references
 
-	err = r.ctrlClient.Status().Update(ctx, &machinePool)
-	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
-		r.logger.Debugf(ctx, "cancelling resource")
-		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
+	if !reflect.DeepEqual(oldStatus, machinePool.Status) {
+		err = r.ctrlClient.Status().Update(ctx, &machinePool)
+		if apierrors.IsConflict(err) {
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
+			r.logger.Debugf(ctx, "cancelling resource")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
 
-	r.logger.Debugf(ctx, "Set MachinePool's NodeRefs")
+		r.logger.Debugf(ctx, "Updated MachinePool's Status")
+	} else {
+		r.logger.Debugf(ctx, "MachinePool's Status is up to date")
+	}
 
 	return nil
 }
