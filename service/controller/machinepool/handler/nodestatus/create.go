@@ -2,6 +2,7 @@ package nodestatus
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -46,25 +47,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	machinePool.Spec.ProviderIDList = azureMachinePool.Spec.ProviderIDList
-	if len(azureMachinePool.Spec.ProviderIDList) == 0 {
-		r.logger.Debugf(ctx, "AzureMachinePool.Spec.ProviderIDList haven't been set yet")
-		r.logger.Debugf(ctx, "canceling resource")
-		return nil
-	}
+	if !reflect.DeepEqual(machinePool.Spec.ProviderIDList, azureMachinePool.Spec.ProviderIDList) {
+		machinePool.Spec.ProviderIDList = azureMachinePool.Spec.ProviderIDList
 
-	err = r.ctrlClient.Update(ctx, &machinePool)
-	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
-		r.logger.Debugf(ctx, "cancelling resource")
-		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Name: machinePool.Name, Namespace: machinePool.Namespace}, &machinePool)
-	if err != nil {
-		return microerror.Mask(err)
+		err = r.ctrlClient.Update(ctx, &machinePool)
+		if apierrors.IsConflict(err) {
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
+			r.logger.Debugf(ctx, "cancelling resource")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
@@ -77,15 +70,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient, machinePool.Name, machinePool.Spec.ProviderIDList)
+	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Name: machinePool.Name, Namespace: machinePool.Namespace}, &machinePool)
 	if err != nil {
-		if IsErrNoAvailableNodes(err) {
-			r.logger.Debugf(ctx, "Cannot assign NodeRefs to MachinePool, no matching Nodes")
-			r.logger.Debugf(ctx, "canceling resource")
-			return nil
-		}
-
 		return microerror.Mask(err)
+	}
+
+	var nodeRefsResult getNodeReferencesResult
+	if len(machinePool.Spec.ProviderIDList) > 0 {
+		nodeRefsResult, err = r.getNodeReferences(ctx, tenantClusterK8sClient, machinePool.Name, machinePool.Spec.ProviderIDList)
+		if err != nil {
+			if IsErrNoAvailableNodes(err) {
+				r.logger.Debugf(ctx, "Cannot assign NodeRefs to MachinePool, no matching Nodes")
+				r.logger.Debugf(ctx, "canceling resource")
+				return nil
+			}
+
+			return microerror.Mask(err)
+		}
 	}
 
 	machinePool.Status.Replicas = azureMachinePool.Status.Replicas
