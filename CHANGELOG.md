@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix handling of `MachinePools'` status fields for empty node pools.
 
+### Changed
+
+- Bump `k8scc` to enable `auditd` monitoring for `execve` syscalls.
+
 ## [5.21.0] - 2022-06-22
 
 ### Changed
