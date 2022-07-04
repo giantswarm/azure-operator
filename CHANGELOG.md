@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.22.0] - 2022-07-04
+
 ### Changed
 
 - Tighten pod and container security contexts for PSS restricted policies.
@@ -585,7 +587,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.21.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.22.0...HEAD
+[5.22.0]: https://github.com/giantswarm/azure-operator/compare/v5.21.0...v5.22.0
 [5.21.0]: https://github.com/giantswarm/azure-operator/compare/v5.20.0...v5.21.0
 [5.20.0]: https://github.com/giantswarm/azure-operator/compare/v5.19.0...v5.20.0
 [5.19.0]: https://github.com/giantswarm/azure-operator/compare/v5.18.0...v5.19.0
