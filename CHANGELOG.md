@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bump `k8scc` to fix syntax error in `k8s-addons` script.
+
 ## [5.22.0] - 2022-07-04
 
 ### Changed
