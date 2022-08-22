@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v13/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v14/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
