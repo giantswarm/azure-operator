@@ -3,6 +3,7 @@ package volumebindingmigration
 import (
 	"bytes"
 	"context"
+	"reflect"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/errors/tenant"
@@ -106,15 +107,30 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			r.logger.Debugf(ctx, "finding if present storage class object %q has desired volumeBindingMode %q", desiredObj.Name, desiredObj.VolumeBindingMode)
 		}
 
+		needsDelete := false
 		// If present object matches the desired one, continue to next one.
-		if (desiredObj.VolumeBindingMode == nil && presentObj.VolumeBindingMode == nil) || (desiredObj.VolumeBindingMode != nil && presentObj.VolumeBindingMode != nil && *presentObj.VolumeBindingMode == *desiredObj.VolumeBindingMode) {
-			r.logger.Debugf(ctx, "present storage class object %q has desired volumeBindingMode: %q", presentObj.Name, desiredObj.VolumeBindingMode)
-			continue
+		if (desiredObj.VolumeBindingMode == nil && presentObj.VolumeBindingMode != nil) ||
+			(desiredObj.VolumeBindingMode != nil && presentObj.VolumeBindingMode == nil) ||
+			*presentObj.VolumeBindingMode != *desiredObj.VolumeBindingMode {
+			r.logger.Debugf(ctx, "storage class %q has wrong volumeBindingMode %q (expected %q)", presentObj.Name, presentObj.VolumeBindingMode, desiredObj.VolumeBindingMode)
+			needsDelete = true
+		}
+
+		// Check if provisioner is up to date.
+		if desiredObj.Provisioner != presentObj.Provisioner {
+			r.logger.Debugf(ctx, "storage class %q has wrong provisioner %q expected %q)", presentObj.Name, presentObj.Provisioner, desiredObj.Provisioner)
+			needsDelete = true
+		}
+
+		// Check if parameters are up to date.
+		if !reflect.DeepEqual(desiredObj.Parameters, presentObj.Parameters) {
+			r.logger.Debugf(ctx, "storage class %q has wrong paramters %v expected %v)", presentObj.Name, presentObj.Parameters, desiredObj.Parameters)
+			needsDelete = true
 		}
 
 		// Volume bind mode is immutable field so we must delete the present
 		// object if it exists.
-		if !presentObj.CreationTimestamp.IsZero() && presentObj.ResourceVersion != "" {
+		if needsDelete && !presentObj.CreationTimestamp.IsZero() && presentObj.ResourceVersion != "" {
 			r.logger.Debugf(ctx, "present storage class object %q does not have desired volumeBindingMode but %q instead", presentObj.Name, presentObj.VolumeBindingMode)
 			r.logger.Debugf(ctx, "deleting present storage class object %q", presentObj.Name)
 			err = tenantClusterK8sClient.Delete(ctx, &presentObj)
