@@ -83,7 +83,6 @@ mountOptions:
   - gid=1000
 parameters:
   skuName: Premium_LRS
-  fsType: ext4
 allowVolumeExpansion: true
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
@@ -100,7 +99,6 @@ mountOptions:
   - gid=1000
 parameters:
   skuName: Standard_LRS
-  fsType: ext4
 allowVolumeExpansion: true
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
