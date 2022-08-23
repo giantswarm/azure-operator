@@ -105,7 +105,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if (desiredObj.VolumeBindingMode == nil && presentObj.VolumeBindingMode != nil) ||
 			(desiredObj.VolumeBindingMode != nil && presentObj.VolumeBindingMode == nil) ||
 			*presentObj.VolumeBindingMode != *desiredObj.VolumeBindingMode {
-			r.logger.Debugf(ctx, "storage class %q has wrong volumeBindingMode %q (expected %q)", presentObj.Name, presentObj.VolumeBindingMode, desiredObj.VolumeBindingMode)
+			r.logger.Debugf(ctx, "storage class %q has wrong volumeBindingMode", presentObj.Name)
 			needsDelete = true
 		}
 
