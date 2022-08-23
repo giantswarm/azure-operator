@@ -85,6 +85,7 @@ parameters:
   skuName: Premium_LRS
 allowVolumeExpansion: true
 reclaimPolicy: Delete
+volumeBindingMode: Immediate
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
@@ -100,4 +101,5 @@ parameters:
   skuName: Standard_LRS
 allowVolumeExpansion: true
 reclaimPolicy: Delete
+volumeBindingMode: Immediate
 `
