@@ -29,7 +29,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 	var k8sAPIExtraArgs []string
 	{
 		oidcExtraArgs := c.oidcExtraArgs(ctx, data)
-		k8sAPIExtraArgs = append(k8sAPIExtraArgs, "--cloud-config=/etc/kubernetes/config/azure.yaml")
 		k8sAPIExtraArgs = append(k8sAPIExtraArgs, oidcExtraArgs...)
 	}
 
@@ -81,7 +80,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 					},
 				},
 				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
 					"--allocate-node-cidrs=true",
 					"--cluster-cidr=" + data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
 				},
@@ -89,9 +87,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			Kubelet: k8scloudconfig.KubernetesDockerOptions{
 				RunExtraArgs: []string{
 					"-v /var/lib/waagent:/var/lib/waagent:ro",
-				},
-				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
 				},
 			},
 		}

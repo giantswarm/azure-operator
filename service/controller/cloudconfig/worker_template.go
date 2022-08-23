@@ -43,9 +43,6 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 				RunExtraArgs: []string{
 					"-v /var/lib/waagent:/var/lib/waagent:ro",
 				},
-				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
-				},
 			},
 		}
 		params.Extension = &workerExtension{
