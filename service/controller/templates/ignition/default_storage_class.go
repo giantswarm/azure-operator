@@ -75,7 +75,7 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: af-premium
-provisioner: kubernetes.io/azure-file
+provisioner: file.csi.azure.com
 mountOptions:
   - dir_mode=0755
   - file_mode=0755
@@ -83,6 +83,7 @@ mountOptions:
   - gid=1000
 parameters:
   skuName: Premium_LRS
+  fsType: ext4
 allowVolumeExpansion: true
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
@@ -91,7 +92,7 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: af-standard
-provisioner: kubernetes.io/azure-file
+provisioner: file.csi.azure.com
 mountOptions:
   - dir_mode=0755
   - file_mode=0755
@@ -99,6 +100,7 @@ mountOptions:
   - gid=1000
 parameters:
   skuName: Standard_LRS
+  fsType: ext4
 allowVolumeExpansion: true
 reclaimPolicy: Delete
 volumeBindingMode: Immediate

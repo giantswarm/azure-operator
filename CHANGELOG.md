@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Bump `k8scc` to v14 to support kubernetes 1.23.
+- Change default storage classes in order to use out-of-tree CSI provisioner. 
 - Improved storage class migration resource.
  
 ### Removed
