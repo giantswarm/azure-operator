@@ -18,7 +18,7 @@ require (
 	github.com/giantswarm/exporterkit v1.0.0
 	github.com/giantswarm/ipam v0.3.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
-	github.com/giantswarm/k8scloudconfig/v14 v14.2.1-0.20220823081040-f09d07ad3996
+	github.com/giantswarm/k8scloudconfig/v14 v14.4.0
 	github.com/giantswarm/k8smetadata v0.9.3
 	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v1.0.0

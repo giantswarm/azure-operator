@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Bump `k8scc` to fix syntax error in `k8s-addons` script.
-
+- Bump `k8scc` to enable authn and authz on `scheduler` and `controller-manager`.
+ 
 ### Changed
 
 - Bump `k8scc` to v14 to support kubernetes 1.23.
