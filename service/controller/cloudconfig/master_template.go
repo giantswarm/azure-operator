@@ -55,6 +55,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.Etcd.ClientPort = defaultEtcdPort
 		params.Etcd.HighAvailability = false
 		params.Etcd.InitialClusterState = EtcdInitialClusterStateNew
+		params.ExternalCloudControllerManager = true
 		params.Kubernetes = k8scloudconfig.Kubernetes{
 			Apiserver: k8scloudconfig.KubernetesPodOptions{
 				HostExtraMounts: []k8scloudconfig.KubernetesPodOptionsHostMount{

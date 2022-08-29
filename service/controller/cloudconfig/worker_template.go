@@ -48,6 +48,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		params.Extension = &workerExtension{
 			baseExtension: be,
 		}
+		params.ExternalCloudControllerManager = true
 		params.Debug = k8scloudconfig.Debug{
 			Enabled:    c.ignition.Debug,
 			LogsPrefix: c.ignition.LogsPrefix,
