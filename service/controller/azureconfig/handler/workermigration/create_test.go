@@ -28,11 +28,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" // nolint:staticcheck
 	"sigs.k8s.io/yaml"
 
-	azureclient "github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/pkg/mock/mock_tenantcluster"
-	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/azure"
-	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/mock_azure"
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	azureclient "github.com/giantswarm/azure-operator/v6/client"
+	"github.com/giantswarm/azure-operator/v6/pkg/mock/mock_tenantcluster"
+	"github.com/giantswarm/azure-operator/v6/service/controller/azureconfig/handler/workermigration/internal/azure"
+	"github.com/giantswarm/azure-operator/v6/service/controller/azureconfig/handler/workermigration/internal/mock_azure"
+	"github.com/giantswarm/azure-operator/v6/service/controller/key"
 )
 
 //go:generate mockgen -destination internal/mock_azure/api.go -source internal/azure/spec.go API

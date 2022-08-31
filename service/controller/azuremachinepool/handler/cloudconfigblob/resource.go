@@ -9,7 +9,7 @@ import (
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v6/client"
 )
 
 const (

@@ -14,9 +14,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/label"
-	"github.com/giantswarm/azure-operator/v5/pkg/project"
-	"github.com/giantswarm/azure-operator/v5/service/controller/machinepoolexp/handler/migration"
+	"github.com/giantswarm/azure-operator/v6/pkg/label"
+	"github.com/giantswarm/azure-operator/v6/pkg/project"
+	"github.com/giantswarm/azure-operator/v6/service/controller/machinepoolexp/handler/migration"
 )
 
 type ControllerConfig struct {

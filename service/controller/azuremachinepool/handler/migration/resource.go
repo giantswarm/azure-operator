@@ -14,8 +14,8 @@ import (
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/machinepoolmigration"
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v6/pkg/machinepoolmigration"
+	"github.com/giantswarm/azure-operator/v6/service/controller/key"
 )
 
 const (

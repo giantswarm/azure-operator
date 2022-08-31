@@ -13,9 +13,9 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
-	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v6/pkg/handler/nodes"
+	"github.com/giantswarm/azure-operator/v6/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v6/service/controller/key"
 )
 
 func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

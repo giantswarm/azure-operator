@@ -18,14 +18,14 @@ import (
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/label"
-	"github.com/giantswarm/azure-operator/v5/pkg/project"
-	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepooldependents"
-	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepoolownerreference"
-	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepoolupgrade"
-	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/migration"
-	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/nodestatus"
+	"github.com/giantswarm/azure-operator/v6/pkg/label"
+	"github.com/giantswarm/azure-operator/v6/pkg/project"
+	"github.com/giantswarm/azure-operator/v6/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v6/service/controller/machinepool/handler/machinepooldependents"
+	"github.com/giantswarm/azure-operator/v6/service/controller/machinepool/handler/machinepoolownerreference"
+	"github.com/giantswarm/azure-operator/v6/service/controller/machinepool/handler/machinepoolupgrade"
+	"github.com/giantswarm/azure-operator/v6/service/controller/machinepool/handler/migration"
+	"github.com/giantswarm/azure-operator/v6/service/controller/machinepool/handler/nodestatus"
 )
 
 type ControllerConfig struct {

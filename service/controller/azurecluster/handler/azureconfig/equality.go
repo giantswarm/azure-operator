@@ -3,7 +3,7 @@ package azureconfig
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
+	"github.com/giantswarm/azure-operator/v6/pkg/annotation"
 )
 
 func azureConfigsEqual(cr1, cr2 providerv1alpha1.AzureConfig) bool {

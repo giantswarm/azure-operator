@@ -13,8 +13,8 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	azureclient "github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/pkg/azureconditions"
+	azureclient "github.com/giantswarm/azure-operator/v6/client"
+	"github.com/giantswarm/azure-operator/v6/pkg/azureconditions"
 )
 
 const (

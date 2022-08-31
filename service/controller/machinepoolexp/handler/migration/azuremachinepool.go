@@ -11,7 +11,7 @@ import (
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/machinepoolmigration"
+	"github.com/giantswarm/azure-operator/v6/pkg/machinepoolmigration"
 )
 
 func (r *Resource) newAzureMachinePoolExists(ctx context.Context, namespacedName types.NamespacedName) (bool, error) {
