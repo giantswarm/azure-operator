@@ -7,11 +7,11 @@ import (
 	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/resourcecanceledcontext"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/checksum"
-	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
-	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v6/pkg/checksum"
+	"github.com/giantswarm/azure-operator/v6/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v6/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v6/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v6/service/controller/key"
 )
 
 func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

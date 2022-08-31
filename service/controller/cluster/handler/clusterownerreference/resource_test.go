@@ -13,8 +13,8 @@ import (
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/label"
-	"github.com/giantswarm/azure-operator/v5/service/unittest"
+	"github.com/giantswarm/azure-operator/v6/pkg/label"
+	"github.com/giantswarm/azure-operator/v6/service/unittest"
 )
 
 const (

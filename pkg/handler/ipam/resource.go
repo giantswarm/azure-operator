@@ -4,7 +4,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/locker"
+	"github.com/giantswarm/azure-operator/v6/pkg/locker"
 )
 
 const (

@@ -13,8 +13,8 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v6/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v6/service/controller/key"
 )
 
 type getNodeReferencesResult struct {

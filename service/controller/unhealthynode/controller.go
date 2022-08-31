@@ -17,12 +17,12 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/pkg/credential"
-	"github.com/giantswarm/azure-operator/v5/pkg/label"
-	"github.com/giantswarm/azure-operator/v5/pkg/project"
-	"github.com/giantswarm/azure-operator/v5/service/collector"
-	"github.com/giantswarm/azure-operator/v5/service/controller/unhealthynode/handler/terminateunhealthynode"
+	"github.com/giantswarm/azure-operator/v6/client"
+	"github.com/giantswarm/azure-operator/v6/pkg/credential"
+	"github.com/giantswarm/azure-operator/v6/pkg/label"
+	"github.com/giantswarm/azure-operator/v6/pkg/project"
+	"github.com/giantswarm/azure-operator/v6/service/collector"
+	"github.com/giantswarm/azure-operator/v6/service/controller/unhealthynode/handler/terminateunhealthynode"
 )
 
 type ControllerConfig struct {

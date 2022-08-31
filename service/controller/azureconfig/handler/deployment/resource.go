@@ -13,11 +13,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v6/client"
+	"github.com/giantswarm/azure-operator/v6/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v6/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v6/service/controller/setting"
 )
 
 const (
