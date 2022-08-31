@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.1] - 2022-08-31
+
 ### Fixed
 
 - Bump k8scc to support cgroups v1 on containerd.
@@ -610,7 +612,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v6.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v6.0.1...HEAD
+[6.0.1]: https://github.com/giantswarm/azure-operator/compare/v6.0.0...v6.0.1
 [6.0.0]: https://github.com/giantswarm/azure-operator/compare/v5.22.0...v6.0.0
 [5.22.0]: https://github.com/giantswarm/azure-operator/compare/v5.21.0...v5.22.0
 [5.21.0]: https://github.com/giantswarm/azure-operator/compare/v5.20.0...v5.21.0
