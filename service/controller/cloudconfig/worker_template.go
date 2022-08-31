@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v13/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v14/pkg/template"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 
@@ -43,14 +43,12 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 				RunExtraArgs: []string{
 					"-v /var/lib/waagent:/var/lib/waagent:ro",
 				},
-				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
-				},
 			},
 		}
 		params.Extension = &workerExtension{
 			baseExtension: be,
 		}
+		params.ExternalCloudControllerManager = true
 		params.Debug = k8scloudconfig.Debug{
 			Enabled:    c.ignition.Debug,
 			LogsPrefix: c.ignition.LogsPrefix,

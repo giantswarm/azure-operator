@@ -1,4 +1,4 @@
-package volumebindingmigration
+package storageclassmigrator
 
 import (
 	"github.com/giantswarm/microerror"

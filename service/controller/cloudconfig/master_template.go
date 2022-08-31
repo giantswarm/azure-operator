@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v13/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v14/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
@@ -29,7 +29,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 	var k8sAPIExtraArgs []string
 	{
 		oidcExtraArgs := c.oidcExtraArgs(ctx, data)
-		k8sAPIExtraArgs = append(k8sAPIExtraArgs, "--cloud-config=/etc/kubernetes/config/azure.yaml")
 		k8sAPIExtraArgs = append(k8sAPIExtraArgs, oidcExtraArgs...)
 	}
 
@@ -56,6 +55,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.Etcd.ClientPort = defaultEtcdPort
 		params.Etcd.HighAvailability = false
 		params.Etcd.InitialClusterState = EtcdInitialClusterStateNew
+		params.ExternalCloudControllerManager = true
 		params.Kubernetes = k8scloudconfig.Kubernetes{
 			Apiserver: k8scloudconfig.KubernetesPodOptions{
 				HostExtraMounts: []k8scloudconfig.KubernetesPodOptionsHostMount{
@@ -81,7 +81,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 					},
 				},
 				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
 					"--allocate-node-cidrs=true",
 					"--cluster-cidr=" + data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
 				},
@@ -89,9 +88,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			Kubelet: k8scloudconfig.KubernetesDockerOptions{
 				RunExtraArgs: []string{
 					"-v /var/lib/waagent:/var/lib/waagent:ro",
-				},
-				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
 				},
 			},
 		}

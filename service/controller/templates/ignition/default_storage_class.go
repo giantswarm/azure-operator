@@ -8,12 +8,14 @@ metadata:
     storageclass.kubernetes.io/is-default-class: "true"
   labels:
     kubernetes.io/cluster-service: "true"
-provisioner: kubernetes.io/azure-disk
+provisioner: disk.csi.azure.com
 parameters:
-  kind: Managed
-  storageaccounttype: Premium_LRS
+  cachingMode: ReadOnly
+  kind: managed
+  skuname: Premium_LRS
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -22,12 +24,14 @@ metadata:
   annotations:
   labels:
     kubernetes.io/cluster-service: "true"
-provisioner: kubernetes.io/azure-disk
+provisioner: disk.csi.azure.com
 parameters:
-  kind: Managed
-  storageaccounttype: Premium_LRS
+  cachingMode: ReadOnly
+  kind: managed
+  skuname: Premium_LRS
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -36,12 +40,14 @@ metadata:
   annotations:
   labels:
     kubernetes.io/cluster-service: "true"
-provisioner: kubernetes.io/azure-disk
+provisioner: disk.csi.azure.com
 parameters:
-  kind: Managed
-  storageaccounttype: Standard_LRS
+  cachingMode: ReadOnly
+  kind: managed
+  skuname: Standard_LRS
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -69,7 +75,7 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: af-premium
-provisioner: kubernetes.io/azure-file
+provisioner: file.csi.azure.com
 mountOptions:
   - dir_mode=0755
   - file_mode=0755
@@ -79,12 +85,13 @@ parameters:
   skuName: Premium_LRS
 allowVolumeExpansion: true
 reclaimPolicy: Delete
+volumeBindingMode: Immediate
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: af-standard
-provisioner: kubernetes.io/azure-file
+provisioner: file.csi.azure.com
 mountOptions:
   - dir_mode=0755
   - file_mode=0755
@@ -94,4 +101,5 @@ parameters:
   skuName: Standard_LRS
 allowVolumeExpansion: true
 reclaimPolicy: Delete
+volumeBindingMode: Immediate
 `

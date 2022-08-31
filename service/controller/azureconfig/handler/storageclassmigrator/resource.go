@@ -1,8 +1,9 @@
-package volumebindingmigration
+package storageclassmigrator
 
 import (
 	"bytes"
 	"context"
+	"reflect"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/errors/tenant"
@@ -22,9 +23,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "volumebindingmigration"
-
-	provisionerAzureFile = "kubernetes.io/azure-file"
+	Name = "storageclassmigrator"
 )
 
 type Config struct {
@@ -79,7 +78,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	r.logger.Debugf(ctx, "ensuring storageclasses use desired volumeBindingMode")
+	r.logger.Debugf(ctx, "ensuring storageclasses are up to date")
 
 	defaultSCs, err := defaultStorageClasses()
 	if err != nil {
@@ -88,43 +87,58 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	for i := range defaultSCs {
 		desiredObj := defaultSCs[i]
-		if desiredObj.Provisioner == provisionerAzureFile {
-			r.logger.Debugf(ctx, "storage class %q uses provisioner %q; skipping as unsupported", desiredObj.Name, desiredObj.Provisioner)
-			continue
-		}
-
-		r.logger.Debugf(ctx, "finding present storage class object %q", desiredObj.Name)
+		r.logger.Debugf(ctx, "finding existing storage class object %q", desiredObj.Name)
 
 		var presentObj storagev1.StorageClass
 		err := tenantClusterK8sClient.Get(ctx, ctrl.ObjectKey{Name: desiredObj.Name, Namespace: desiredObj.Namespace}, &presentObj)
 		if apierrors.IsNotFound(err) {
 			// All good. We'll create it.
-			r.logger.Debugf(ctx, "did not find present storage class object %q", desiredObj)
+			r.logger.Debugf(ctx, "did not find existing storage class object %q", desiredObj)
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.Debugf(ctx, "finding if present storage class object %q has desired volumeBindingMode %q", desiredObj.Name, desiredObj.VolumeBindingMode)
+			r.logger.Debugf(ctx, "finding if existing storage class object %q is up to date", desiredObj.Name)
 		}
 
+		needsDelete := false
 		// If present object matches the desired one, continue to next one.
-		if (desiredObj.VolumeBindingMode == nil && presentObj.VolumeBindingMode == nil) || (desiredObj.VolumeBindingMode != nil && presentObj.VolumeBindingMode != nil && *presentObj.VolumeBindingMode == *desiredObj.VolumeBindingMode) {
-			r.logger.Debugf(ctx, "present storage class object %q has desired volumeBindingMode: %q", presentObj.Name, desiredObj.VolumeBindingMode)
+		if (desiredObj.VolumeBindingMode == nil && presentObj.VolumeBindingMode != nil) ||
+			(desiredObj.VolumeBindingMode != nil && presentObj.VolumeBindingMode == nil) ||
+			*presentObj.VolumeBindingMode != *desiredObj.VolumeBindingMode {
+			r.logger.Debugf(ctx, "storage class %q has wrong volumeBindingMode", presentObj.Name)
+			needsDelete = true
+		}
+
+		// Check if provisioner is up to date.
+		if desiredObj.Provisioner != presentObj.Provisioner {
+			r.logger.Debugf(ctx, "storage class %q has wrong provisioner %q (expected %q)", presentObj.Name, presentObj.Provisioner, desiredObj.Provisioner)
+			needsDelete = true
+		}
+
+		// Check if parameters are up to date.
+		if !reflect.DeepEqual(desiredObj.Parameters, presentObj.Parameters) {
+			r.logger.Debugf(ctx, "storage class %q has wrong parameters %v (expected %v)", presentObj.Name, presentObj.Parameters, desiredObj.Parameters)
+			needsDelete = true
+		}
+
+		if !needsDelete {
+			r.logger.Debugf(ctx, "storage class %q is up to date", presentObj.Name)
 			continue
 		}
 
 		// Volume bind mode is immutable field so we must delete the present
 		// object if it exists.
 		if !presentObj.CreationTimestamp.IsZero() && presentObj.ResourceVersion != "" {
-			r.logger.Debugf(ctx, "present storage class object %q does not have desired volumeBindingMode but %q instead", presentObj.Name, presentObj.VolumeBindingMode)
-			r.logger.Debugf(ctx, "deleting present storage class object %q", presentObj.Name)
+			r.logger.Debugf(ctx, "storage class object %q needs to be recreated", presentObj.Name)
+			r.logger.Debugf(ctx, "deleting storage class object %q", presentObj.Name)
 			err = tenantClusterK8sClient.Delete(ctx, &presentObj)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			r.logger.Debugf(ctx, "deleted present storage class object %q", presentObj.Name)
+			r.logger.Debugf(ctx, "deleted storage class object %q", presentObj.Name)
 		}
 
-		r.logger.Debugf(ctx, "creating desired storage class object %q", desiredObj.Name)
+		r.logger.Debugf(ctx, "creating storage class object %q", desiredObj.Name)
 
 		// Finally create the desired object.
 		err = tenantClusterK8sClient.Create(ctx, &desiredObj)
@@ -132,10 +146,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.Debugf(ctx, "created desired storage class object %q", desiredObj.Name)
+		r.logger.Debugf(ctx, "created storage class object %q", desiredObj.Name)
 	}
 
-	r.logger.Debugf(ctx, "ensured storageclasses use desired volumeBindingMode")
+	r.logger.Debugf(ctx, "ensured storageclasses are up to date")
 
 	return nil
 }

@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Bump `k8scc` to fix syntax error in `k8s-addons` script.
+- Bump `k8scc` to enable authn and authz on `scheduler` and `controller-manager`.
+- Enable external cloud controller manager in k8scc.
+ 
+### Changed
+
+- Bump `k8scc` to v14 to support kubernetes 1.23.
+- Change default storage classes in order to use out-of-tree CSI provisioner. 
+- Improved storage class migration resource.
+ 
+### Removed
+
+- Remove --cloud-config flag from k8s components.
 
 ## [5.22.0] - 2022-07-04
 

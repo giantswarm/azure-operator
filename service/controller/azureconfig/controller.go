@@ -42,8 +42,8 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/namespace"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/resourcegroup"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/service"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/storageclassmigrator"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/vnetpeering"
-	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/volumebindingmigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
@@ -588,14 +588,14 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		}
 	}
 
-	var volumeBindingMigrationResource resource.Interface
+	var storageClassMigratorResource resource.Interface
 	{
-		c := volumebindingmigration.Config{
+		c := storageclassmigrator.Config{
 			Logger:                   config.Logger,
 			TenantRestConfigProvider: tenantRestConfigProvider,
 		}
 
-		volumeBindingMigrationResource, err = volumebindingmigration.New(c)
+		storageClassMigratorResource, err = storageclassmigrator.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -634,7 +634,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		mastersResource,
 		workerMigrationResource,
 		endpointsResource,
-		volumeBindingMigrationResource,
+		storageClassMigratorResource,
 		vnetPeeringResource,
 	}
 
