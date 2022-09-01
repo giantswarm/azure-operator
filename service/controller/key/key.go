@@ -544,11 +544,18 @@ func ToClusterKubernetesSSHUser(s employees.SSHUserList) []v1alpha1.ClusterKuber
 	var ret []v1alpha1.ClusterKubernetesSSHUser
 
 	for name, keys := range s {
-		ret = append(ret, v1alpha1.ClusterKubernetesSSHUser{
+		u := v1alpha1.ClusterKubernetesSSHUser{
 			Name: name,
 			// v1alpha1 type currently supports only one ssh key per user.
 			PublicKey: keys[0],
-		})
+		}
+
+		// we want giantswarm user always first in the list.
+		if name == "giantswarm" {
+			ret = append([]v1alpha1.ClusterKubernetesSSHUser{u}, ret...)
+		} else {
+			ret = append(ret, u)
+		}
 	}
 
 	return ret

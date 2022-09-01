@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensure giantswarm user is always created first.
+
 ## [6.0.1] - 2022-08-31
 
 ### Fixed
