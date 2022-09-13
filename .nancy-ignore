@@ -2,3 +2,6 @@ CVE-2022-29153
 CVE-2022-24687
 CVE-2021-23772
 sonatype-2021-1485
+
+# pkg:golang/github.com/labstack/echo/v4@v4.5.0
+sonatype-2022-5436

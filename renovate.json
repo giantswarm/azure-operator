@@ -4,6 +4,9 @@
     ":reviewer(team:team-phoenix)"
   ],
   "labels": ["dependencies"],
+  "constraints": {
+    "go": "1.18"
+  },
   "packageRules": [
     {
       "matchPackagePatterns": [".*giantswarm.*"],
