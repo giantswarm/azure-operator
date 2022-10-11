@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bump k8scc to improve calico crd installer startup time.
+
 ## [6.0.2] - 2022-09-01
 
 ### Fixed
