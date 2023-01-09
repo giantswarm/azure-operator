@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v14/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v15/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v6/service/controller/encrypter"
@@ -15,9 +15,8 @@ import (
 )
 
 const (
-	defaultEtcdPort                  = 2379
-	defaultImagePullProgressDeadline = "1m"
-	EtcdInitialClusterStateNew       = "new"
+	defaultEtcdPort            = 2379
+	EtcdInitialClusterStateNew = "new"
 
 	encryptionConfigFilePath = "/etc/kubernetes/encryption/k8s-encryption-config.yaml"
 )
@@ -50,7 +49,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
 		params.DockerhubToken = c.dockerhubToken
-		params.ImagePullProgressDeadline = defaultImagePullProgressDeadline
 		params.DisableIngressControllerService = true
 		params.Etcd.ClientPort = defaultEtcdPort
 		params.Etcd.HighAvailability = false

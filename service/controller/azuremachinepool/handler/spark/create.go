@@ -16,7 +16,7 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v4/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v14/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v15/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
 	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"

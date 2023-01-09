@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v14/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v15/pkg/template"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 
@@ -56,7 +56,6 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		}
 		params.DockerhubToken = c.dockerhubToken
 		params.Images = data.Images
-		params.ImagePullProgressDeadline = defaultImagePullProgressDeadline
 		params.RegistryMirrors = c.registryMirrors
 		params.Versions = data.Versions
 		params.SSOPublicKey = c.ssoPublicKey
