@@ -35,8 +35,7 @@ var update = flag.Bool("update", false, "update .golden reference files")
 
 // Test_BidirectionalAzureConfigCRMapping uses golden files.
 //
-//  go test ./integration/test/crmapping -run Test_BidirectionalAzureConfigCRMapping -update
-//
+//	go test ./integration/test/crmapping -run Test_BidirectionalAzureConfigCRMapping -update
 func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
 	testCases := []struct {
 		name              string
@@ -108,8 +107,7 @@ func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
 
 // Test_BidirectionalAzureClusterCRMapping uses golden files.
 //
-//  go test ./integration/test/crmapping -run Test_BidirectionalAzureClusterCRMapping -update
-//
+//	go test ./integration/test/crmapping -run Test_BidirectionalAzureClusterCRMapping -update
 func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 	testCases := []struct {
 		name              string

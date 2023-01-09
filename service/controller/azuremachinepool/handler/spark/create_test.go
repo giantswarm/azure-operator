@@ -8,8 +8,7 @@ import (
 
 // Test_AzureConfigCRMapping uses golden files.
 //
-//  go test ./service/controller/resource/capzcrs -run Test_AzureConfigCRMapping -update
-//
+//	go test ./service/controller/resource/capzcrs -run Test_AzureConfigCRMapping -update
 func Test_CloudConfigRendering(t *testing.T) {
 	// testCases := []struct {
 	//	name                 string
