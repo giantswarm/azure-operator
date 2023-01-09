@@ -5,7 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io/ioutil" // nolint:staticcheck
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -36,8 +36,7 @@ var update = flag.Bool("update", false, "update .golden reference files")
 
 // Test_AzureConfigCRMapping uses golden files.
 //
-//  go test ./service/controller/azureconfig/handler/capzcrs -run Test_AzureConfigCRMapping -update
-//
+//	go test ./service/controller/azureconfig/handler/capzcrs -run Test_AzureConfigCRMapping -update
 func Test_AzureConfigCRMapping(t *testing.T) {
 	testCases := []struct {
 		name            string
