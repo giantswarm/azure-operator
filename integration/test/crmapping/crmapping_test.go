@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io/ioutil" // nolint:staticcheck
 	"path/filepath"
 	"strconv"
 	"testing"
