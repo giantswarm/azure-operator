@@ -11,7 +11,8 @@ const maxDNSLabelLength = 63
 // can be used as Kubernetes object identifier such as namespace name.
 //
 // NOTE: This function returns an empty string if input string consists of only
-//		 non-allowed characters.
+//
+//	non-allowed characters.
 //
 // https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-label-names
 func AsDNSLabelName(v string) string {

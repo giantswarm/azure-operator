@@ -727,7 +727,7 @@ func NodePoolMinReplicas(machinePool *capiexp.MachinePool) int32 {
 		return *machinePool.Spec.Replicas
 	}
 
-	return int32(size)
+	return int32(size) // nolint:gosec
 }
 
 func NodePoolMaxReplicas(machinePool *capiexp.MachinePool) int32 {
@@ -738,7 +738,7 @@ func NodePoolMaxReplicas(machinePool *capiexp.MachinePool) int32 {
 		return *machinePool.Spec.Replicas
 	}
 
-	return int32(size)
+	return int32(size) // nolint:gosec
 }
 
 func NodePoolVMSSName(azureMachinePool *capzexp.AzureMachinePool) string {
