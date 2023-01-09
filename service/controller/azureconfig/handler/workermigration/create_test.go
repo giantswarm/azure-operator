@@ -3,7 +3,7 @@ package workermigration
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io/ioutil" // nolint:staticcheck
 	"net/http"
 	"path/filepath"
 	"strconv"
