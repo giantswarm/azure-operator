@@ -9,7 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/giantswarm/apiextensions/v6 v6.0.0
+	github.com/giantswarm/apiextensions/v6 v6.4.1
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v4 v4.0.0
 	github.com/giantswarm/conditions v0.5.0
@@ -18,14 +18,14 @@ require (
 	github.com/giantswarm/exporterkit v1.0.0
 	github.com/giantswarm/ipam v0.3.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
-	github.com/giantswarm/k8scloudconfig/v14 v14.5.2
-	github.com/giantswarm/k8smetadata v0.9.3
+	github.com/giantswarm/k8scloudconfig/v14 v14.6.0
+	github.com/giantswarm/k8smetadata v0.17.0
 	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v1.0.0
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/microkit v1.0.0
 	github.com/giantswarm/micrologger v0.6.0
-	github.com/giantswarm/operatorkit/v7 v7.0.1
+	github.com/giantswarm/operatorkit/v7 v7.1.0
 	github.com/giantswarm/release-operator/v3 v3.2.0
 	github.com/giantswarm/tenantcluster/v6 v6.0.0
 	github.com/giantswarm/to v0.4.0
