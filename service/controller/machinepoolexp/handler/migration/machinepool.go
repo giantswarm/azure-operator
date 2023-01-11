@@ -10,7 +10,7 @@ import (
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/machinepoolmigration"
+	"github.com/giantswarm/azure-operator/v7/pkg/machinepoolmigration"
 )
 
 const (

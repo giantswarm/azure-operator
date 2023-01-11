@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.0] - 2023-01-11
+
 ### Changed
 
 - Bump k8scc to support k8s 1.24.
@@ -628,7 +630,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v6.0.3...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v7.0.0...HEAD
+[7.0.0]: https://github.com/giantswarm/azure-operator/compare/v6.0.3...v7.0.0
 [6.0.3]: https://github.com/giantswarm/azure-operator/compare/v6.0.2...v6.0.3
 [6.0.2]: https://github.com/giantswarm/azure-operator/compare/v6.0.1...v6.0.2
 [6.0.1]: https://github.com/giantswarm/azure-operator/compare/v6.0.0...v6.0.1

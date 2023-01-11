@@ -9,8 +9,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/helpers"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 var nodePoolIPMask = net.CIDRMask(24, 32)

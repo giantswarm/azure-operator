@@ -13,9 +13,9 @@ import (
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/client"
-	"github.com/giantswarm/azure-operator/v6/pkg/helpers"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/client"
+	"github.com/giantswarm/azure-operator/v7/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 type AzureMachinePoolSubnetCollectorConfig struct {

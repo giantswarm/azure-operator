@@ -15,7 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 const (

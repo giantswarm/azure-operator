@@ -6,9 +6,9 @@ import (
 	"github.com/giantswarm/certs/v4/pkg/certs"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 
-	"github.com/giantswarm/azure-operator/v6/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
-	"github.com/giantswarm/azure-operator/v6/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v7/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/service/controller/setting"
 )
 
 type baseExtension struct {

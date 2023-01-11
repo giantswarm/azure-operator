@@ -9,10 +9,10 @@ import (
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/label"
-	"github.com/giantswarm/azure-operator/v6/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
-	"github.com/giantswarm/azure-operator/v6/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v7/pkg/label"
+	"github.com/giantswarm/azure-operator/v7/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/service/controller/templates/ignition"
 )
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a

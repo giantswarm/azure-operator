@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/locker"
+	"github.com/giantswarm/azure-operator/v7/pkg/locker"
 )
 
 func Test_SubnetAllocator(t *testing.T) {

@@ -10,8 +10,8 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/helpers"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 const (

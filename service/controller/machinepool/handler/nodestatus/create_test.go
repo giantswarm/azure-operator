@@ -15,8 +15,8 @@ import (
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/mock/mock_tenantcluster"
-	"github.com/giantswarm/azure-operator/v6/service/unittest"
+	"github.com/giantswarm/azure-operator/v7/pkg/mock/mock_tenantcluster"
+	"github.com/giantswarm/azure-operator/v7/service/unittest"
 )
 
 func Test_NodeStatusIsSaved(t *testing.T) {
