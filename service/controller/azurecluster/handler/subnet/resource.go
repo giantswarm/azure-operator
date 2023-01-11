@@ -17,10 +17,10 @@ import (
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/client"
-	subnet "github.com/giantswarm/azure-operator/v6/service/controller/azurecluster/handler/subnet/template"
-	"github.com/giantswarm/azure-operator/v6/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/client"
+	subnet "github.com/giantswarm/azure-operator/v7/service/controller/azurecluster/handler/subnet/template"
+	"github.com/giantswarm/azure-operator/v7/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 const (

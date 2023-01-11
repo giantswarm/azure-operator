@@ -5,8 +5,8 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/handler/nodes/state"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 // createStateMachine configures and returns state machine that is driven by

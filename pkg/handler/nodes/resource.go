@@ -8,12 +8,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/client"
-	"github.com/giantswarm/azure-operator/v6/pkg/handler/nodes/state"
-	"github.com/giantswarm/azure-operator/v6/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v6/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
-	"github.com/giantswarm/azure-operator/v6/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v7/client"
+	"github.com/giantswarm/azure-operator/v7/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v7/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v7/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/service/controller/setting"
 )
 
 type Config struct {

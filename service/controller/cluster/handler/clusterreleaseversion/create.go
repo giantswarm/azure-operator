@@ -7,8 +7,8 @@ import (
 	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 
-	azopannotation "github.com/giantswarm/azure-operator/v6/pkg/annotation"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	azopannotation "github.com/giantswarm/azure-operator/v7/pkg/annotation"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {

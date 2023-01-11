@@ -10,11 +10,11 @@ import (
 	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/checksum"
-	"github.com/giantswarm/azure-operator/v6/pkg/handler/nodes"
-	"github.com/giantswarm/azure-operator/v6/pkg/handler/nodes/state"
-	"github.com/giantswarm/azure-operator/v6/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/pkg/checksum"
+	"github.com/giantswarm/azure-operator/v7/pkg/handler/nodes"
+	"github.com/giantswarm/azure-operator/v7/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v7/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

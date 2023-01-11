@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/giantswarm/azure-operator/v6/service/collector"
+	"github.com/giantswarm/azure-operator/v7/service/collector"
 )
 
 const metricsNamespace = "azure_operator_azure_api"

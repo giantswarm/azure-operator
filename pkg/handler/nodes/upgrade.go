@@ -8,7 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/service/controller/key"
+	"github.com/giantswarm/azure-operator/v7/service/controller/key"
 )
 
 // AnyOutOfDate iterates over all nodes in tenant cluster and finds

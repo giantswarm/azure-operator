@@ -6,7 +6,7 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	azureclient "github.com/giantswarm/azure-operator/v6/client"
+	azureclient "github.com/giantswarm/azure-operator/v7/client"
 )
 
 const (

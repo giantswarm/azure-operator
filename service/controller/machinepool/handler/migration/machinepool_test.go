@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
-	"github.com/giantswarm/azure-operator/v6/service/unittest"
+	"github.com/giantswarm/azure-operator/v7/service/unittest"
 )
 
 func TestEnsureCreatedMachinePoolIsCorrect(t *testing.T) {

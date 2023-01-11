@@ -12,7 +12,7 @@ import (
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/service/unittest"
+	"github.com/giantswarm/azure-operator/v7/service/unittest"
 )
 
 func TestSparkCRIsDeletedWhenDeletingNodePool(t *testing.T) {

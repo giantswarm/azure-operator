@@ -13,9 +13,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v6/client/senddecorator"
-	"github.com/giantswarm/azure-operator/v6/pkg/backpressure"
-	"github.com/giantswarm/azure-operator/v6/service/collector"
+	"github.com/giantswarm/azure-operator/v7/client/senddecorator"
+	"github.com/giantswarm/azure-operator/v7/pkg/backpressure"
+	"github.com/giantswarm/azure-operator/v7/service/collector"
 )
 
 const (

@@ -11,8 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v6/pkg/label"
-	"github.com/giantswarm/azure-operator/v6/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v7/pkg/label"
+	"github.com/giantswarm/azure-operator/v7/service/controller/controllercontext"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {

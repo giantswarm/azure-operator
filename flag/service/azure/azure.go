@@ -1,9 +1,9 @@
 package azure
 
 import (
-	"github.com/giantswarm/azure-operator/v6/flag/service/azure/hostcluster"
-	"github.com/giantswarm/azure-operator/v6/flag/service/azure/msi"
-	"github.com/giantswarm/azure-operator/v6/flag/service/azure/template"
+	"github.com/giantswarm/azure-operator/v7/flag/service/azure/hostcluster"
+	"github.com/giantswarm/azure-operator/v7/flag/service/azure/msi"
+	"github.com/giantswarm/azure-operator/v7/flag/service/azure/template"
 )
 
 type Azure struct {
