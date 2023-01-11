@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v14/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v15/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
