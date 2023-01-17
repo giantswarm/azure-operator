@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- bumping k8scc to `v15.4.2` to include changes made to psp.
+
 ## [7.0.0] - 2023-01-11
 
 ### Changed
