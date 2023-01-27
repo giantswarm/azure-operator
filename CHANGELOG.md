@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump k8scc to support improve reliability of calico deployment process for new clusters.
+
 ## [7.0.0] - 2023-01-11
 
 ### Changed
