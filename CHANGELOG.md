@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Bump k8scc to support improve reliability of calico deployment process for new clusters.
+- Enable `CronJobTimeZone` feature gate.
 
 ## [7.0.0] - 2023-01-11
 
