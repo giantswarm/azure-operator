@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.1.0] - 2023-02-07
+
 ### Changed
 
 - Bump k8scc to support improve reliability of calico deployment process for new clusters.
@@ -635,7 +637,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v7.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v7.1.0...HEAD
+[7.1.0]: https://github.com/giantswarm/azure-operator/compare/v7.0.0...v7.1.0
 [7.0.0]: https://github.com/giantswarm/azure-operator/compare/v6.0.3...v7.0.0
 [6.0.3]: https://github.com/giantswarm/azure-operator/compare/v6.0.2...v6.0.3
 [6.0.2]: https://github.com/giantswarm/azure-operator/compare/v6.0.1...v6.0.2
