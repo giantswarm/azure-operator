@@ -83,7 +83,7 @@ const (
 // Container image versions for k8scloudconfig.
 const (
 	// k8s-api-healthz version.
-	kubernetesAPIHealthzVersion = "0.1.1"
+	kubernetesAPIHealthzVersion = "0.2.0"
 
 	// k8s-setup-network-environment.
 	kubernetesNetworkSetupDocker = "0.2.0"

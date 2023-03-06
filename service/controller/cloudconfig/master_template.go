@@ -50,6 +50,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.CalicoPolicyOnly = true
 		params.DockerhubToken = c.dockerhubToken
 		params.DisableIngressControllerService = true
+		params.EnableCronJobTimeZone = true
 		params.Etcd.ClientPort = defaultEtcdPort
 		params.Etcd.HighAvailability = false
 		params.Etcd.InitialClusterState = EtcdInitialClusterStateNew
