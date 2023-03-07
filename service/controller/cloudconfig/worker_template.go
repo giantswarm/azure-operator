@@ -45,6 +45,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 				},
 			},
 		}
+		params.EnableCronJobTimeZone = true
 		params.Extension = &workerExtension{
 			baseExtension: be,
 		}

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump k8s-api-healthz image to 0.2.0.
+
 ## [7.1.0] - 2023-02-07
 
 ### Changed
