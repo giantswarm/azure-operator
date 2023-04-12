@@ -28,7 +28,6 @@ import (
 	"github.com/giantswarm/azure-operator/v7/service/collector"
 	"github.com/giantswarm/azure-operator/v7/service/controller/azuremachinepool/handler/azuremachinepoolconditions"
 	"github.com/giantswarm/azure-operator/v7/service/controller/azuremachinepool/handler/cloudconfigblob"
-	"github.com/giantswarm/azure-operator/v7/service/controller/azuremachinepool/handler/migration"
 	"github.com/giantswarm/azure-operator/v7/service/controller/azuremachinepool/handler/nodepool"
 	"github.com/giantswarm/azure-operator/v7/service/controller/azuremachinepool/handler/spark"
 	"github.com/giantswarm/azure-operator/v7/service/controller/debugger"
@@ -138,18 +137,6 @@ func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interfa
 			Logger:     config.Logger,
 		}
 		organizationClientFactory = client.NewOrganizationFactory(c)
-	}
-
-	var migrationResource resource.Interface
-	{
-		c := migration.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
-		}
-		migrationResource, err = migration.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
 	}
 
 	var azureMachinePoolConditionsResource resource.Interface
@@ -371,7 +358,6 @@ func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interfa
 	}
 
 	resources := []resource.Interface{
-		migrationResource,
 		azureMachinePoolConditionsResource,
 		ipamResource,
 		sparkResource,
