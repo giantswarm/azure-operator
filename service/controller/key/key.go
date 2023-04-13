@@ -8,7 +8,6 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	apiextensionsannotations "github.com/giantswarm/apiextensions/v6/pkg/annotation"
-	oldcapiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	"github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v6/pkg/label"
@@ -156,20 +155,6 @@ func ToMachinePool(v interface{}) (capiexp.MachinePool, error) {
 	customObjectPointer, ok := v.(*capiexp.MachinePool)
 	if !ok {
 		return capiexp.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiexp.MachinePool{}, v)
-	}
-	customObject := *customObjectPointer
-
-	return customObject, nil
-}
-
-func ToOldExpMachinePool(v interface{}) (oldcapiexp.MachinePool, error) {
-	if v == nil {
-		return oldcapiexp.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &oldcapiexp.MachinePool{}, v)
-	}
-
-	customObjectPointer, ok := v.(*oldcapiexp.MachinePool)
-	if !ok {
-		return oldcapiexp.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &oldcapiexp.MachinePool{}, v)
 	}
 	customObject := *customObjectPointer
 
