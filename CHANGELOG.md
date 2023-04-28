@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove logic that migrates CAPI CRDs from experimental group to new group.
 
+### Changed
+
+- Kubernetes 1.25 support.
+
 ## [7.2.0] - 2023-03-07
 
 ### Changed
