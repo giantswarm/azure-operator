@@ -1,9 +1,7 @@
-FROM quay.io/giantswarm/golang:1.18.10 AS builder
+FROM quay.io/giantswarm/golang:1.20.3 AS builder
 ENV GO111MODULE=on
 COPY go.mod /etc/go.mod
-RUN cat /etc/go.mod | grep k8scloudconfig | awk '{print $1"/...@"$2}' | xargs -I{} go get {}
-# This is needed to extract the versioned catalog name, e.g. v6@6.0.1
-RUN ln -s /go/pkg/mod/$(cat /etc/go.mod | grep k8scloudconfig | awk '{print $1"@"$2}') /opt/k8scloudconfig
+RUN git clone --depth 1 --branch $(cat /etc/go.mod | grep k8scloudconfig | awk '{print $2}') https://github.com/giantswarm/k8scloudconfig.git && cp -r k8scloudconfig /opt/k8scloudconfig
 
 FROM alpine:3.17.3
 
