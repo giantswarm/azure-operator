@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 
-	oldcapiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
@@ -29,37 +28,6 @@ func GetMachinePoolsByMetadata(ctx context.Context, c client.Client, obj metav1.
 
 func GetMachinePoolsByClusterID(ctx context.Context, c client.Client, clusterNamespace, clusterID string) (*capiexp.MachinePoolList, error) {
 	machinePools := &capiexp.MachinePoolList{}
-	var labelSelector client.MatchingLabels
-	{
-		labelSelector = map[string]string{
-			capi.ClusterLabelName: clusterID,
-		}
-	}
-
-	err := c.List(ctx, machinePools, labelSelector, client.InNamespace(clusterNamespace))
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return machinePools, nil
-}
-
-func GetOldExpMachinePoolsByMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*oldcapiexp.MachinePoolList, error) {
-	if obj.Labels[capi.ClusterLabelName] == "" {
-		err := microerror.Maskf(invalidObjectError, "Label %q must not be empty for object %q", capi.ClusterLabelName, obj.GetSelfLink())
-		return nil, err
-	}
-
-	machinePools, err := GetOldExpMachinePoolsByClusterID(ctx, c, obj.Namespace, obj.Labels[capi.ClusterLabelName])
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return machinePools, nil
-}
-
-func GetOldExpMachinePoolsByClusterID(ctx context.Context, c client.Client, clusterNamespace, clusterID string) (*oldcapiexp.MachinePoolList, error) {
-	machinePools := &oldcapiexp.MachinePoolList{}
 	var labelSelector client.MatchingLabels
 	{
 		labelSelector = map[string]string{

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
-	oldcapiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
@@ -61,12 +60,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	oldMachinePoolLst, err := helpers.GetOldExpMachinePoolsByMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	machinePoolUpgrading, err := isAnyMachinePoolUpgrading(cr, oldMachinePoolLst.Items, machinePoolLst.Items)
+	machinePoolUpgrading, err := isAnyMachinePoolUpgrading(cr, machinePoolLst.Items)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -76,36 +70,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}
-
-	r.logger.Debugf(ctx, "finding old experimental machinepool that has not been upgraded yet")
-
-	oldMachinePoolsNotUpgradedYet, err := oldExpMachinePoolsNotUpgradedYet(cr, oldMachinePoolLst.Items)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if len(oldMachinePoolsNotUpgradedYet) > 0 {
-		oldMachinePool := oldMachinePoolsNotUpgradedYet[0]
-
-		r.logger.Debugf(ctx, "found old exp machinepool that has not been upgraded yet: %#q", oldMachinePool.Name)
-		r.logger.Debugf(ctx, "updating release & operator version labels")
-
-		oldMachinePool.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
-		oldMachinePool.Labels[label.AzureOperatorVersion] = cr.Labels[label.AzureOperatorVersion]
-		err = r.ctrlClient.Update(ctx, &oldMachinePool)
-		if apierrors.IsConflict(err) {
-			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
-			r.logger.Debugf(ctx, "cancelling resource")
-			return nil
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-
-		r.logger.Debugf(ctx, "updated release & operator version labels of old exp machinepool %#q", oldMachinePool.Name)
-		r.logger.Debugf(ctx, "cancelling resource")
-		return nil
-	}
-	// ***
 
 	r.logger.Debugf(ctx, "finding machinepool that has not been upgraded yet")
 
@@ -253,32 +217,6 @@ func machinePoolsNotUpgradedYet(cr capi.Cluster, machinePools []capiexp.MachineP
 
 		if !isUpgrading && !hasUpgraded {
 			pendingUpgrade = append(pendingUpgrade, machinePool)
-		}
-	}
-
-	return pendingUpgrade, nil
-}
-
-func oldExpMachinePoolsNotUpgradedYet(cr capi.Cluster, oldMachinePools []oldcapiexp.MachinePool) ([]oldcapiexp.MachinePool, error) {
-	desiredRelease := cr.Labels[label.ReleaseVersion]
-
-	var pendingUpgrade []oldcapiexp.MachinePool
-
-	for i := range oldMachinePools {
-		oldMachinePool := oldMachinePools[i]
-
-		isUpgrading, err := isOldExpMachinePoolUpgradingInProgress(&oldMachinePool, desiredRelease)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		hasUpgraded, err := isOldExpMachinePoolUpgraded(&oldMachinePool, desiredRelease)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		if !isUpgrading && !hasUpgraded {
-			pendingUpgrade = append(pendingUpgrade, oldMachinePool)
 		}
 	}
 

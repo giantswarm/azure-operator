@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove logic that migrates CAPI CRDs from experimental group to new group.
+
 ## [7.2.0] - 2023-03-07
 
 ### Changed
@@ -52,13 +56,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `k8scc` to fix syntax error in `k8s-addons` script.
 - Bump `k8scc` to enable authn and authz on `scheduler` and `controller-manager`.
 - Enable external cloud controller manager in k8scc.
- 
+
 ### Changed
 
 - Bump `k8scc` to v14 to support kubernetes 1.23.
-- Change default storage classes in order to use out-of-tree CSI provisioner. 
+- Change default storage classes in order to use out-of-tree CSI provisioner.
 - Improved storage class migration resource.
- 
+
 ### Removed
 
 - Remove --cloud-config flag from k8s components.
@@ -106,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Use systemd cgroup driver on masters and cgroups v2 worker nodes. 
+- Use systemd cgroup driver on masters and cgroups v2 worker nodes.
 - Update github.com/Azure/azure-sdk-for-go to v58.1.0+incompatible
 - Update github.com/giantswarm/apiextensions to v6.0.0
 - Update github.com/giantswarm/certs to v4.0.0

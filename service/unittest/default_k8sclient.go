@@ -1,8 +1,6 @@
 package unittest
 
 import (
-	oldcapiexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
-	oldcapzexpv1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -62,14 +60,6 @@ func FakeK8sClient(initObjs ...client.Object) k8sclient.Interface {
 			panic(err)
 		}
 		err = releasev1alpha1.AddToScheme(scheme)
-		if err != nil {
-			panic(err)
-		}
-		err = oldcapiexpv1alpha3.AddToScheme(scheme)
-		if err != nil {
-			panic(err)
-		}
-		err = oldcapzexpv1alpha3.AddToScheme(scheme)
 		if err != nil {
 			panic(err)
 		}
