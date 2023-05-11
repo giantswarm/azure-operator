@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add new control-plane taint to detect master nodes.
+- Add new control-plane label to detect master nodes.
 
 ### Removed
 
