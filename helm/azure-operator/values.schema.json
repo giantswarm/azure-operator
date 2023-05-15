@@ -1,0 +1,315 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "azure": {
+            "type": "object",
+            "properties": {
+                "environmentName": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "managementCluster": {
+                    "type": "object",
+                    "properties": {
+                        "cidr": {
+                            "type": "string"
+                        },
+                        "resourceGroup": {
+                            "type": "string"
+                        },
+                        "virtualNetwork": {
+                            "type": "string"
+                        },
+                        "virtualNetworkGateway": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "msi": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        },
+        "azureOperatorSecret": {
+            "type": "object",
+            "properties": {
+                "service": {
+                    "type": "object",
+                    "properties": {
+                        "azure": {
+                            "type": "object",
+                            "properties": {
+                                "clientid": {
+                                    "type": "string"
+                                },
+                                "clientsecret": {
+                                    "type": "string"
+                                },
+                                "sptenantid": {
+                                    "type": "string"
+                                },
+                                "subscriptionid": {
+                                    "type": "string"
+                                },
+                                "tenantid": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "cluster": {
+            "type": "object",
+            "properties": {
+                "baseDomain": {
+                    "type": "string"
+                },
+                "cni": {
+                    "type": "object",
+                    "properties": {
+                        "mask": {
+                            "type": "string"
+                        },
+                        "subnet": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "docker": {
+                    "type": "object",
+                    "properties": {
+                        "daemon": {
+                            "type": "object",
+                            "properties": {
+                                "cidr": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "kubernetes": {
+                    "type": "object",
+                    "properties": {
+                        "ingressController": {
+                            "type": "object",
+                            "properties": {
+                                "baseDomain": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "ssh": {
+                            "type": "object",
+                            "properties": {
+                                "userList": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "image": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                }
+            }
+        },
+        "installation": {
+            "type": "string"
+        },
+        "pod": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "user": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
+        "podSecurityContext": {
+            "type": "object",
+            "properties": {
+                "runAsNonRoot": {
+                    "type": "boolean"
+                },
+                "seccompProfile": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "ports": {
+            "type": "object",
+            "properties": {
+                "ingress": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "port": {
+                                "type": "integer"
+                            },
+                            "protocol": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "project": {
+            "type": "object",
+            "properties": {
+                "branch": {
+                    "type": "string"
+                },
+                "commit": {
+                    "type": "string"
+                }
+            }
+        },
+        "registry": {
+            "type": "object",
+            "properties": {
+                "dockerhub": {
+                    "type": "object",
+                    "properties": {
+                        "token": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "domain": {
+                    "type": "string"
+                }
+            }
+        },
+        "securityContext": {
+            "type": "object",
+            "properties": {
+                "allowPrivilegeEscalation": {
+                    "type": "boolean"
+                },
+                "capabilities": {
+                    "type": "object",
+                    "properties": {
+                        "drop": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "privileged": {
+                    "type": "boolean"
+                },
+                "runAsNonRoot": {
+                    "type": "boolean"
+                },
+                "seccompProfile": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "verticalPodAutoscaler": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "workloadCluster": {
+            "type": "object",
+            "properties": {
+                "ipam": {
+                    "type": "object",
+                    "properties": {
+                        "network": {
+                            "type": "object",
+                            "properties": {
+                                "cidr": {
+                                    "type": "string"
+                                },
+                                "subnetMaskBits": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "oidc": {
+                    "type": "object",
+                    "properties": {
+                        "clientID": {
+                            "type": "string"
+                        },
+                        "groupsClaim": {
+                            "type": "string"
+                        },
+                        "issuerURL": {
+                            "type": "string"
+                        },
+                        "usernameClaim": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "ssh": {
+                    "type": "object",
+                    "properties": {
+                        "ssoPublicKey": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
