@@ -10,7 +10,7 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v6 v6.0.0
-	github.com/giantswarm/badnodedetector v1.0.1
+	github.com/giantswarm/badnodedetector/v2 v2.0.0
 	github.com/giantswarm/certs/v4 v4.0.0
 	github.com/giantswarm/conditions v0.5.0
 	github.com/giantswarm/conditions-handler v0.3.0
@@ -18,15 +18,15 @@ require (
 	github.com/giantswarm/exporterkit v1.0.0
 	github.com/giantswarm/ipam v0.3.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
-	github.com/giantswarm/k8scloudconfig/v15 v15.7.0
+	github.com/giantswarm/k8scloudconfig/v16 v16.2.0
 	github.com/giantswarm/k8smetadata v0.9.3
-	github.com/giantswarm/kubelock/v2 v2.0.0
+	github.com/giantswarm/kubelock/v4 v4.0.0
 	github.com/giantswarm/microendpoint v1.0.0
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/microkit v1.0.0
-	github.com/giantswarm/micrologger v0.6.0
-	github.com/giantswarm/operatorkit/v7 v7.0.1
-	github.com/giantswarm/release-operator/v3 v3.2.0
+	github.com/giantswarm/micrologger v1.0.0
+	github.com/giantswarm/operatorkit/v8 v8.0.0
+	github.com/giantswarm/release-operator/v4 v4.0.0
 	github.com/giantswarm/tenantcluster/v6 v6.0.0
 	github.com/giantswarm/to v0.4.0
 	github.com/giantswarm/versionbundle v1.0.0
