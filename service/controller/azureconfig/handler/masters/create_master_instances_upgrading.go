@@ -269,6 +269,8 @@ func isMaster(n corev1.Node) bool {
 			return true
 		case "node.kubernetes.io/master":
 			return true
+		case "node-role.kubernetes.io/control-plane":
+			return true
 		}
 	}
 
