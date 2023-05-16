@@ -9,8 +9,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/label"
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/pkg/label"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
 )
 
 const (

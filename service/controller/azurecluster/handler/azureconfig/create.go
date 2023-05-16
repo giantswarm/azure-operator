@@ -18,10 +18,10 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	localannotation "github.com/giantswarm/azure-operator/v7/pkg/annotation"
-	"github.com/giantswarm/azure-operator/v7/pkg/label"
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
-	"github.com/giantswarm/azure-operator/v7/service/network"
+	localannotation "github.com/giantswarm/azure-operator/v8/pkg/annotation"
+	"github.com/giantswarm/azure-operator/v8/pkg/label"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/service/network"
 )
 
 const (

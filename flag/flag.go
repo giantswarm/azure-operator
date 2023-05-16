@@ -3,7 +3,7 @@ package flag
 import (
 	"github.com/giantswarm/microkit/flag"
 
-	"github.com/giantswarm/azure-operator/v7/flag/service"
+	"github.com/giantswarm/azure-operator/v8/flag/service"
 )
 
 type Flag struct {

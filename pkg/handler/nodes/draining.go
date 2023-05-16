@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/label"
+	"github.com/giantswarm/azure-operator/v8/pkg/label"
 )
 
 func (r *Resource) CreateDrainerConfig(ctx context.Context, clusterID, clusterAPIEndpoint string, nodeName string) error {

@@ -11,9 +11,9 @@ import (
 	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/project"
-	"github.com/giantswarm/azure-operator/v7/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v7/service/unittest"
+	"github.com/giantswarm/azure-operator/v8/pkg/project"
+	"github.com/giantswarm/azure-operator/v8/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v8/service/unittest"
 )
 
 func Test_Resource_Puts_Release_In_Context_When_Release_Has_Leading_V(t *testing.T) {

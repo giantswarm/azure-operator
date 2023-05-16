@@ -3,8 +3,8 @@ package blobobject
 import (
 	"context"
 
-	"github.com/giantswarm/azure-operator/v7/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/v7/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v8/service/controller/cloudconfig"
+	"github.com/giantswarm/azure-operator/v8/service/controller/encrypter"
 )
 
 type CloudConfigMock struct {

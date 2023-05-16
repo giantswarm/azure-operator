@@ -1,7 +1,7 @@
 package kubernetes
 
 import (
-	"github.com/giantswarm/azure-operator/v7/flag/service/installation/tenant/kubernetes/api"
+	"github.com/giantswarm/azure-operator/v8/flag/service/installation/tenant/kubernetes/api"
 )
 
 type Kubernetes struct {

@@ -17,11 +17,11 @@ import (
 	"sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/helpers"
-	"github.com/giantswarm/azure-operator/v7/pkg/project"
-	"github.com/giantswarm/azure-operator/v7/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
-	"github.com/giantswarm/azure-operator/v7/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v8/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v8/pkg/project"
+	"github.com/giantswarm/azure-operator/v8/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/service/controller/setting"
 )
 
 const (

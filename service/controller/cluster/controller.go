@@ -18,14 +18,14 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/label"
-	"github.com/giantswarm/azure-operator/v7/pkg/project"
-	"github.com/giantswarm/azure-operator/v7/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v7/service/controller/cluster/handler/clusterdependents"
-	"github.com/giantswarm/azure-operator/v7/service/controller/cluster/handler/clusterownerreference"
-	"github.com/giantswarm/azure-operator/v7/service/controller/cluster/handler/clusterreleaseversion"
-	"github.com/giantswarm/azure-operator/v7/service/controller/cluster/handler/clusterupgrade"
-	"github.com/giantswarm/azure-operator/v7/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v8/pkg/label"
+	"github.com/giantswarm/azure-operator/v8/pkg/project"
+	"github.com/giantswarm/azure-operator/v8/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v8/service/controller/cluster/handler/clusterdependents"
+	"github.com/giantswarm/azure-operator/v8/service/controller/cluster/handler/clusterownerreference"
+	"github.com/giantswarm/azure-operator/v8/service/controller/cluster/handler/clusterreleaseversion"
+	"github.com/giantswarm/azure-operator/v8/service/controller/cluster/handler/clusterupgrade"
+	"github.com/giantswarm/azure-operator/v8/service/controller/setting"
 )
 
 type ControllerConfig struct {

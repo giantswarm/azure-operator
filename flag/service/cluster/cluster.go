@@ -1,10 +1,10 @@
 package cluster
 
 import (
-	"github.com/giantswarm/azure-operator/v7/flag/service/cluster/calico"
-	"github.com/giantswarm/azure-operator/v7/flag/service/cluster/docker"
-	"github.com/giantswarm/azure-operator/v7/flag/service/cluster/etcd"
-	"github.com/giantswarm/azure-operator/v7/flag/service/cluster/kubernetes"
+	"github.com/giantswarm/azure-operator/v8/flag/service/cluster/calico"
+	"github.com/giantswarm/azure-operator/v8/flag/service/cluster/docker"
+	"github.com/giantswarm/azure-operator/v8/flag/service/cluster/etcd"
+	"github.com/giantswarm/azure-operator/v8/flag/service/cluster/kubernetes"
 )
 
 type Cluster struct {

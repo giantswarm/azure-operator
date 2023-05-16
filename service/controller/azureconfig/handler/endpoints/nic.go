@@ -6,7 +6,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v7/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v8/service/controller/controllercontext"
 )
 
 func (r *Resource) getMasterNICPrivateIPs(ctx context.Context, resourceGroupName, virtualMachineScaleSetName string) ([]string, error) {

@@ -5,8 +5,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	azureclient "github.com/giantswarm/azure-operator/v7/client"
-	"github.com/giantswarm/azure-operator/v7/pkg/azureconditions"
+	azureclient "github.com/giantswarm/azure-operator/v8/client"
+	"github.com/giantswarm/azure-operator/v8/pkg/azureconditions"
 )
 
 const (

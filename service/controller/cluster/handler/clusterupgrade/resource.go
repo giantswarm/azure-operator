@@ -5,7 +5,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v8/pkg/tenantcluster"
 )
 
 const (

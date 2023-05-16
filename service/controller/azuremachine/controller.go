@@ -13,13 +13,13 @@ import (
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v7/client"
-	"github.com/giantswarm/azure-operator/v7/pkg/credential"
-	"github.com/giantswarm/azure-operator/v7/pkg/label"
-	"github.com/giantswarm/azure-operator/v7/pkg/project"
-	"github.com/giantswarm/azure-operator/v7/service/collector"
-	"github.com/giantswarm/azure-operator/v7/service/controller/azuremachine/handler/azuremachineconditions"
-	"github.com/giantswarm/azure-operator/v7/service/controller/azuremachine/handler/azuremachinemetadata"
+	"github.com/giantswarm/azure-operator/v8/client"
+	"github.com/giantswarm/azure-operator/v8/pkg/credential"
+	"github.com/giantswarm/azure-operator/v8/pkg/label"
+	"github.com/giantswarm/azure-operator/v8/pkg/project"
+	"github.com/giantswarm/azure-operator/v8/service/collector"
+	"github.com/giantswarm/azure-operator/v8/service/controller/azuremachine/handler/azuremachineconditions"
+	"github.com/giantswarm/azure-operator/v8/service/controller/azuremachine/handler/azuremachinemetadata"
 )
 
 type ControllerConfig struct {

@@ -7,8 +7,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/helpers"
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {

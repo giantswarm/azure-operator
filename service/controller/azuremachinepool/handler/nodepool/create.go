@@ -11,10 +11,10 @@ import (
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capiutil "sigs.k8s.io/cluster-api/util"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/handler/nodes/state"
-	"github.com/giantswarm/azure-operator/v7/pkg/project"
-	"github.com/giantswarm/azure-operator/v7/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v8/pkg/project"
+	"github.com/giantswarm/azure-operator/v8/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
 )
 
 // createStateMachine configures and returns state machine that is driven by
