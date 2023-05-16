@@ -78,7 +78,7 @@
                     "type": "object",
                     "properties": {
                         "mask": {
-                            "type": "string"
+                            "type": ["string", "number" ]
                         },
                         "subnet": {
                             "type": "string"
@@ -92,7 +92,7 @@
                             "type": "object",
                             "properties": {
                                 "cidr": {
-                                    "type": ["string", "number" ]
+                                    "type": "string"
                                 }
                             }
                         }
