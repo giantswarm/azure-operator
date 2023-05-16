@@ -92,7 +92,7 @@
                             "type": "object",
                             "properties": {
                                 "cidr": {
-                                    "type": "string"
+                                    "type": ["string", "number" ]
                                 }
                             }
                         }
