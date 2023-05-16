@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	"github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"

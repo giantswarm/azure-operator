@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/giantswarm/microerror"
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/azure-operator/v7/pkg/label"

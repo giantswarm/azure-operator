@@ -18,7 +18,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	operatorkitcontroller "github.com/giantswarm/operatorkit/v7/pkg/controller"
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
