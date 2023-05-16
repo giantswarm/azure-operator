@@ -18,7 +18,7 @@ require (
 	github.com/giantswarm/exporterkit v1.0.0
 	github.com/giantswarm/ipam v0.3.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
-	github.com/giantswarm/k8scloudconfig/v16 v16.1.1-0.20230502133229-e56b5563cdaa
+	github.com/giantswarm/k8scloudconfig/v17 v17.0.0
 	github.com/giantswarm/k8smetadata v0.19.0
 	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v1.0.0
@@ -49,7 +49,7 @@ require (
 require (
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
-	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.9.23 // indirect
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.5 // indirect
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
@@ -80,7 +80,7 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gobuffalo/flect v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v4 v4.2.0 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
@@ -116,7 +116,7 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	go.opentelemetry.io/otel v1.3.0 // indirect
 	go.opentelemetry.io/otel/trace v1.3.0 // indirect
-	golang.org/x/crypto v0.5.0 // indirect
+	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
 	golang.org/x/sys v0.5.0 // indirect
