@@ -9,9 +9,9 @@ import (
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v17/pkg/template"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v7/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
-	"github.com/giantswarm/azure-operator/v7/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v8/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/service/controller/templates/ignition"
 )
 
 const (

@@ -5,12 +5,12 @@ import (
 
 	"github.com/giantswarm/certs/v4/pkg/certs"
 
-	v5client "github.com/giantswarm/azure-operator/v7/client"
-	"github.com/giantswarm/azure-operator/v7/pkg/credential"
-	"github.com/giantswarm/azure-operator/v7/pkg/employees"
-	"github.com/giantswarm/azure-operator/v7/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
-	"github.com/giantswarm/azure-operator/v7/service/controller/setting"
+	v5client "github.com/giantswarm/azure-operator/v8/client"
+	"github.com/giantswarm/azure-operator/v8/pkg/credential"
+	"github.com/giantswarm/azure-operator/v8/pkg/employees"
+	"github.com/giantswarm/azure-operator/v8/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/service/controller/setting"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"

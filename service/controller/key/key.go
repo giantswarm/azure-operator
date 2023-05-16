@@ -20,10 +20,10 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/annotation"
-	"github.com/giantswarm/azure-operator/v7/pkg/employees"
-	"github.com/giantswarm/azure-operator/v7/pkg/label"
-	"github.com/giantswarm/azure-operator/v7/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v8/pkg/annotation"
+	"github.com/giantswarm/azure-operator/v8/pkg/employees"
+	"github.com/giantswarm/azure-operator/v8/pkg/label"
+	"github.com/giantswarm/azure-operator/v8/service/controller/templates/ignition"
 )
 
 const (

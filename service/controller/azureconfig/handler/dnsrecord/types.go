@@ -5,7 +5,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
 )
 
 type nsRecord struct {

@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v7/service/network"
+	"github.com/giantswarm/azure-operator/v8/service/network"
 )
 
 type AzureConfigPersisterConfig struct {

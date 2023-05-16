@@ -7,11 +7,11 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api/util"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/drainer"
-	"github.com/giantswarm/azure-operator/v7/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v7/service/controller/key"
+	"github.com/giantswarm/azure-operator/v8/pkg/drainer"
+	"github.com/giantswarm/azure-operator/v8/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v8/service/controller/key"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v8/pkg/handler/nodes/state"
 )
 
 func (r *Resource) cordonOldWorkerInstances(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

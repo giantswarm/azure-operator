@@ -4,10 +4,10 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/credential"
-	"github.com/giantswarm/azure-operator/v7/pkg/handler/nodes"
-	"github.com/giantswarm/azure-operator/v7/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v7/service/controller/internal/vmsku"
+	"github.com/giantswarm/azure-operator/v8/pkg/credential"
+	"github.com/giantswarm/azure-operator/v8/pkg/handler/nodes"
+	"github.com/giantswarm/azure-operator/v8/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v8/service/controller/internal/vmsku"
 )
 
 const (

@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/meta"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/locker"
+	"github.com/giantswarm/azure-operator/v8/pkg/locker"
 )
 
 // EnsureCreated allocates tenant cluster network segments. It gathers existing

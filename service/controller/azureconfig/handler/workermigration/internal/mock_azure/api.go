@@ -11,7 +11,7 @@ import (
 	network "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	gomock "github.com/golang/mock/gomock"
 
-	azure "github.com/giantswarm/azure-operator/v7/service/controller/azureconfig/handler/workermigration/internal/azure"
+	azure "github.com/giantswarm/azure-operator/v8/service/controller/azureconfig/handler/workermigration/internal/azure"
 )
 
 // MockAPI is a mock of API interface

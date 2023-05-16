@@ -26,9 +26,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" // nolint:staticcheck
 	"sigs.k8s.io/yaml"
 
-	client2 "github.com/giantswarm/azure-operator/v7/client"
-	"github.com/giantswarm/azure-operator/v7/service/controller/azurecluster/handler/azureconfig"
-	"github.com/giantswarm/azure-operator/v7/service/controller/azureconfig/handler/capzcrs"
+	client2 "github.com/giantswarm/azure-operator/v8/client"
+	"github.com/giantswarm/azure-operator/v8/service/controller/azurecluster/handler/azureconfig"
+	"github.com/giantswarm/azure-operator/v8/service/controller/azureconfig/handler/capzcrs"
 )
 
 var update = flag.Bool("update", false, "update .golden reference files")

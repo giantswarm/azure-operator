@@ -3,7 +3,7 @@ package masters
 import (
 	"context"
 
-	"github.com/giantswarm/azure-operator/v7/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v8/pkg/handler/nodes/state"
 )
 
 func (r *Resource) provisioningSuccessfulTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

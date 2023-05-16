@@ -7,8 +7,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/release-operator/v4/api/v1alpha1"
 
-	"github.com/giantswarm/azure-operator/v7/client"
-	"github.com/giantswarm/azure-operator/v7/service/controller/cloudconfig"
+	"github.com/giantswarm/azure-operator/v8/client"
+	"github.com/giantswarm/azure-operator/v8/service/controller/cloudconfig"
 )
 
 type contextKey string
