@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.0.1] - 2023-05-16
+
 ### Fixed
 
 - Fix helm values json schema.
@@ -661,7 +663,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v8.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v8.0.1...HEAD
+[8.0.1]: https://github.com/giantswarm/azure-operator/compare/v8.0.0...v8.0.1
 [8.0.0]: https://github.com/giantswarm/azure-operator/compare/v7.2.0...v8.0.0
 [7.2.0]: https://github.com/giantswarm/azure-operator/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/giantswarm/azure-operator/compare/v7.0.0...v7.1.0
