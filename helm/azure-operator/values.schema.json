@@ -78,7 +78,7 @@
                     "type": "object",
                     "properties": {
                         "mask": {
-                            "type": "string"
+                            "type": ["string", "number" ]
                         },
                         "subnet": {
                             "type": "string"
