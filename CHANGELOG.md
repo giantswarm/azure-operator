@@ -5,12 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
 
 ### Added
 
 - Add necessary values for PSS policy warnings. 
+
+### Removed
+
+- Scripts: Remove `migrate-nginx-ingress-controller.sh`. ([#1729](https://github.com/giantswarm/azure-operator/pull/1729))
 
 ## [8.0.1] - 2023-05-16
 
