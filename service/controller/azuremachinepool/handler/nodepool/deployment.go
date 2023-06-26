@@ -11,7 +11,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"

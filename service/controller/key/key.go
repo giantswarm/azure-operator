@@ -12,7 +12,7 @@ import (
 	"github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v6/pkg/label"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v15/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v16/pkg/template"
 	k8smetaannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"

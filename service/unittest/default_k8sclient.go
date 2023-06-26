@@ -7,7 +7,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8scrdclient"
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/runtime"

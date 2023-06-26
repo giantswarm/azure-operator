@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump k8scc to 16.2.0
+- Remove logic that migrates CAPI CRDs from experimental group to new group.
+
 ## [7.2.0] - 2023-03-07
 
 ### Changed

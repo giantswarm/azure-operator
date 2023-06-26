@@ -18,7 +18,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	operatorkitcontroller "github.com/giantswarm/operatorkit/v7/pkg/controller"
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
@@ -43,7 +43,6 @@ import (
 	"github.com/giantswarm/azure-operator/v7/service/controller/azuremachinepool"
 	"github.com/giantswarm/azure-operator/v7/service/controller/cluster"
 	"github.com/giantswarm/azure-operator/v7/service/controller/machinepool"
-	"github.com/giantswarm/azure-operator/v7/service/controller/machinepoolexp"
 	"github.com/giantswarm/azure-operator/v7/service/controller/setting"
 	"github.com/giantswarm/azure-operator/v7/service/controller/unhealthynode"
 )
@@ -471,22 +470,6 @@ func New(config Config) (*Service, error) {
 		}
 
 		controllers = append(controllers, clusterController)
-	}
-
-	var machinePoolExpController *operatorkitcontroller.Controller
-	{
-		c := machinepoolexp.ControllerConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
-			SentryDSN: sentryDSN,
-		}
-
-		machinePoolExpController, err = machinepoolexp.NewController(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		controllers = append(controllers, machinePoolExpController)
 	}
 
 	var machinePoolController *operatorkitcontroller.Controller
