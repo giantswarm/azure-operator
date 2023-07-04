@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for customizing `controller-manager` `terminated-pod-gc-threshold` value through annotation `giantswarm.io/controllermanager-terminated-pod-gc-threshold`
+
 ### Removed
 
 - Scripts: Remove `migrate-nginx-ingress-controller.sh`. ([#1729](https://github.com/giantswarm/azure-operator/pull/1729))
