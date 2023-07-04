@@ -695,6 +695,22 @@ func MachinePoolID(getter LabelsGetter) (string, error) {
 	return machinePoolID, nil
 }
 
+func ControllerManagerTerminatedPodGcThreshold(cluster *capi.Cluster) int {
+	str := cluster.Annotations["controllermanager.giantswarm.io/terminated-pod-gc-threshold"]
+	if str != "" {
+		i, err := strconv.Atoi(str)
+		if err != nil {
+			// when 0 is returned than the default value configured in k8scloudconfig will be used
+			return 0
+		}
+
+		return int(i)
+	}
+
+	// when 0 is returned than the default value configured in k8scloudconfig will be used
+	return 0
+}
+
 func NodePoolInstanceName(nodePoolName, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
