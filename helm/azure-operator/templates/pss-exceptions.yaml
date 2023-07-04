@@ -18,7 +18,7 @@ spec:
     any:
     - resources:
         kinds:
-        - DaemonSet
+        - Deployment
         - Pod
         namespaces:
         - {{ include "resource.default.namespace"  . }}
