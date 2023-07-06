@@ -91,6 +91,8 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			},
 		}
 
+		params.ControllerManagerTerminatedPodGcThreshold = key.ControllerManagerTerminatedPodGcThreshold(data.Cluster)
+
 		encryptedEncryptionConfig, err := encrypter.Encrypt(data.EncryptionConf)
 		if err != nil {
 			return "", microerror.Mask(err)

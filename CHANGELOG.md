@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add necessary values for PSS policy warnings. 
 
+## [8.1.0] - 2023-07-04
+
+### Added
+
+- Add support for customizing `controller-manager` `terminated-pod-gc-threshold` value through annotation `giantswarm.io/controllermanager-terminated-pod-gc-threshold`
+
 ### Removed
 
 - Scripts: Remove `migrate-nginx-ingress-controller.sh`. ([#1729](https://github.com/giantswarm/azure-operator/pull/1729))
@@ -670,7 +676,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v8.0.1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v8.1.0...HEAD
+[8.1.0]: https://github.com/giantswarm/azure-operator/compare/v8.0.1...v8.1.0
 [8.0.1]: https://github.com/giantswarm/azure-operator/compare/v8.0.0...v8.0.1
 [8.0.0]: https://github.com/giantswarm/azure-operator/compare/v7.2.0...v8.0.0
 [7.2.0]: https://github.com/giantswarm/azure-operator/compare/v7.1.0...v7.2.0
