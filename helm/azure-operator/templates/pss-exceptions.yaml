@@ -24,4 +24,4 @@ spec:
         namespaces:
         - {{ include "resource.default.namespace"  . }}
         names:
-        - {{ include "resource.default.name"  . }}*
+        - {{ .Chart.Name }}*
