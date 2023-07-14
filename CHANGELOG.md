@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+## [8.2.0] - 2023-07-14
+
+### Fixed
 
 - Add necessary values for PSS policy warnings. 
 
@@ -676,7 +678,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v8.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v8.2.0...HEAD
+[8.2.0]: https://github.com/giantswarm/azure-operator/compare/v8.1.0...v8.2.0
 [8.1.0]: https://github.com/giantswarm/azure-operator/compare/v8.0.1...v8.1.0
 [8.0.1]: https://github.com/giantswarm/azure-operator/compare/v8.0.0...v8.0.1
 [8.0.0]: https://github.com/giantswarm/azure-operator/compare/v7.2.0...v8.0.0
