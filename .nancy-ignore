@@ -25,3 +25,6 @@ CVE-2023-29401
 
 # pkg:golang/google.golang.org/grpc@v1.50.1
 CVE-2023-32731
+
+#pkg:golang/golang.org/x/net@v0.9.0
+CVE-2023-3978 until=2023-11-30
