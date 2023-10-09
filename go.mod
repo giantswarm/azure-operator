@@ -3,7 +3,7 @@ module github.com/giantswarm/azure-operator/v8
 go 1.18
 
 require (
-	github.com/Azure/azure-sdk-for-go v65.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.15.0
 	github.com/Azure/go-autorest/autorest v0.11.28
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
@@ -150,8 +150,8 @@ replace (
 	github.com/giantswarm/micrologger => github.com/giantswarm/micrologger v0.6.0
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.0
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
-	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
-	github.com/go-logr/stdr => github.com/go-logr/stdr v0.4.0
+	github.com/go-logr/logr => github.com/go-logr/logr v1.2.4
+	github.com/go-logr/stdr => github.com/go-logr/stdr v1.2.2
 	github.com/gofiber/fiber/v2 => github.com/gofiber/fiber/v2 v2.36.0
 	github.com/gogo/protobuf v1.3.1 => github.com/gogo/protobuf v1.3.2
 	github.com/microcosm-cc/bluemonday => github.com/microcosm-cc/bluemonday v1.0.19
