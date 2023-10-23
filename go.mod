@@ -8,7 +8,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.28
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/Azure/go-autorest/autorest/to v0.4.0
-	github.com/coreos/go-semver v0.3.0
+	github.com/coreos/go-semver v0.3.1
 	github.com/giantswarm/apiextensions/v6 v6.0.0
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v4 v4.0.0
