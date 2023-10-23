@@ -63,6 +63,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
+	github.com/distribution/reference v0.5.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -146,7 +147,7 @@ replace (
 	github.com/coredns/coredns => github.com/coredns/coredns v1.9.3
 	github.com/coreos/etcd v3.3.13+incompatible => github.com/coreos/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
-	github.com/docker/distribution => github.com/docker/distribution v2.8.1+incompatible
+	github.com/docker/distribution => github.com/docker/distribution v2.8.3+incompatible
 	github.com/giantswarm/micrologger => github.com/giantswarm/micrologger v0.6.0
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.0
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
