@@ -149,7 +149,7 @@ replace (
 	github.com/docker/distribution => github.com/docker/distribution v2.8.1+incompatible
 	github.com/giantswarm/micrologger => github.com/giantswarm/micrologger v0.6.0
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.0
-	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
+	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 	github.com/go-logr/stdr => github.com/go-logr/stdr v0.4.0
 	github.com/gofiber/fiber/v2 => github.com/gofiber/fiber/v2 v2.36.0
