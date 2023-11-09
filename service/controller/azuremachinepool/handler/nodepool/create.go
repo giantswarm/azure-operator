@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/v6/pkg/label"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v8/pkg/controller/context/reconciliationcanceledcontext"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"

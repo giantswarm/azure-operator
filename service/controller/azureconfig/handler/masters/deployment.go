@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v8/pkg/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/azure-operator/v8/pkg/helpers/vmss"

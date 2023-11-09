@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/giantswarm/operatorkit/v7/pkg/flag/service/kubernetes"
+	"github.com/giantswarm/operatorkit/v8/pkg/flag/service/kubernetes"
 
 	"github.com/giantswarm/azure-operator/v8/flag/service/azure"
 	"github.com/giantswarm/azure-operator/v8/flag/service/cluster"

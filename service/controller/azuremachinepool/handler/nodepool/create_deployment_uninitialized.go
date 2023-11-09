@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v8/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"

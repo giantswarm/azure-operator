@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v8/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"

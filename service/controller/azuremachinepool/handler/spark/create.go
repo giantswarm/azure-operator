@@ -18,7 +18,7 @@ import (
 	"github.com/giantswarm/certs/v4/pkg/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v17/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v8/pkg/controller/context/reconciliationcanceledcontext"
 	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
