@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v8/pkg/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/v8/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v8/service/controller/controllercontext"

@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/certs/v4/pkg/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v17/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v7/pkg/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v8/pkg/controller/context/resourcecanceledcontext"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

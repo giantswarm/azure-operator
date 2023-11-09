@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/apiextensions/v6/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v6/pkg/label"
-	"github.com/giantswarm/badnodedetector/pkg/detector"
+	"github.com/giantswarm/badnodedetector/v3/pkg/detector"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
