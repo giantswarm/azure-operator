@@ -9,27 +9,27 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/giantswarm/apiextensions/v6 v6.0.0
+	github.com/giantswarm/apiextensions/v6 v6.6.0
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v4 v4.0.0
 	github.com/giantswarm/conditions v0.5.0
 	github.com/giantswarm/conditions-handler v0.3.0
 	github.com/giantswarm/errors v0.3.0
-	github.com/giantswarm/exporterkit v1.0.0
+	github.com/giantswarm/exporterkit v1.1.0
 	github.com/giantswarm/ipam v0.3.0
-	github.com/giantswarm/k8sclient/v7 v7.0.1
+	github.com/giantswarm/k8sclient/v7 v7.2.0
 	github.com/giantswarm/k8scloudconfig/v17 v17.2.0
-	github.com/giantswarm/k8smetadata v0.19.0
+	github.com/giantswarm/k8smetadata v0.23.0
 	github.com/giantswarm/kubelock/v2 v2.0.0
-	github.com/giantswarm/microendpoint v1.0.0
-	github.com/giantswarm/microerror v0.4.0
+	github.com/giantswarm/microendpoint v1.1.0
+	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/microkit v1.0.0
-	github.com/giantswarm/micrologger v1.0.0
-	github.com/giantswarm/operatorkit/v7 v7.0.1
-	github.com/giantswarm/release-operator/v4 v4.0.0
+	github.com/giantswarm/micrologger v1.1.1
+	github.com/giantswarm/operatorkit/v7 v7.2.0
+	github.com/giantswarm/release-operator/v4 v4.1.0
 	github.com/giantswarm/tenantcluster/v6 v6.0.0
 	github.com/giantswarm/to v0.4.0
-	github.com/giantswarm/versionbundle v1.0.0
+	github.com/giantswarm/versionbundle v1.1.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.9
 	github.com/patrickmn/go-cache v2.1.0+incompatible
