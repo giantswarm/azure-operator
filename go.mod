@@ -1,6 +1,8 @@
 module github.com/giantswarm/azure-operator/v8
 
-go 1.18
+go 1.21
+
+toolchain go1.21.4
 
 require (
 	github.com/Azure/azure-sdk-for-go v65.0.0+incompatible
@@ -115,12 +117,12 @@ require (
 	github.com/subosito/gotenv v1.4.2 // indirect
 	go.opentelemetry.io/otel v1.3.0 // indirect
 	go.opentelemetry.io/otel/trace v1.3.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
@@ -154,7 +156,7 @@ replace (
 	github.com/go-logr/stdr => github.com/go-logr/stdr v0.4.0
 	github.com/gofiber/fiber/v2 => github.com/gofiber/fiber/v2 v2.36.0
 	github.com/gogo/protobuf v1.3.1 => github.com/gogo/protobuf v1.3.2
-	github.com/microcosm-cc/bluemonday => github.com/microcosm-cc/bluemonday v1.0.19
+	github.com/microcosm-cc/bluemonday => github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/nats-io/jwt => github.com/nats-io/jwt/v2 v2.3.0
 	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2
