@@ -1,5 +1,5 @@
 orbs:
-  architect: giantswarm/architect@4.33.0
+  architect: giantswarm/architect@4.35.5
 
 version: 2.1
 workflows:
@@ -16,12 +16,9 @@ workflows:
               only: /^v.*/
 
       # build and push docker image to quay.
-      - architect/push-to-docker:
+      - architect/push-to-registries:
           context: architect
-          name: push-azure-operator-to-quay
-          image: "quay.io/giantswarm/azure-operator"
-          username_envar: "QUAY_USERNAME"
-          password_envar: "QUAY_PASSWORD"
+          name: push-to-registries
           requires:
             - go-build
           filters:
@@ -30,20 +27,6 @@ workflows:
               only: /^v.*/
 
       # build and push docker image to docker.
-      - architect/push-to-docker:
-          context: architect
-          name: push-azure-operator-to-docker
-          image: "docker.io/giantswarm/azure-operator"
-          username_envar: "DOCKER_USERNAME"
-          password_envar: "DOCKER_PASSWORD"
-          requires:
-            - go-build
-          filters:
-            # Trigger the job also on git tag.
-            tags:
-              only: /^v.*/
-
-      # build and push helm chart to app catalog.
       - architect/push-to-app-catalog:
           context: architect
           name: push-azure-operator-to-control-plane-app-catalog
@@ -52,8 +35,7 @@ workflows:
           chart: "azure-operator"
           # Make sure docker image is successfully built.
           requires:
-            - push-azure-operator-to-quay
-            - push-azure-operator-to-docker
+            - push-to-registries
           filters:
             # Trigger the job also on git tag.
             tags:
